@@ -1,18 +1,19 @@
 local action = require('action')
+local os = require('os')
 local database = require('database')
 local gps = require('gps')
 local scanner = require('scanner')
 local config = require('config')
 local events = require('events')
+local serverApi = require('serverApi')
 local emptySlot
 local targetCrop
-
 -- =================== MINOR FUNCTIONS ======================
 
 local function findEmpty()
     local farm = database.getFarm()
 
-    for slot=1, config.workingFarmArea, 2 do
+    for slot = 1, config.workingFarmArea, 2 do
         local crop = farm[slot]
         if crop ~= nil and (crop.name == 'air' or crop.name == 'emptyCrop') then
             emptySlot = slot
@@ -25,14 +26,14 @@ end
 
 local function checkChild(slot, crop)
     if crop.isCrop and crop.name ~= 'emptyCrop' then
-
         if crop.name == 'air' then
             action.placeCropStick(2)
-
         elseif scanner.isWeed(crop, 'storage') then
             action.deweed()
             action.placeCropStick()
-
+        elseif scanner.isComMax(crop, 'working') then
+            action.removePlant()
+            action.placeCropStick(2)
         elseif crop.name == targetCrop then
             local stat = crop.gr + crop.ga - crop.re
 
@@ -42,26 +43,24 @@ local function checkChild(slot, crop)
                 action.placeCropStick(2)
                 database.updateFarm(emptySlot, crop)
 
-            -- No parent is empty, put in storage
+                -- No parent is empty, put in storage
             elseif stat >= config.autoSpreadThreshold then
                 action.transplant(gps.workingSlotToPos(slot), gps.storageSlotToPos(database.nextStorageSlot()))
                 database.addToStorage(crop)
                 action.placeCropStick(2)
 
-            -- Stats are not high enough
+                -- Stats are not high enough
             else
-                action.deweed()
-                action.placeCropStick()
+                action.removePlant()
+                action.placeCropStick(2)
             end
-
         elseif config.keepMutations and (not database.existInStorage(crop)) then
             action.transplant(gps.workingSlotToPos(slot), gps.storageSlotToPos(database.nextStorageSlot()))
             action.placeCropStick(2)
             database.addToStorage(crop)
-
         else
-            action.deweed()
-            action.placeCropStick()
+            action.removePlant()
+            action.placeCropStick(2)
         end
     end
 end
@@ -71,15 +70,18 @@ local function checkParent(slot, crop)
     if crop.isCrop and crop.name ~= 'air' and crop.name ~= 'emptyCrop' then
         if scanner.isWeed(crop, 'working') then
             action.deweed()
-            database.updateFarm(slot, {isCrop=true, name='emptyCrop'})
+        elseif scanner.isComMax(crop, 'working') then
+            action.removePlant()
         end
+        database.updateFarm(slot, { isCrop = true, name = 'emptyCrop' })
     end
 end
 
 -- ====================== THE LOOP ======================
 
 local function spreadOnce(firstRun)
-    for slot=1, config.workingFarmArea, 1 do
+    for slot = 1, config.workingFarmArea, 1 do
+        print(gps.workingSlotToPos(slot))
 
         -- Terminal Condition
         if #database.getStorage() >= config.storageFarmArea then
@@ -97,7 +99,7 @@ local function spreadOnce(firstRun)
 
         -- Scan
         gps.go(gps.workingSlotToPos(slot))
-        local crop = scanner.scan()
+        local crop = serverApi.sendToLinkedCards(serverApi.initGetCrop())
 
         if firstRun then
             database.updateFarm(slot, crop)
@@ -125,7 +127,6 @@ end
 local function main()
     action.initWork()
     print('autoSpread: Scanning Farm')
-
     -- First Run
     spreadOnce(true)
     action.restockAll()

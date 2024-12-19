@@ -1,5 +1,5 @@
 local gps = require('gps')
-local scanner = require('scanner')
+--local scanner = require('scanner')
 local config = require('config')
 local events = require('events')
 local storage = {}
