@@ -152,7 +152,6 @@ local function tierOnce(firstRun)
         -- Scan
         gps.go(gps.workingSlotToPos(slot))
         local crop = serverApi.sendToLinkedCards(serverApi.initGetCrop())
-        --local crop = scanner.scan()
 
         if firstRun then
             database.updateFarm(slot, crop)

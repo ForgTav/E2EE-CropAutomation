@@ -5,18 +5,20 @@ local serialization = require("serialization")
 local tunnel = component.tunnel
 local sensor = component.sensor
 local robotSide
+
+
+-- 1 = North  2 = East 3 = South 4 = West
 local sidesCharger = {
-  { 0,  1 },
+  { 0,  -1 },
   { 1,  0 },
+  { 0,  1 },
   { -1, 0 },
-  { 0,  -1 }
 }
 
 local function getChargerSide()
   for i = 1, #sidesCharger do
-    local cur_scan = sensor.scan(sidesCharger[i][0], 0, sidesCharger[i][1])
-
-    if cur_scan.name == 'openComputer' then
+    local cur_scan = sensor.scan(sidesCharger[i][1], 0, sidesCharger[i][2])
+    if cur_scan.block.name == 'opencomputers:charger' then
       robotSide = i
       return true
     end
@@ -59,11 +61,11 @@ SendToLinkedCards = function(ready_message)
   tunnel.send(message_to_send)
 end
 
-print("LinkedRelay Started")
 if not getChargerSide() then
-  print('Charger not found')
-  os.exit()
+  error('Charger not found')
 end
+
+print("LinkedRelay Started")
 
 while true do
   local _, _, _, _, _, message = event.pull("modem_message")
