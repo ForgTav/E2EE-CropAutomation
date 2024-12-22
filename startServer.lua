@@ -52,6 +52,19 @@ local function transporter(messagetype, data)
       type = 'getCrop',
       response = cur_scan
     })
+    local block = cur_scan['block']
+    if block['name'] == 'minecraft:air' or block['name'] == 'GalacticraftCore:tile.brightAir' then
+      print('air')
+    elseif block['name'] == 'ic2:te' then
+      if block['label'] == 'Crop' then
+        print('emptyCrop')
+      else
+        local crop = cur_scan['data']['Crop']
+        print('name:' .. crop['cropId'] .. ', gr:' .. crop['statGrowth'] .. ', ga:' .. crop['statGain'] .. ',re' .. crop ['statResistance'])
+      end
+    else
+      print('block')
+    end
   end
 end
 
