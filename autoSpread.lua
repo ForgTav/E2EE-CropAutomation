@@ -81,8 +81,6 @@ end
 
 local function spreadOnce(firstRun)
     for slot = 1, config.workingFarmArea, 1 do
-        print(gps.workingSlotToPos(slot))
-
         -- Terminal Condition
         if #database.getStorage() >= config.storageFarmArea then
             print('autoSpread: Storage Full!')

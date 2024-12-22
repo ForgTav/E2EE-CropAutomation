@@ -3,6 +3,7 @@ local args = {...}
 local branch
 local repo
 local scripts = {
+    'serverApi.lua',
     'action.lua',
     'database.lua',
     'events.lua',
@@ -26,7 +27,7 @@ end
 if #args >= 2 then
     repo = args[2]
 else
-    repo = 'https://raw.githubusercontent.com/DylanTaylor1/GTNH-CropAutomation/'
+    repo = 'https://raw.githubusercontent.com/ForgTav/E2EE-CropAutomation/'
 end
 
 -- INSTALL
