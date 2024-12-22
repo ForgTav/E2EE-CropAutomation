@@ -30,9 +30,9 @@ Obtaining these components will require access to EV circuits and epoxid (mid-la
 
 Find a location with good environmental stats. It is recommended to set everything up in a Jungle or Swamp biome at Y=130 as that will give you the highest humidity and air quality stats. If not, crops run the risk of randomly dying and leaving the farms susceptible to weeds. Do not place any solid blocks above the farm as that will reduce the air quality. The whole farm can easily fit into a single chunk for easy chunk loading.
 
-![Farm Top](media/Farm_Top.png?)
+![Farm Top](media/farm_first_step.png?)
 
-![Farm Side](media/Farm_Side.png?)
+![Farm Side](media/farm_first_step_side.png?)
 
 First note the orientation of the robot sitting atop the OC charger. It must face towards the right-most column of the working farm. Adjacent to the OC charger is the crop stick chest which can be a few things: any sort of large chest, a JABBA barrel, or storage drawer (orientation does not matter). If the crop stick chest is ever empty, bad things will happen. Next to that is a trash can for any random drops that the robot picks up such as weeds, seed bags, and crop sticks but this can be swapped with another chest to recycle some of the materials. The transvector dislocator sits facing the top of the blank farmland (where a crop would go). The blank farmland itself acts as a buffer between the working and storage farms. Lastly, a crop-matron sits one y-level lower than the OC charger and hydrates most of the crops which boosts their stats and helps them grow faster.
 
@@ -59,37 +59,21 @@ Underneath the farm, you can see that there are three additional dirt blocks bel
 
         wget https://raw.githubusercontent.com/ForgTav/E2EE-CropAutomation/main/setup.lua && setup
    
-10) Place the Spade and Transvector Binder into the last and second to last slot of the robot, respectively. Crop sticks will go in the third, but it is not required to put them in yourself. An axe or mattock can also be placed into the tool slot of the robot to speed up destroying crops (optional). See image below.
+10) Place the Weeding Trowel and Transvector Binder into the last and second to last slot of the robot, respectively. Crop sticks will go in the third, but it is not required to put them in yourself. An axe or mattock can also be placed into the tool slot of the robot to speed up destroying crops (optional). See image below.
 
 ![Robot Inventory](media/Robot_Inventory.png?)
 
 
 # Building the Computer
+![Robot Components](media/Com_Components.png?)
+1) Place the computer case.
+2) Place screen and keyboard on top the case
+3) Shift-click all of the components into the computer case
+4) Power on
+5) Follow the commands on screen 'install' --> 'Y' --> 'Y' (Note: The OpenOS floppy disk is no longer needed in the robot afterwards)
+6) Install the required scripts by copying this line of code into the robot (middle-click to paste)
 
-1) Insert the computer case into the OC Electronics Assembler which can be powered directly by any GT cable.
-2) Shift-click all of the components into the computer case except the OpenOS floppy disk
-3) Click assemble and wait until it completes (~3 min).
-4) Rename the robot in an anvil.
-5) Place the robot on the OC Charger which can also be powered directly by any GT cable. The OC Charger must be activated using some form of redstone such as a lever.
-6) Insert the OpenOS floppy disk into the disk slot of the robot and press the power button
-7) Follow the commands on screen 'install' --> 'Y' --> 'Y' (Note: The OpenOS floppy disk is no longer needed in the robot afterwards)
-8) Install the required scripts by copying this line of code into the robot (middle-click to paste)
-
-        wget https://raw.githubusercontent.com/ForgTav/E2EE-CropAutomation/main/setup.lua && setup
-
-9) Edit the config by entering:
-
-        edit config.lua
-
-10) robotSide parameter defines the orientation of the robot in relation to the cardinal directions. It is important to set this parameter correctly for the system to function properly.
-If the robot is facing East, set robotSide = 2. If the robot is facing North, set robotSide = 1. If it is facing South, use robotSide = 3. In the case that the robot is oriented West, set robotSide = 4.
-        
-
-        robotSide = 4,
-
-12) Place the Spade and Transvector Binder into the last and second to last slot of the robot, respectively. Crop sticks will go in the third, but it is not required to put them in yourself. An axe or mattock can also be placed into the tool slot of the robot to speed up destroying crops (optional). See image below.
-
-![Robot Inventory](media/Robot_Inventory.png?)
+        wget https://raw.githubusercontent.com/ForgTav/E2EE-CropAutomation/main/startServer.lua
 
 
 # Running the Programs
