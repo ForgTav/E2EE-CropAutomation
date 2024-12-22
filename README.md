@@ -84,7 +84,7 @@ Before launching the programs, you need to check if the computer is turned on. I
     startServer
 
 
-# Running the Programs
+# Running the Programs on robot
 
 The first program **autoTier** will automatically tier-up your crops until the max breeding round is reached (configurable), the storage farm is full, or ALL crops meet the specified tier threshold which defaults to 13. Note that unrecognized crops will be moved to the storage farm first before replacing any of the lower tier crops in the working farm. Statting-up crops during this program is also a configurable option, but that will slow down the process significantly. To run, simply enter:
 
