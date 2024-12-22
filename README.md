@@ -75,6 +75,14 @@ Underneath the farm, you can see that there are three additional dirt blocks bel
 
         wget https://raw.githubusercontent.com/ForgTav/E2EE-CropAutomation/main/startServer.lua
 
+![Robot Components](media/install_computer.png?)
+
+
+# BEFORE running the Programs
+Before launching the programs, you need to check if the computer is turned on. If it is off, turn it on and enter the command startServer.
+
+    startServer
+
 
 # Running the Programs
 
@@ -122,24 +130,6 @@ _Solution: This is from having outdated java certificates. Try updating your jav
 
 _Solution: The execute complex refers to using the && operator. Double check that you installed at least Tier 2 memory. Anything less will prevent you from joining commands together._
 
-## Recommended Crops
-
-For starters, I recommend statting-up and spreading the following crops because their outputs are useful and not completely overshadowed by bees. Note that every crop has a higher chance of being discovered with specific parent combinations, but it is often easier to discover a crop from crossbreeding at the same tier. For example, diareed apparently has the highest chance of being discovered when the parents are oilberry and bobsyeruncleranks, BUT I recommend just running autoTier with all Tier 12 crops (or autoSpread with keepMutations on in the config). Crops that require a particular block underneath do not need to be fully grown in order to spread. For a full list of crops and their requirements, visit https://gtnh.miraheze.org/wiki/IC2_Crops_List.
-
-- **Stickreed** for sticky resin and discovering/breeding with other crops
-- **Spruce Bonsai** for all of your benzene and power needs
-- **Black Stonelilly** for black granite dust (fluorine, potassium, magnesium, aluminium, silicon)
-- **Nether Stonelilly** for netherrack dust (coal, sulfur, redstone, gold)
-- **Yellow Stonelilly** for endstone dust (helium, tungstate, platinum metallic powder)
-- **Sugarbeet** for sugar (oxygen)
-- **Salty root** OR **Tearstalks** for salt (sodium and chlorine)
-- **Enderbloom** for enderpearls and endereyes
-- **Glowing Earth Coral** for sunnarium and glowstone (gold and redstone)
-- **Rape** for seed oil
-- **Goldfish Plant** for fish oil
-- **Diareed** for diamonds
-- **Bobsyeruncleranks** for emeralds
-- **Transformium** for UU-Matter
 
 ## Other Helpful Commands
 
@@ -154,16 +144,7 @@ To edit (or create) a new file, enter
 To remove any one file installed on the robot, enter
 
     rm <filename>
-
-To uninstall all of the files from this repo, enter
-
-    uninstall
-
-To view an entire error message regardless of how long it may be, enter
-
-    <program> 2>/errors.log
-
-    edit /errors.log
+    
 
 ## Thanks
-Huge thanks to huchenlei and xyqyear for their initial implementations and letting me take this project even further! Shoutout to Mozzg for also contributing to the repo!
+Huge thanks to huchenlei, xyqyear and DylanTaylor1!
