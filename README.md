@@ -10,6 +10,7 @@ Obtaining these components will require access to EV circuits and epoxid (mid-la
 - OC Charger
 - OC Sensor
 - Tier 3 Computer Case x2
+- Linked card x2
 - Tier 2 Memory x2
 - Tier 2 Accelerated Processing Unit x2
 - Tier 1 Redstone Card
@@ -25,6 +26,26 @@ Obtaining these components will require access to EV circuits and epoxid (mid-la
 - Transvector Binder (Thaumcraft, Thaumic Tinkerer)
 - Transvector Dislocator (Thaumcraft,Thaumic Tinkerer)
 
+# Building the Farms
+
+Find a location with good environmental stats. It is recommended to set everything up in a Jungle or Swamp biome at Y=130 as that will give you the highest humidity and air quality stats. If not, crops run the risk of randomly dying and leaving the farms susceptible to weeds. Do not place any solid blocks above the farm as that will reduce the air quality. The whole farm can easily fit into a single chunk for easy chunk loading.
+
+![Farm Top](media/Farm_Top.png?)
+
+![Farm Side](media/Farm_Side.png?)
+
+First note the orientation of the robot sitting atop the OC charger. It must face towards the right-most column of the working farm. Adjacent to the OC charger is the crop stick chest which can be a few things: any sort of large chest, a JABBA barrel, or storage drawer (orientation does not matter). If the crop stick chest is ever empty, bad things will happen. Next to that is a trash can for any random drops that the robot picks up such as weeds, seed bags, and crop sticks but this can be swapped with another chest to recycle some of the materials. The transvector dislocator sits facing the top of the blank farmland (where a crop would go). The blank farmland itself acts as a buffer between the working and storage farms. Lastly, a crop-matron sits one y-level lower than the OC charger and hydrates most of the crops which boosts their stats and helps them grow faster.
+
+The location of the water is completely flexible: they do not have to be in the same locations as in the photo (underneath all five grates) and you can have as many as you would like on both the working farm and storage farm. However, **there MUST be a block on top of each water** and no two can be next to each other. The block can be literally anything, even a lily pad will work, so long as there is something.
+
+The starting crops must be placed manually in the checkerboard pattern seen in the photo. This layout goes for all three programs. If you cannot fill the entire checkerboard to start, the absolute minimum required is two (one as the target crop and the other next to it for crossbreeding). Even worse, if you have just a single seed of your target crop, it is possible to start with a different crop next to it for crossbreeding (ie. Stickreed). It is not necessary to place empty crop sticks to fill the rest of the checkerboard. The target crop is used by autoStat and autoSpread to identify the crop you want to stat-up or spread to the storage farm, respectively.
+
+![Farm Bottom](media/Farm_Bottom.png?)
+
+Underneath the farm, you can see that there are three additional dirt blocks below each farmland, each of which add to the nutrient stat of the crop above it. For crops requiring a block underneath, that should be placed at the bottom. In this case, I have diareed planted on top which means I have one farmland --> two dirt --> one diamond block underneath each one. I do not have diamond blocks underneath the working farm because the diareed does not need to be fully grown in order to spread. 
+
+
+
 # Building the Robot
 ![Robot Components](media/Robot_Components.png?)
 1) Insert the computer case into the OC Electronics Assembler which can be powered directly by any GT cable.
@@ -37,18 +58,8 @@ Obtaining these components will require access to EV circuits and epoxid (mid-la
 8) Install the required scripts by copying this line of code into the robot (middle-click to paste)
 
         wget https://raw.githubusercontent.com/ForgTav/E2EE-CropAutomation/main/setup.lua && setup
-
-9) Edit the config by entering:
-
-        edit config.lua
-
-10) robotSide parameter defines the orientation of the robot in relation to the cardinal directions. It is important to set this parameter correctly for the system to function properly.
-If the robot is facing East, set robotSide = 2. If the robot is facing North, set robotSide = 1. If it is facing South, use robotSide = 3. In the case that the robot is oriented West, set robotSide = 4.
-        
-
-        robotSide = 4,
-
-12) Place the Spade and Transvector Binder into the last and second to last slot of the robot, respectively. Crop sticks will go in the third, but it is not required to put them in yourself. An axe or mattock can also be placed into the tool slot of the robot to speed up destroying crops (optional). See image below.
+   
+10) Place the Spade and Transvector Binder into the last and second to last slot of the robot, respectively. Crop sticks will go in the third, but it is not required to put them in yourself. An axe or mattock can also be placed into the tool slot of the robot to speed up destroying crops (optional). See image below.
 
 ![Robot Inventory](media/Robot_Inventory.png?)
 
@@ -80,28 +91,6 @@ If the robot is facing East, set robotSide = 2. If the robot is facing North, se
 
 ![Robot Inventory](media/Robot_Inventory.png?)
 
-
-# Building the Farms
-
-Find a location with good environmental stats. It is recommended to set everything up in a Jungle or Swamp biome at Y=130 as that will give you the highest humidity and air quality stats. If not, crops run the risk of randomly dying and leaving the farms susceptible to weeds. This is most easily done in a personal dimension which you earn as a quest reward from reaching the moon. Do not place any solid blocks above the farm as that will reduce the air quality. All of the machines on the surface are waterproof so do not worry about the rain. Use vanilla dirt because that will allow you to grow crops that require a particular block underneath, and boost the nutrient stat of your crops. The whole farm can easily fit into a single chunk for easy chunk loading.
-
-You may change both the size of the working farm and the size of the storage farm in the config (default is 6x6 and 9x9, respectively). Larger working farm sizes will extend left and up while larger storage farm sizes will extend down and right (see image below). The top row of the working farm will always align with the top row of the storage farm. There is no maximum or minimum size for either farm and it does not matter if the lengths are even or odd. Note that larger storage farm sizes will leave your working farm more susceptible to weeds because the robot will have to travel further when transporting crops which means less time spent scanning the working farm. Also note that the maximum range for the transvector dislocator is 16 blocks. Changing anything in the config requires you to restart your robot.
-
-![Farm Top](media/Farm_Top.png?)
-
-![Farm Side](media/Farm_Side.png?)
-
-First note the orientation of the robot sitting atop the OC charger. It must face towards the right-most column of the working farm. Adjacent to the OC charger is the crop stick chest which can be a few things: any sort of large chest, a JABBA barrel, or storage drawer (orientation does not matter). If the crop stick chest is ever empty, bad things will happen. Next to that is a trash can for any random drops that the robot picks up such as weeds, seed bags, and crop sticks but this can be swapped with another chest to recycle some of the materials. The transvector dislocator sits facing the top of the blank farmland (where a crop would go). You can tell which direction the transvector dislocator is facing by the side that is animated. The blank farmland itself acts as a buffer between the working and storage farms. Lastly, a crop-matron sits one y-level lower than the OC charger and hydrates most of the crops which boosts their stats and helps them grow faster.
-
-The location of the water is completely flexible: they do not have to be in the same locations as in the photo (underneath all five grates) and you can have as many as you would like on both the working farm and storage farm. However, **there MUST be a block on top of each water** and no two can be next to each other. The block can be literally anything, even a lily pad will work, so long as there is something. It is also possible to use garden soil or fertilized dirt and have absolutely no water on the farms at all, but this will sacrifice a few nutrient stats and bar you from growing crops that require a particular block underneath.
-
-The starting crops must be placed manually in the checkerboard pattern seen in the photo. This layout goes for all three programs. If you cannot fill the entire checkerboard to start, the absolute minimum required is two (one as the target crop and the other next to it for crossbreeding). Even worse, if you have just a single seed of your target crop, it is possible to start with a different crop next to it for crossbreeding (ie. Stickreed). It is not necessary to place empty crop sticks to fill the rest of the checkerboard. The target crop is used by autoStat and autoSpread to identify the crop you want to stat-up or spread to the storage farm, respectively.
-
-![Farm Bottom](media/Farm_Bottom.png?)
-
-Underneath the farm, you can see that there are three additional dirt blocks below each farmland, each of which add to the nutrient stat of the crop above it. For crops requiring a block underneath, that should be placed at the bottom. In this case, I have diareed planted on top which means I have one farmland --> two dirt --> one diamond block underneath each one. I do not have diamond blocks underneath the working farm because the diareed does not need to be fully grown in order to spread. 
-
-For power, I am using an HV gas turbine and a super tank with some benzene (no transformer needed). This is a little overkill, but the important part is that the charger is always at 100% charging speed which you can see by hovering over it. A set-up such as this will last forever with a few hundred thousand benzene since both machines require very little EU/t. Lastly, a reservoir feeds water into the crop-matron automatically after right-clicking it with a wrench.
 
 # Running the Programs
 
