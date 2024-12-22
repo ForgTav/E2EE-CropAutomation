@@ -76,6 +76,7 @@ Underneath the farm, you can see that there are three additional dirt blocks bel
         wget https://raw.githubusercontent.com/ForgTav/E2EE-CropAutomation/main/startServer.lua
 
 ![Robot Components](media/install_computer.png?)
+![Robot Components](media/install_computer2.png?)
 
 
 # BEFORE running the Programs
