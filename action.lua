@@ -257,10 +257,6 @@ function restockAll()
 end
 
 local function initWork()
-    serverApi.sendToLinkedCards({
-        type = 'initServer',
-        side = config.robotSide,
-    })
     events.initEvents()
     events.hookEvents()
     charge()

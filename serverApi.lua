@@ -20,14 +20,11 @@ local function sendToLinkedCards(ready_message)
     local response_type = unserilized.type
     local response_data = unserilized.response
 
-    if response_type == 'initServer' and response_data then
-      return true
-    elseif response_type == 'getCrop' then
+    if response_type == 'getCrop' then
       local block = response_data['block']
       if block['name'] == 'minecraft:air' or block['name'] == 'GalacticraftCore:tile.brightAir' then
         return { isCrop = true, name = 'air' }
       elseif block['name'] == 'ic2:te' then
-        
         if block['label'] == 'Crop' then
           return { isCrop = true, name = 'emptyCrop' }
         else

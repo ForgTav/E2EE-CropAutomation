@@ -1,11 +1,8 @@
 local config = {
   -- NOTE: EACH CONFIG SHOULD END WITH A COMMA
 
-  -- 1 = North  2 = East 3 = South 4 = West
-  robotSide = 4,
-
   -- Side Length of Working Farm
-  workingFarmSize = 6,
+  workingFarmSize = 5,
   -- Side Length of Storage Farm
   storageFarmSize = 9,
 
