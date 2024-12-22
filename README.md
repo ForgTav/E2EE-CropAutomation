@@ -8,28 +8,52 @@ Obtaining these components will require access to EV circuits and epoxid (mid-la
 
 - OC Electronics Assembler
 - OC Charger
-- Tier 2 Computer Case
-- Tier 2 Memory
-- Tier 1 Accelerated Processing Unit [1]
+- OC Sensor
+- Tier 3 Computer Case x2
+- Tier 2 Memory x2
+- Tier 2 Accelerated Processing Unit x2
 - Tier 1 Redstone Card
-- Tier 1 Hard Disk Drive
-- Tier 1 Screen
-- Geolyzer
-- Keyboard
-- Disk Drive (Block)
-- Internet Card
+- Tier 1 Hard Disk Drive x2
+- Tier 1 Screen x2
+- Keyboard x2
+- Disk Drive (Block) 
+- Internet Card x2
 - Inventory Controller Upgrade
 - Inventory Upgrade
-- EEPROM (Lua BIOS)
+- EEPROM (Lua BIOS) x2
 - OpenOS Floppy Disk
-
-![Robot Components](media/Robot_Components.png?)
-
-Lastly, you need a Transvector Binder and Transvector Dislocator which requires some progression in Thaumcraft. Neither are very difficult to craft even if you have yet to start Thaumcraft. In the thaumonomicon, Transvector Dislocator can be found under "Thaumic Tinkerer" which requires both Transvector Interface and Smokey Quartz on the same tab. You will also need to complete research on Mirror Magic under "Artifice." For more information regarding Thaumcraft research, visit https://gtnh.miraheze.org/wiki/Thaumcraft_Research_Cheatsheet.
-
-[1]  In GTNH 2.7.0, the APU (yellow) was renamed from Tier 2 to Tier 1. Follow the image if you are unsure.
+- Transvector Binder (Thaumcraft, Thaumic Tinkerer)
+- Transvector Dislocator (Thaumcraft,Thaumic Tinkerer)
 
 # Building the Robot
+![Robot Components](media/Robot_Components.png?)
+1) Insert the computer case into the OC Electronics Assembler which can be powered directly by any GT cable.
+2) Insert all of the components into the computer case like on image
+3) Click assemble and wait until it completes (~3 min).
+4) Rename the robot in an anvil.
+5) Place the robot on the OC Charger which can also be powered directly by any GT cable. The OC Charger must be activated using some form of redstone such as a lever.
+6) Insert the OpenOS floppy disk into the disk slot of the robot and press the power button
+7) Follow the commands on screen 'install' --> 'Y' --> 'Y' (Note: The OpenOS floppy disk is no longer needed in the robot afterwards)
+8) Install the required scripts by copying this line of code into the robot (middle-click to paste)
+
+        wget https://raw.githubusercontent.com/ForgTav/E2EE-CropAutomation/main/setup.lua && setup
+
+9) Edit the config by entering:
+
+        edit config.lua
+
+10) robotSide parameter defines the orientation of the robot in relation to the cardinal directions. It is important to set this parameter correctly for the system to function properly.
+If the robot is facing East, set robotSide = 2. If the robot is facing North, set robotSide = 1. If it is facing South, use robotSide = 3. In the case that the robot is oriented West, set robotSide = 4.
+        
+
+        robotSide = 4,
+
+12) Place the Spade and Transvector Binder into the last and second to last slot of the robot, respectively. Crop sticks will go in the third, but it is not required to put them in yourself. An axe or mattock can also be placed into the tool slot of the robot to speed up destroying crops (optional). See image below.
+
+![Robot Inventory](media/Robot_Inventory.png?)
+
+
+# Building the Computer
 
 1) Insert the computer case into the OC Electronics Assembler which can be powered directly by any GT cable.
 2) Shift-click all of the components into the computer case except the OpenOS floppy disk
@@ -40,15 +64,22 @@ Lastly, you need a Transvector Binder and Transvector Dislocator which requires 
 7) Follow the commands on screen 'install' --> 'Y' --> 'Y' (Note: The OpenOS floppy disk is no longer needed in the robot afterwards)
 8) Install the required scripts by copying this line of code into the robot (middle-click to paste)
 
-        wget https://raw.githubusercontent.com/DylanTaylor1/GTNH-CropAutomation/main/setup.lua && setup
+        wget https://raw.githubusercontent.com/ForgTav/E2EE-CropAutomation/main/setup.lua && setup
 
-9) Edit the config (not recommended, but check it out) by entering:
+9) Edit the config by entering:
 
         edit config.lua
 
-10) Place the Spade and Transvector Binder into the last and second to last slot of the robot, respectively. Crop sticks will go in the third, but it is not required to put them in yourself. An axe or mattock can also be placed into the tool slot of the robot to speed up destroying crops (optional). See image below.
+10) robotSide parameter defines the orientation of the robot in relation to the cardinal directions. It is important to set this parameter correctly for the system to function properly.
+If the robot is facing East, set robotSide = 2. If the robot is facing North, set robotSide = 1. If it is facing South, use robotSide = 3. In the case that the robot is oriented West, set robotSide = 4.
+        
+
+        robotSide = 4,
+
+12) Place the Spade and Transvector Binder into the last and second to last slot of the robot, respectively. Crop sticks will go in the third, but it is not required to put them in yourself. An axe or mattock can also be placed into the tool slot of the robot to speed up destroying crops (optional). See image below.
 
 ![Robot Inventory](media/Robot_Inventory.png?)
+
 
 # Building the Farms
 
