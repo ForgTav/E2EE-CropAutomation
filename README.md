@@ -70,8 +70,8 @@ Underneath the farm, you can see that there are three additional dirt blocks bel
 2) Place screen and keyboard on top the case
 3) Shift-click all of the components into the computer case
 4) Power on
-5) Follow the commands on screen 'install' --> 'Y' --> 'Y' (Note: The OpenOS floppy disk is no longer needed in the robot afterwards)
-6) Install the required scripts by copying this line of code into the robot (middle-click to paste)
+5) Follow the commands on screen 'install' --> 'Y' --> 'Y' (Note: The OpenOS floppy disk is no longer needed in the computer afterwards)
+6) Install the required scripts by copying this line of code into the computer (middle-click to paste)
 
         wget https://raw.githubusercontent.com/ForgTav/E2EE-CropAutomation/main/startServer.lua
 
