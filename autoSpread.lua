@@ -31,7 +31,7 @@ local function checkChild(slot, crop)
         elseif scanner.isWeed(crop, 'storage') then
             action.deweed()
             action.placeCropStick()
-        elseif scanner.isComMax(crop, 'working') then
+        elseif scanner.isComMax(crop, 'storage') then
             action.removePlant()
             action.placeCropStick(2)
         elseif crop.name == targetCrop then
