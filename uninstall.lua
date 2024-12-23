@@ -1,6 +1,7 @@
 local shell = require('shell')
 local scripts = {
     'setup.lua',
+    'serverApi.lua',
     'action.lua',
     'database.lua',
     'events.lua',
