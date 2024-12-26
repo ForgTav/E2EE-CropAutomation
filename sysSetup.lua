@@ -6,7 +6,8 @@ local scripts = {
     'sysGPS.lua',
     'sysConfig.lua',
     'sysDB.lua',
-    'autoStat.lua'
+    'autoStat.lua',
+    'uninstall.lua'
 }
 
 -- BRANCH

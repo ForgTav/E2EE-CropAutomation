@@ -6,7 +6,8 @@ local scripts = {
     'robotGPS.lua',
     'robotConfig.lua',
     'robotActions.lua',
-    'start.lua'
+    'start.lua',
+    'uninstall.lua'
 }
 
 -- BRANCH
