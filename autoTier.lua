@@ -7,7 +7,6 @@ local database = require('sysDB')
 local serialization = require("serialization")
 local tunnel = component.tunnel
 local sensor = component.sensor
-local targetCrop
 local robotSide
 local robotStatus = false
 local sidesCharger = {
@@ -255,9 +254,9 @@ local function createOrderList()
     for slot, crop in ipairs(database.getFarm()) do
         if crop.isCrop then
             local tasks = {}
-            if slot % 2 == 0 then -- Четные слоты для дочерних растений
+            if slot % 2 == 0 then
                 tasks = handleChild(slot, crop)
-            else                  -- Нечетные слоты для родительских растений
+            else
                 tasks = handleParent(slot, crop)
             end
             for _, task in ipairs(tasks) do

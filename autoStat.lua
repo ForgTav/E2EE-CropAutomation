@@ -9,6 +9,7 @@ local tunnel = component.tunnel
 local sensor = component.sensor
 local targetCrop
 local robotStatus = false
+local robotSide
 local sidesCharger = {
   { 0,  -1 },
   { 1,  0 },
@@ -57,7 +58,7 @@ local function getChargerSide()
   return nil
 end
 
-local function cordtoScan(x, y, robotSide)
+local function cordtoScan(x, y)
   if robotSide == 1 then
     return { x, (-y - 1) }
   elseif robotSide == 2 then
@@ -69,22 +70,6 @@ local function cordtoScan(x, y, robotSide)
   else
     error("Invalid robot side")
   end
-end
-
-local function isComMax(crop, farm)
-  if farm == 'working' then
-    return crop.gr > config.workingMaxGrowth or
-        crop.re > config.workingMaxResistance or
-        (crop.name == 'venomilia' and crop.gr > 7)
-  elseif farm == 'storage' then
-    return crop.gr > config.storageMaxGrowth or
-        crop.re > config.storageMaxResistance or
-        (crop.name == 'venomilia' and crop.gr > 7)
-  end
-end
-
-local function isWeed(crop, farm)
-  return (farm == 'working' or farm == 'storage') and (crop.name == 'weed' or crop.name == 'Grass')
 end
 
 local function fetchScan(rawScan)
@@ -110,9 +95,64 @@ local function fetchScan(rawScan)
   end
 end
 
-local function scanFarmAndAddToDB(slot, robotSide)
+local function scanStorage()
+  for slot = 1, config.storageFarmArea, 1 do
+    local raw = gps.storageSlotToPos(slot)
+    local cord = cordtoScan(raw[1], raw[2])
+    local rawScan = sensor.scan(cord[1], 0, cord[2])
+    local crop = fetchScan(rawScan)
+    if crop and crop.isCrop and crop.name ~= 'air' and crop.name ~= 'emptyCrop' and not database.existInStorage(crop) then
+      database.updateStorage(slot, crop)
+    end
+  end
+end
+
+local function scanFarm()
+  for slot = 1, config.workingFarmArea, 1 do
+    local raw = gps.workingSlotToPos(slot)
+    local cord = cordtoScan(raw[1], raw[2])
+    local rawScan = sensor.scan(cord[1], 0, cord[2])
+    local crop = fetchScan(rawScan)
+    if crop and crop.isCrop then
+      database.updateFarm(slot, crop)
+    end
+  end
+end
+
+local function scanEmptySlotStorage(newCrop)
+  for slot = 1, config.storageFarmArea, 1 do
+    local raw = gps.storageSlotToPos(slot)
+    local cord = cordtoScan(raw[1], raw[2])
+    local rawScan = sensor.scan(cord[1], 0, cord[2])
+    local crop = fetchScan(rawScan)
+    if crop and crop.isCrop and (crop.name == 'air' or crop.name == 'emptyCrop') then
+      database.updateStorage(slot, newCrop)
+      return slot
+    end
+  end
+end
+
+local function isComMax(crop, farm)
+  if farm == 'working' then
+    return crop.gr > config.workingMaxGrowth or
+        crop.re > config.workingMaxResistance or
+        (crop.name == 'venomilia' and crop.gr > 7)
+  elseif farm == 'storage' then
+    return crop.gr > config.storageMaxGrowth or
+        crop.re > config.storageMaxResistance or
+        (crop.name == 'venomilia' and crop.gr > 7)
+  end
+end
+
+local function isWeed(crop, farm)
+  return (farm == 'working' or farm == 'storage') and (crop.name == 'weed' or crop.name == 'Grass')
+end
+
+
+
+local function scanFarmAndAddToDB(slot)
   local raw = gps.workingSlotToPos(slot)
-  local cord = cordtoScan(raw[1], raw[2], robotSide)
+  local cord = cordtoScan(raw[1], raw[2])
   local rawScan = sensor.scan(cord[1], 0, cord[2])
   local crop = fetchScan(rawScan)
   if crop then
@@ -125,8 +165,9 @@ local function handleChild(slot, crop)
   local order = {}
   local availableParentSlot = nil
   local availableParent = nil
-  for _, parentSlot in ipairs(database.getParentSlots()) do
-    local parentCrop = database.getFarm()[parentSlot]
+  for _, parentSlot in pairs(database.getParentSlots()) do
+    local parentCrop = database.getFarmSlot(parentSlot)
+
     if parentCrop and (parentCrop.name == 'emptyCrop' or parentCrop.name == 'air') then
       availableParentSlot = parentSlot
       availableParent = parentCrop
@@ -149,7 +190,7 @@ local function handleChild(slot, crop)
       slot = slot,
       priority = priorities['deweed']
     })
-  elseif isComMax(crop, 'working') then
+  elseif isComMax(crop, 'working') and not availableParentSlot then
     table.insert(order, {
       action = 'removePlant',
       slot = slot,
@@ -168,6 +209,23 @@ local function handleChild(slot, crop)
       })
       database.updateFarm(slot, { isCrop = true, name = 'air' })
       database.updateFarm(availableParentSlot, crop)
+    elseif stat >= config.autoStatThreshold then
+      table.insert(order, {
+        action = 'transplant',
+        slot = slot,
+        to = scanEmptySlotStorage(crop),
+        farm = 'storage',
+        slotName = 'air',
+        priority = priorities['transplant']
+      })
+      database.updateFarm(slot, { isCrop = true, name = 'air' })
+      database.updateStorage(slot, crop)
+      table.insert(order, {
+        action = 'placeCropStick',
+        slot = slot,
+        priority = priorities['placeCropStick'],
+        count = 2
+      })
     else
       local foundedSlot = false
       for _, parentSlot in ipairs(database.getParentSlots()) do
@@ -179,7 +237,7 @@ local function handleChild(slot, crop)
               action = 'transplant',
               slot = slot,
               to = parentSlot,
-              farm = 'storage',
+              farm = 'working',
               slotName = parentCrop.name,
               priority = priorities['transplant']
             })
@@ -251,22 +309,17 @@ end
 local function createOrderList()
   local orderList = {}
   for slot, crop in ipairs(database.getFarm()) do
-    if not crop.isCrop then
-      goto continue
+    if crop.isCrop then
+      local tasks = {}
+      if slot % 2 == 0 then
+        tasks = handleChild(slot, crop)
+      else
+        tasks = handleParent(slot, crop)
+      end
+      for _, task in ipairs(tasks) do
+        table.insert(orderList, task)
+      end
     end
-    local tasks = {}
-    if slot % 2 == 0 then -- Четные слоты для дочерних растений
-      tasks = handleChild(slot, crop, false)
-    else                  -- Нечетные слоты для родительских растений
-      tasks = handleParent(slot, crop, false)
-    end
-    if next(tasks) == nil then
-      goto continue
-    end
-    for _, task in ipairs(tasks) do
-      table.insert(orderList, task)
-    end
-    ::continue::
   end
   table.sort(orderList, function(a, b)
     if a.priority == b.priority then
@@ -277,9 +330,9 @@ local function createOrderList()
   return orderList
 end
 
-local function scanFarmAndAddToQueue(robotSide)
+local function scanFarmAndAddToQueue()
   for slot = 1, config.workingFarmArea do
-    scanFarmAndAddToDB(slot, robotSide)
+    scanFarmAndAddToDB(slot)
   end
   return createOrderList()
 end
@@ -308,18 +361,26 @@ end
 
 local function main()
   print("getChargerSide")
-  local robotSide = getChargerSide()
+  robotSide = getChargerSide()
   if not robotSide then
-    error('Charger not found')
+    print('Charger not found')
+    os.exit()
   end
+
+  local cord = cordtoScan(0, 1)
+  local scan = fetchScan(sensor.scan(cord[1], 0, cord[2]))
+  if not scan.isCrop or (scan.name == 'air' or scan.name == 'emptyCrop') then
+    print('Not found targetCrop')
+    os.exit()
+  end
+  targetCrop = scan.name
+  print("targetCrop:" .. scan.name)
 
   print("initDataBase")
   database.initDataBase()
+  scanStorage()
+  scanFarm()
 
-  print("targetCrop")
-  local cord = cordtoScan(0, 1, robotSide)
-  local scan = fetchScan(sensor.scan(cord[1], 0, cord[2]))
-  targetCrop = scan.name
 
   while true do
     local loopForStatus = true
@@ -333,7 +394,7 @@ local function main()
     end
 
     print("getOrder")
-    local order = scanFarmAndAddToQueue(robotSide)
+    local order = scanFarmAndAddToQueue()
     if next(order) == nil then
       print("emptyOrder")
     else
