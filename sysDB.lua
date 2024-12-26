@@ -1,4 +1,4 @@
-local config = require('systemConfig')
+local config = require('sysConfig')
 local storage = {}
 local reverseStorage = {}
 local farm = {}

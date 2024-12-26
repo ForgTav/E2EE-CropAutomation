@@ -3,10 +3,11 @@ local args = { ... }
 local branch
 local repo
 local scripts = {
-    'robotGPS.lua',
-    'robotConfig.lua',
-    'robotActions.lua',
-    'start.lua'
+    'systemGPS.lua',
+    'systemConfig.lua',
+    'database.lua',
+    'autoTier.lua',
+    'autoStat.lua'
 }
 
 -- BRANCH

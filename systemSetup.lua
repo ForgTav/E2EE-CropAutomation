@@ -5,14 +5,9 @@ local repo
 local scripts = {
     'systemGPS.lua',
     'systemConfig.lua',
-    'database.lua',
+    'sysDB.lua',
     'autoTier.lua',
-    'autoStat.lua',
-
-
-
-    
-    'start.lua'
+    'autoStat.lua'
 }
 
 -- BRANCH

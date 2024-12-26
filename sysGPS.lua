@@ -1,5 +1,5 @@
 --local robot = require('robot')
-local config = require('systemConfig')
+local config = require('sysConfig')
 
 -- ======================== WORKING FARM ========================
 --  _________________
