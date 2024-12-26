@@ -1,5 +1,5 @@
 local robot = require('robot')
-local config = require('config')
+local config = require('robotConfig')
 local nowFacing = 1
 local nowPos = { 0, 0 }
 local savedPos = {}
