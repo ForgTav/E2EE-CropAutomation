@@ -2,6 +2,7 @@ local config = require('sysConfig')
 local storage = {}
 local reverseStorage = {}
 local farm = {}
+local reverseFarm = {}
 local order = {}
 local ParentSlots = {}
 
@@ -66,6 +67,23 @@ end
 
 local function updateFarm(slot, crop)
   farm[slot] = crop
+  reverseFarm[crop.name] = slot
+end
+
+local function existInFarm(crop)
+  if crop and crop.name and reverseFarm[crop.name] then
+    return reverseFarm[crop.name]
+  else
+    return false
+  end
+end
+
+local function existInFarmSlot(slot, crop)
+  if reverseFarm[crop.name] == slot then
+    return true
+  else
+    return false
+  end
 end
 
 -- ======================== STORAGE FARM ========================
@@ -123,5 +141,7 @@ return {
   updateOrder = updateOrder,
   getParentSlots = getParentSlots,
   updateParentSlots = updateParentSlots,
+  existInFarm = existInFarm,
+  existInFarmSlot = existInFarmSlot,
   deleteParentSlots = deleteParentSlots
 }

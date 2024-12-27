@@ -113,4 +113,28 @@ config.seedTiers = {
     diareed = 12,
 }
 
+config.tierSchema = {
+    ["nether_wart"] = { 1, 9, 11 },
+    ["stickreed"] = { 3, 5 },
+    ["blazereed"] = { 7, 15 },
+    ["diareed"] = { 17, 25 },
+    ["withereed"] = { 19, 21, 23 }
+}
+
+config.sidesCharger = {
+    { 0,  -1 },
+    { 1,  0 },
+    { 0,  1 },
+    { -1, 0 },
+}
+
+
+config.priorities = {
+    deweed = 1,
+    transplantParent = 2,
+    transplant = 4,
+    removePlant = 8,
+    placeCropStick = 9
+}
+
 return config
