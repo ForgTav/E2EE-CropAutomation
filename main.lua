@@ -3,7 +3,7 @@ local event = require("event")
 local os = require('os')
 local database = require('sysDB')
 local sys = require('sysFunction')
-
+local ev = require('sysEvents')
 local term = require("term")
 local gpu = component.gpu
 --local screenWidth, screenHeight = gpu.getResolution()
@@ -77,6 +77,14 @@ local function initServer()
         end
         print("sleep5S")
         os.sleep(5)
+
+        if exec.checkCondition() then
+
+        end
+    end
+
+    if ev.needCleanup() then
+
     end
 end
 local function drawButton(y, text)

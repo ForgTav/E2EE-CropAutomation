@@ -5,10 +5,10 @@ local config = require('sysConfig')
 --  _________________   5x5 Slot Map
 -- |25 16 15 06 05|
 -- |24 17 14 07 04|  One down from 01 is (0,0)
--- |23 18 WW 08 03|
+-- |23 18 WW 08 03|  WW - Water
 -- |22 19 12 09 02|
 -- |21 20 11 10 01|
---  ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
+--  ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
 
 local function workingSlotToPos(slot)
     local x = (slot - 1) // config.workingFarmSize

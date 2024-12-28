@@ -10,8 +10,6 @@ local config = {
     cleanUp = true,
     -- Pickup any and all drops (don't change)
     keepDrops = true,
-    -- Keep crops that are not the target crop during autoSpread and autoStat
-    keepMutations = false,
     -- Stat-up crops during autoTier (Very Slow)
     statWhileTiering = false,
 

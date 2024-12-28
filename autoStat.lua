@@ -82,15 +82,16 @@ local function handleChild(slot, crop)
           local parentStat = parentCrop.gr + parentCrop.ga - parentCrop.re
           if stat > parentStat then
             print('child slot:' .. slot .. ' stat: gr=' .. crop.gr .. ' ga=' .. crop.ga .. ' re=' .. crop.re)
-            print('parent slot:' .. parentSlot .. ' stat: gr=' .. parentCrop.gr .. ' ga=' .. parentCrop.ga .. ' re=' .. parentCrop.re)
+            print('parent slot:' ..
+              parentSlot .. ' stat: gr=' .. parentCrop.gr .. ' ga=' .. parentCrop.ga .. ' re=' .. parentCrop.re)
             print('-----------------')
             table.insert(order, {
-              action = 'transplant',
+              action = 'transplantParent',
               slot = slot,
               to = parentSlot,
               farm = 'working',
               slotName = parentCrop.name,
-              priority = priorities['transplant']
+              priority = priorities['transplantParent']
             })
             database.updateFarm(slot, { isCrop = true, name = 'air' })
             database.updateFarm(parentSlot, crop)
@@ -113,16 +114,6 @@ local function handleChild(slot, crop)
         })
       end
     end
-  elseif config.keepMutations and not database.existInStorage(crop) then
-    local nextSlot = database.nextStorageSlot()
-    table.insert(order, {
-      action = 'transplant',
-      slot = slot,
-      to = nextSlot,
-      farm = 'storage',
-      priority = priorities['transplant']
-    })
-    database.updateFarm(slot, { isCrop = true, name = 'air' })
   else
     table.insert(order, {
       action = 'removePlant',
@@ -167,9 +158,14 @@ local function init()
   targetCrop = scan.name
 end
 
+local function checkCondition()
+  print(config.storageFarmArea)
+end
+
 
 return {
   handleParent = handleParent,
   handleChild = handleChild,
+  checkCondition = checkCondition,
   init = init
 }
