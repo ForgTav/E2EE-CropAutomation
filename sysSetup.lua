@@ -7,7 +7,9 @@ local scripts = {
     'sysConfig.lua',
     'sysFunction.lua',
     'sysDB.lua',
+    'sysEvents.lua',
     'autoStat.lua',
+    'autoTier.lua',
     'main.lua',
     'uninstall.lua'
 }

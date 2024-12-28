@@ -13,6 +13,7 @@ local scripts = {
     'sysSetup.lua',
     'main.lua',
     'sysFunction.lua',
+    'sysEvents.lua',
     'uninstall.lua'
 }
 
