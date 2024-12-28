@@ -5,8 +5,10 @@ local repo
 local scripts = {
     'sysGPS.lua',
     'sysConfig.lua',
+    'sysFunction.lua',
     'sysDB.lua',
     'autoStat.lua',
+    'main.lua',
     'uninstall.lua'
 }
 
