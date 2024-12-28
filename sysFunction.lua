@@ -69,7 +69,7 @@ local function scanStorage()
         local cord = cordtoScan(raw[1], raw[2])
         local rawScan = sensor.scan(cord[1], 0, cord[2])
         local crop = fetchScan(rawScan)
-        if crop and crop.isCrop and crop.name ~= 'air' and crop.name ~= 'emptyCrop' and not database.existInStorage(crop) then
+        if crop and crop.isCrop and crop.name ~= 'air' and crop.name ~= 'emptyCrop' then
             database.updateStorage(slot, crop)
         end
     end
@@ -94,7 +94,7 @@ local function scanFarm(slot)
     else
         scanAndProcess(slot)
     end
-    
+
     return true
 end
 
@@ -131,15 +131,15 @@ end
 
 local function createOrderList(handleChild, handleParent)
     local orderList = {}
-    for slot, crop in ipairs(database.getFarm()) do
+    for slot, crop in pairs(database.getFarm()) do
         if crop.isCrop then
             local tasks = {}
-            if slot % 2 == 0 then -- Четные слоты для дочерних растений
+            if slot % 2 == 0 then
                 tasks = handleChild(slot, crop)
-            else                  -- Нечетные слоты для родительских растений
+            else
                 tasks = handleParent(slot, crop)
             end
-            for _, task in ipairs(tasks) do
+            for _, task in pairs(tasks) do
                 table.insert(orderList, task)
             end
         end

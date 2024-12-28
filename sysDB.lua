@@ -3,8 +3,8 @@ local storage = {}
 local reverseStorage = {}
 local farm = {}
 local reverseFarm = {}
-local order = {}
-local ParentSlots = {}
+--local order = {}
+local parentSlots = {}
 
 function tprint(tbl, indent)
   if not indent then indent = 0 end
@@ -24,15 +24,15 @@ end
 -- ======================== PARENT AND CHILD SLOTS ========================
 
 local function getParentSlots()
-  return ParentSlots
+  return parentSlots
 end
 
 local function updateParentSlots(slot)
-  ParentSlots[slot] = slot
+  parentSlots[slot] = slot
 end
 
 local function deleteParentSlots(slot)
-  ParentSlots[slot] = nil
+  parentSlots[slot] = nil
 end
 
 local function getPossibleParentSlots()
@@ -45,13 +45,13 @@ end
 
 -- ======================== ORDER LIST ========================
 
-local function getOrder()
-  return order
-end
+--local function getOrder()
+--  return order
+--end
 
-local function updateOrder(newOrder)
-  order = newOrder
-end
+--local function updateOrder(newOrder)
+--  order = newOrder
+--end
 
 
 -- ======================== WORKING FARM ========================
@@ -88,14 +88,14 @@ end
 
 -- ======================== STORAGE FARM ========================
 
-local function getStorage()
-  return storage
-end
+--local function getStorage()
+--  return storage
+--end
 
 
-local function resetStorage()
-  storage = {}
-end
+--local function resetStorage()
+--  storage = {}
+--end
 
 local function updateStorage(slot, crop)
   storage[slot] = crop
@@ -132,16 +132,17 @@ return {
   getFarm = getFarm,
   getFarmSlot = getFarmSlot,
   updateFarm = updateFarm,
-  getStorage = getStorage,
-  resetStorage = resetStorage,
   updateStorage = updateStorage,
   existInStorage = existInStorage,
   nextStorageSlot = nextStorageSlot,
-  getOrder = getOrder,
-  updateOrder = updateOrder,
   getParentSlots = getParentSlots,
-  updateParentSlots = updateParentSlots,
   existInFarm = existInFarm,
   existInFarmSlot = existInFarmSlot,
   deleteParentSlots = deleteParentSlots
 }
+
+
+--resetStorage = resetStorage,
+--getStorage = getStorage,
+--getOrder = getOrder,
+--updateOrder = updateOrder,

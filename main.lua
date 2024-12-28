@@ -6,9 +6,9 @@ local sys = require('sysFunction')
 
 local term = require("term")
 local gpu = component.gpu
-local screenWidth, screenHeight = gpu.getResolution()
+--local screenWidth, screenHeight = gpu.getResolution()
 
-local sensor = component.sensor
+--local sensor = component.sensor
 local robotSide
 local robotStatus = false
 
@@ -48,6 +48,7 @@ local function initServer()
 
     print("initDataBase")
     database.initDataBase()
+
     sys.scanStorage()
     sys.scanFarm()
 
@@ -63,7 +64,7 @@ local function initServer()
         end
 
         print("getOrder")
-        local order = nil
+        local order = {}
         if sys.scanFarm() then
             order = sys.createOrderList(exec.handleChild, exec.handleParent)
         end
@@ -79,7 +80,7 @@ local function initServer()
     end
 end
 local function drawButton(y, text)
-    gpu.set(math.floor((50 - #text) / 2), y, "[ " .. text .. " ]")
+    gpu.set(math.floor((40 - #text) / 2), y, "[ " .. text .. " ]")
 end
 
 
@@ -89,8 +90,8 @@ local function main()
     term.clear()
 
     drawButton(1, "autoStat")
-    drawButton(5, "autoTier")
-    drawButton(10, "autoSpread")
+    drawButton(5, "autoTier WIP")
+    drawButton(10, "autoSpread WIP")
 
     -- Ожидание событий
     while true do
@@ -99,16 +100,16 @@ local function main()
         if x >= 20 and x <= 40 and y == 1 then
             exec = require("autoStat")
             break
-        elseif x >= 20 and x <= 40 and y == 5 then
-            exec = require("autoTier")
-            break
-        elseif x >= 20 and x <= 40 and y == 10 then
-            exec = require("autoSpread")
-            break
+            --elseif x >= 20 and x <= 40 and y == 5 then
+            --    exec = require("autoTier")
+            --    break
+            --elseif x >= 20 and x <= 40 and y == 10 then
+            --exec = require("autoSpread")
+            --    break
         end
     end
 
-    gpu.setResolution(screenWidth, screenHeight)
+    --gpu.setResolution(screenWidth, screenHeight)
     term.clear()
     initServer()
 end

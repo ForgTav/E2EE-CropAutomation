@@ -8,7 +8,7 @@ local function handleChild(slot, crop)
     local parentSlots = database.getParentSlots()
 
     -- Найти пустой родительский слот
-    for _, parentSlot in ipairs(parentSlots) do
+    for _, parentSlot in pairs(parentSlots) do
         local parentCrop = database.getFarmSlot(parentSlot)
         if parentCrop and (parentCrop.name == 'emptyCrop' or parentCrop.name == 'air') then
             availableParentSlot = parentSlot
@@ -21,13 +21,14 @@ local function handleChild(slot, crop)
         if not sys.isWeed(crop) and config.tierSchema[crop.name] then
             for _, schemaSlot in pairs(config.tierSchema[crop.name]) do
                 if not database.existInFarmSlot(schemaSlot, crop) then
+                    local schemaCrop = database.getFarmSlot(schemaSlot)
                     table.insert(order, {
                         action = 'transplantParent',
                         slot = slot,
                         farm = 'working',
                         to = schemaSlot,
                         priority = config.priorities['transplantParent'],
-                        slotName = database.getFarmSlot(schemaSlot)
+                        slotName = schemaCrop.name
                     })
                     database.updateFarm(slot, { isCrop = true, name = 'air' })
                     database.updateFarm(schemaSlot, crop)
@@ -105,17 +106,17 @@ local function handleParent(slot, crop)
         })
     elseif crop.name == "emptyCrop" then
         return order
-    elseif config.tierSchema[crop.name] and not database.existInFarmSlot(slot, crop.name) then
+    elseif config.tierSchema[crop.name] then
         for _, schemaSlot in pairs(config.tierSchema[crop.name]) do
-            print(name)
-            if schemaSlot ~= slot then
+            if schemaSlot ~= slot and not database.existInFarmSlot(schemaSlot, crop.name) then
+                local schemaCrop = database.getFarmSlot(schemaSlot)
                 table.insert(order, {
                     action = 'transplantParent',
                     slot = slot,
                     farm = 'working',
                     to = schemaSlot,
                     priority = config.priorities['transplantParent'],
-                    slotName = database.getFarmSlot(schemaSlot)
+                    slotName = schemaCrop.name
                 })
                 database.updateFarm(slot, { isCrop = true, name = 'air' })
                 database.updateFarm(schemaSlot, crop)

@@ -1,15 +1,18 @@
+local component = require('component')
 local config = require('sysConfig')
 local database = require('sysDB')
+local os = require('os')
 local sys = require('sysFunction')
+local sensor = component.sensor
 local targetCrop
 
 local function handleChild(slot, crop)
   local order = {}
   local availableParentSlot = nil
   local availableParent = nil
-  for _, parentSlot in pairs(database.getParentSlots()) do
+  local parentSlots = database.getParentSlots()
+  for _, parentSlot in pairs(parentSlots) do
     local parentCrop = database.getFarmSlot(parentSlot)
-
     if parentCrop and (parentCrop.name == 'emptyCrop' or parentCrop.name == 'air') then
       availableParentSlot = parentSlot
       availableParent = parentCrop
@@ -17,11 +20,13 @@ local function handleChild(slot, crop)
     end
   end
 
+  local priorities = config.priorities
+
   if crop.name == 'air' then
     table.insert(order, {
       action = 'placeCropStick',
       slot = slot,
-      priority = config.priorities['placeCropStick'],
+      priority = priorities['placeCropStick'],
       count = 2
     })
   elseif crop.isCrop and crop.name == "emptyCrop" then
@@ -30,13 +35,13 @@ local function handleChild(slot, crop)
     table.insert(order, {
       action = 'deweed',
       slot = slot,
-      priority = config.priorities['deweed']
+      priority = priorities['deweed']
     })
   elseif sys.isComMax(crop, 'working') and not availableParentSlot then
     table.insert(order, {
       action = 'removePlant',
       slot = slot,
-      priority = config.priorities['removePlant']
+      priority = priorities['removePlant']
     })
   elseif crop.name == targetCrop then
     local stat = crop.gr + crop.ga - crop.re
@@ -46,49 +51,53 @@ local function handleChild(slot, crop)
         slot = slot,
         to = availableParentSlot,
         farm = 'working',
-        priority = config.priorities['transplantParent'],
+        priority = priorities['transplantParent'],
         slotName = availableParent.name
       })
       database.updateFarm(slot, { isCrop = true, name = 'air' })
       database.updateFarm(availableParentSlot, crop)
     elseif stat >= config.autoStatThreshold then
+      local emptySlot = sys.scanEmptySlotStorage(crop)
       table.insert(order, {
         action = 'transplant',
         slot = slot,
-        to = sys.scanEmptySlotStorage(crop),
+        to = emptySlot,
         farm = 'storage',
         slotName = 'air',
-        priority = config.priorities['transplant']
+        priority = priorities['transplant']
       })
       database.updateFarm(slot, { isCrop = true, name = 'air' })
-      database.updateStorage(slot, crop)
+      database.updateStorage(emptySlot, crop)
       table.insert(order, {
         action = 'placeCropStick',
         slot = slot,
-        priority = config.priorities['placeCropStick'],
+        priority = priorities['placeCropStick'],
         count = 2
       })
     else
       local foundedSlot = false
-      for _, parentSlot in ipairs(database.getParentSlots()) do
+      for _, parentSlot in pairs(parentSlots) do
         local parentCrop = database.getFarm()[parentSlot]
         if parentCrop and parentCrop.isCrop and (parentCrop.name ~= 'emptyCrop' and parentCrop.name ~= 'air') then
           local parentStat = parentCrop.gr + parentCrop.ga - parentCrop.re
-          if parentStat < stat then
+          if stat > parentStat then
+            print('child slot:' .. slot .. ' stat: gr=' .. crop.gr .. ' ga=' .. crop.ga .. ' re=' .. crop.re)
+            print('parent slot:' .. parentSlot .. ' stat: gr=' .. parentCrop.gr .. ' ga=' .. parentCrop.ga .. ' re=' .. parentCrop.re)
+            print('-----------------')
             table.insert(order, {
               action = 'transplant',
               slot = slot,
               to = parentSlot,
               farm = 'working',
               slotName = parentCrop.name,
-              priority = config.priorities['transplant']
+              priority = priorities['transplant']
             })
             database.updateFarm(slot, { isCrop = true, name = 'air' })
             database.updateFarm(parentSlot, crop)
             table.insert(order, {
               action = 'placeCropStick',
               slot = slot,
-              priority = config.priorities['placeCropStick'],
+              priority = priorities['placeCropStick'],
               count = 2
             })
             foundedSlot = true
@@ -100,24 +109,25 @@ local function handleChild(slot, crop)
         table.insert(order, {
           action = 'removePlant',
           slot = slot,
-          priority = config.priorities['removePlant']
+          priority = priorities['removePlant']
         })
       end
     end
   elseif config.keepMutations and not database.existInStorage(crop) then
+    local nextSlot = database.nextStorageSlot()
     table.insert(order, {
       action = 'transplant',
       slot = slot,
-      to = database.nextStorageSlot(),
+      to = nextSlot,
       farm = 'storage',
-      priority = config.priorities['transplant']
+      priority = priorities['transplant']
     })
     database.updateFarm(slot, { isCrop = true, name = 'air' })
   else
     table.insert(order, {
       action = 'removePlant',
       slot = slot,
-      priority = config.priorities['removePlant']
+      priority = priorities['removePlant']
     })
   end
   return order
@@ -125,24 +135,21 @@ end
 
 local function handleParent(slot, crop)
   local order = {}
-  if crop.name == 'air' then
+  if crop.name == 'air' or (crop.isCrop and crop.name == "emptyCrop") then
     return order
-  end
-  if sys.isWeed(crop) then
-    table.insert(order, {
+  elseif sys.isWeed(crop) then
+    order[#order + 1] = {
       action = 'deweed',
       slot = slot,
       priority = config.priorities['deweed']
-    })
-  elseif crop.isCrop and crop.name == "emptyCrop" then
-    return order
+    }
   elseif sys.isComMax(crop, 'working') then
-    table.insert(order, {
+    order[#order + 1] = {
       action = 'removePlant',
       slot = slot,
       priority = config.priorities['removePlant']
-    })
-  else
+    }
+  elseif not crop.isCrop then
     database.deleteParentSlots(slot)
   end
   return order
@@ -157,7 +164,7 @@ local function init()
   end
   print("targetCrop:" .. scan.name)
   print("autoStat inited")
-  targetCrop = crop
+  targetCrop = scan.name
 end
 
 
