@@ -132,7 +132,8 @@ config.priorities = {
     transplantParent = 2,
     transplant = 4,
     removePlant = 8,
-    placeCropStick = 9
+    placeCropStick = 9,
+    removeCrop = 10
 }
 
 return config

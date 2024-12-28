@@ -12,11 +12,10 @@ local function sendMessage(msg)
     tunnel.send(messageToSend)
 end
 
-
 local function transporter(table)
     if table.type == 'order' then
         robotStatus = false
-        for index, order in ipairs(table.data) do
+        for index, order in pairs(table.data) do
             if order.action == 'deweed' then
                 gps.go(gps.workingSlotToPos(order.slot))
                 actions.deweed()
@@ -33,6 +32,18 @@ local function transporter(table)
         actions.restockAll()
     elseif table.type == 'getStatus' then
         sendMessage({ action = 'getStatus', robotStatus = robotStatus })
+    elseif table.type == 'cleanUp' then
+        robotStatus = false
+        for index, order in pairs(table.data) do
+            if order.farm == 'working' then
+                gps.go(gps.workingSlotToPos(order.slot))
+                actions.removePlant()
+            elseif order.farm == 'storage' then
+                gps.go(gps.storageSlotToPos(order.slot))
+                actions.removePlant()
+            end
+        end
+        actions.restockAll()
     end
 end
 
@@ -49,13 +60,9 @@ local function main()
         local unserilized = serialization.unserialize(message)
         transporter(unserilized)
         robotStatus = true
-        os.sleep(0.1)
+        --os.sleep(0.1)
     end
 end
 
 
 main()
-
---while main() do
---
---end

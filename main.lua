@@ -31,11 +31,13 @@ end
 
 local function extraExit()
     if ev.needCleanup() then
-        local order = sys.Cleanup()
+        local order = sys.cleanUp()
         if next(order) ~= nil then
-            print("sendCleanup")
-            sys.SendToLinkedCards({ type = 'Cleanup', data = order })
-            return true
+            print("sendCleanUp")
+            while not sys.getRobotStatus() do
+                os.sleep(1)
+            end
+            sys.SendToLinkedCards({ type = 'cleanUp', data = order })
         end
     end
 end
@@ -54,21 +56,24 @@ local function initServer()
     database.initDataBase()
     sys.scanStorage()
     sys.scanFarm()
+
     while true do
+        os.sleep(0.1)
         if exec.checkCondition() then
             break
         end
         print("awaitRobotStatus")
-        while not sys.getRobotStatus() do
-            os.sleep(1)
-        end
 
-        print("getOrder")
         if ev.needExit() then
             extraExit()
             break
         end
 
+        while not sys.getRobotStatus() do
+            os.sleep(1)
+        end
+
+        print("getOrder")
         local order = sys.createOrderList(exec.handleChild, exec.handleParent)
         if next(order) == nil then
             print("emptyOrder")
@@ -76,7 +81,7 @@ local function initServer()
             print("sendOrder")
             sys.SendToLinkedCards({ type = 'order', data = order })
         end
-        
+
         if ev.needExit() then
             break
         end

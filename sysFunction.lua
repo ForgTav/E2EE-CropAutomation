@@ -76,7 +76,7 @@ local function scanStorage()
         local cord = cordtoScan(raw[1], raw[2])
         local rawScan = sensor.scan(cord[1], 0, cord[2])
         local crop = fetchScan(rawScan)
-        if crop and crop.isCrop and crop.name ~= 'air' and crop.name ~= 'emptyCrop' then
+        if crop then
             database.updateStorage(slot, crop)
         end
     end
@@ -161,36 +161,29 @@ local function createOrderList(handleChild, handleParent)
 end
 
 
-local function Cleanup()
+local function cleanUp()
     local order = {}
 
     for slot, crop in pairs(database.getFarm()) do
-        if crop.isCrop and crop.name == 'emptyCrop' then
+        if crop.isCrop and (crop.name == 'emptyCrop' or isWeed(crop)) then
             table.insert(order, {
-                action = 'removeCrop',
                 farm = 'working',
                 slot = slot,
-                priority = config.priorities['removeCrop']
             })
         end
     end
 
     for slot, crop in pairs(database.getStorage()) do
-        if crop.isCrop and crop.name == 'emptyCrop' then
+        if crop.isCrop and (crop.name == 'emptyCrop' or isWeed(crop)) then
             table.insert(order, {
-                action = 'removeCrop',
                 farm = 'storage',
                 slot = slot,
-                priority = config.priorities['removeCrop']
             })
         end
     end
 
     table.sort(order, function(a, b)
-        if a.priority == b.priority then
-            return a.slot < b.slot
-        end
-        return a.priority < b.priority
+        return a.slot < b.slot
     end)
 
     return order
@@ -232,5 +225,5 @@ return {
     getChargerSide = getChargerSide,
     cordtoScan = cordtoScan,
     setRobotSide = setRobotSide,
-    Cleanup = Cleanup
+    cleanUp = cleanUp
 }

@@ -122,9 +122,9 @@ local function existInStorage(crop)
 end
 
 
-local function nextStorageSlot()
-  return #storage + 1
-end
+--local function nextStorageSlot()
+--  return #storage + 1
+--end
 
 local function initDataBase()
   getPossibleParentSlots()
@@ -140,7 +140,6 @@ return {
   getStorageSlot = getStorageSlot,
   updateStorage = updateStorage,
   existInStorage = existInStorage,
-  nextStorageSlot = nextStorageSlot,
   getParentSlots = getParentSlots,
   existInFarm = existInFarm,
   existInFarmSlot = existInFarmSlot,
@@ -151,3 +150,4 @@ return {
 --resetStorage = resetStorage,
 --getOrder = getOrder,
 --updateOrder = updateOrder,
+--nextStorageSlot = nextStorageSlot,

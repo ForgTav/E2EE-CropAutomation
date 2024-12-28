@@ -160,9 +160,14 @@ end
 
 local function checkCondition()
   local storageSlot = database.getStorageSlot(config.storageFarmArea)
-  if storageSlot and storageSlot.isCrop and (storageSlot.name ~= 'air' or storageSlot.name ~= 'emptyCrop') then
-    return true;
+  if not storageSlot then
+    return false
   end
+
+  if storageSlot.isCrop and storageSlot.name ~= 'air' and storageSlot.name ~= 'emptyCrop' and not sys.isWeed(storageSlot) then
+    return true
+  end
+
   return false
 end
 

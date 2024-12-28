@@ -207,13 +207,6 @@ local function charge()
     gps.turnTo(1)
     repeat
         os.sleep(0.5)
-        --if events.needExit() then
-        --    if events.needCleanup() and config.cleanUp then
-        --        events.setNeedCleanup(false)
-        --        cleanUp()
-        --    end
-        --    os.exit() -- Exit here to leave robot in starting position
-        --end
     until fullyCharged()
 end
 
@@ -240,8 +233,6 @@ local function restockAll()
 end
 
 local function initWork()
-    --events.initEvents()
-    --events.hookEvents()
     charge()
     primeBinder()
     restockAll()
@@ -259,6 +250,5 @@ return {
     removePlant = removePlant,
     pulseDown = pulseDown,
     transplant = transplant,
-    cleanUp = cleanUp,
     initWork = initWork
 }
