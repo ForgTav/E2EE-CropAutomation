@@ -6,15 +6,9 @@ local sys = require('sysFunction')
 local ev = require('sysEvents')
 local term = require("term")
 local gpu = component.gpu
---local screenWidth, screenHeight = gpu.getResolution()
 
---local sensor = component.sensor
 local robotSide
-local robotStatus = false
-
 local exec
-
-
 
 local function drawButton(y, text)
     gpu.set(math.floor((50 - #text) / 2), y, "[ " .. text .. " ]")
@@ -35,89 +29,76 @@ local function tprint(tbl, indent)
     end
 end
 
+local function extraExit()
+    if ev.needCleanup() then
+        local order = sys.Cleanup()
+        if next(order) ~= nil then
+            print("sendCleanup")
+            sys.SendToLinkedCards({ type = 'Cleanup', data = order })
+            return true
+        end
+    end
+end
+
 local function initServer()
     print("getChargerSide")
     robotSide = sys.getChargerSide()
     if not robotSide then
         error('Charger not found')
     end
-
+    ev.initEvents()
+    ev.hookEvents()
     sys.setRobotSide(robotSide)
-
     exec.init()
-
     print("initDataBase")
     database.initDataBase()
-
     sys.scanStorage()
     sys.scanFarm()
-
-    -- sysFunction.initServer()
     while true do
-        local loopForStatus = true
+        if exec.checkCondition() then
+            break
+        end
         print("awaitRobotStatus")
-        while loopForStatus do
-            if sys.getRobotStatus() then
-                loopForStatus = false
-            end
+        while not sys.getRobotStatus() do
             os.sleep(1)
         end
 
         print("getOrder")
-        local order = {}
-        if sys.scanFarm() then
-            order = sys.createOrderList(exec.handleChild, exec.handleParent)
+        if ev.needExit() then
+            extraExit()
+            break
         end
 
+        local order = sys.createOrderList(exec.handleChild, exec.handleParent)
         if next(order) == nil then
             print("emptyOrder")
         else
             print("sendOrder")
             sys.SendToLinkedCards({ type = 'order', data = order })
         end
+        
+        if ev.needExit() then
+            break
+        end
         print("sleep5S")
         os.sleep(5)
-
-        if exec.checkCondition() then
-
-        end
-    end
-
-    if ev.needCleanup() then
-
+        sys.scanFarm()
     end
 end
-local function drawButton(y, text)
-    gpu.set(math.floor((40 - #text) / 2), y, "[ " .. text .. " ]")
-end
-
 
 local function main()
     gpu.setResolution(50, 16)
-
     term.clear()
-
     drawButton(1, "autoStat")
     drawButton(5, "autoTier WIP")
     drawButton(10, "autoSpread WIP")
-
-    -- Ожидание событий
     while true do
         local _, _, x, y = event.pull("touch")
-
         if x >= 20 and x <= 40 and y == 1 then
             exec = require("autoStat")
             break
-            --elseif x >= 20 and x <= 40 and y == 5 then
-            --    exec = require("autoTier")
-            --    break
-            --elseif x >= 20 and x <= 40 and y == 10 then
-            --exec = require("autoSpread")
-            --    break
         end
     end
-
-    --gpu.setResolution(screenWidth, screenHeight)
     term.clear()
     initServer()
 end

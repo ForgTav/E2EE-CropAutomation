@@ -88,9 +88,13 @@ end
 
 -- ======================== STORAGE FARM ========================
 
---local function getStorage()
---  return storage
---end
+local function getStorage()
+  return storage
+end
+
+local function getStorageSlot(slot)
+  return storage[slot]
+end
 
 
 --local function resetStorage()
@@ -132,6 +136,8 @@ return {
   getFarm = getFarm,
   getFarmSlot = getFarmSlot,
   updateFarm = updateFarm,
+  getStorage = getStorage,
+  getStorageSlot = getStorageSlot,
   updateStorage = updateStorage,
   existInStorage = existInStorage,
   nextStorageSlot = nextStorageSlot,
@@ -143,6 +149,5 @@ return {
 
 
 --resetStorage = resetStorage,
---getStorage = getStorage,
 --getOrder = getOrder,
 --updateOrder = updateOrder,

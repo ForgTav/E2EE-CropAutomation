@@ -12,6 +12,13 @@ local sensor = component.sensor
 local robotSide
 
 
+local function SendToLinkedCards(msg)
+    local messageToSend = serialization.serialize(msg)
+    tunnel.send(messageToSend)
+end
+
+
+
 local function setRobotSide(side)
     robotSide = side
 end
@@ -81,24 +88,23 @@ local function scanAndProcess(slot)
     local rawScan = sensor.scan(cord[1], 0, cord[2])
     local crop = fetchScan(rawScan)
     if crop then
-        crop.slot = slot
         database.updateFarm(slot, crop)
     end
 end
 
-local function scanFarm(slot)
-    if slot == nil then
-        for slot = 1, config.workingFarmArea do
-            scanAndProcess(slot)
+local function scanFarm()
+    for slot = 1, config.workingFarmArea do
+        local raw = gps.workingSlotToPos(slot)
+        local cord = cordtoScan(raw[1], raw[2])
+        local rawScan = sensor.scan(cord[1], 0, cord[2])
+        local crop = fetchScan(rawScan)
+        if crop then
+            database.updateFarm(slot, crop)
         end
-    else
-        scanAndProcess(slot)
     end
 
     return true
 end
-
-
 
 local function scanEmptySlotStorage(newCrop)
     for slot = 1, config.storageFarmArea, 1 do
@@ -155,6 +161,42 @@ local function createOrderList(handleChild, handleParent)
 end
 
 
+local function Cleanup()
+    local order = {}
+
+    for slot, crop in pairs(database.getFarm()) do
+        if crop.isCrop and crop.name == 'emptyCrop' then
+            table.insert(order, {
+                action = 'removeCrop',
+                farm = 'working',
+                slot = slot,
+                priority = config.priorities['removeCrop']
+            })
+        end
+    end
+
+    for slot, crop in pairs(database.getStorage()) do
+        if crop.isCrop and crop.name == 'emptyCrop' then
+            table.insert(order, {
+                action = 'removeCrop',
+                farm = 'storage',
+                slot = slot,
+                priority = config.priorities['removeCrop']
+            })
+        end
+    end
+
+    table.sort(order, function(a, b)
+        if a.priority == b.priority then
+            return a.slot < b.slot
+        end
+        return a.priority < b.priority
+    end)
+
+    return order
+end
+
+
 local function getRobotStatus()
     local messageToSend = serialization.serialize({ type = "getStatus" })
     tunnel.send(messageToSend)
@@ -172,10 +214,6 @@ local function getRobotStatus()
     return false
 end
 
-local function SendToLinkedCards(msg)
-    local messageToSend = serialization.serialize(msg)
-    tunnel.send(messageToSend)
-end
 
 
 
@@ -193,5 +231,6 @@ return {
     fetchScan = fetchScan,
     getChargerSide = getChargerSide,
     cordtoScan = cordtoScan,
-    setRobotSide = setRobotSide
+    setRobotSide = setRobotSide,
+    Cleanup = Cleanup
 }

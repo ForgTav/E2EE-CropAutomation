@@ -159,7 +159,11 @@ local function init()
 end
 
 local function checkCondition()
-  print(config.storageFarmArea)
+  local storageSlot = database.getStorageSlot(config.storageFarmArea)
+  if storageSlot and storageSlot.isCrop and (storageSlot.name ~= 'air' or storageSlot.name ~= 'emptyCrop') then
+    return true;
+  end
+  return false
 end
 
 
