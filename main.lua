@@ -97,7 +97,7 @@ local function run()
         if ev.needExit() then
             break
         end
-        first_run = true
+        first_run = false
         print("sleep5S")
         os.sleep(5)
     end
