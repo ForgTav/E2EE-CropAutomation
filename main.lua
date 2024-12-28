@@ -6,6 +6,7 @@ local sys = require('sysFunction')
 local ev = require('sysEvents')
 local term = require("term")
 local gpu = component.gpu
+local serialization = require("serialization")
 
 local robotSide
 local exec
@@ -42,35 +43,46 @@ local function extraExit()
     end
 end
 
-local function initServer()
-    print("getChargerSide")
-    robotSide = sys.getChargerSide()
-    if not robotSide then
-        error('Charger not found')
-    end
-    ev.initEvents()
-    ev.hookEvents()
-    sys.setRobotSide(robotSide)
-    exec.init()
-    print("initDataBase")
-    database.initDataBase()
+local function sysExit()
+    print("scanStorage")
     sys.scanStorage()
+
+    print("scanFarm")
     sys.scanFarm()
 
+    local order = sys.cleanUp()
+    if next(order) ~= nil then
+        print("sendCleanUp")
+        while not sys.getRobotStatus() do
+            os.sleep(1)
+        end
+        sys.SendToLinkedCards({ type = 'cleanUp', data = order })
+    end
+end
+
+local function run()
+    local system_exit = false;
+    local first_run = true;
+
     while true do
-        os.sleep(0.1)
         if exec.checkCondition() then
+            system_exit = true
             break
         end
-        print("awaitRobotStatus")
 
         if ev.needExit() then
             extraExit()
             break
         end
 
+        print("awaitRobotStatus")
         while not sys.getRobotStatus() do
             os.sleep(1)
+        end
+
+        print("scanFarm")
+        if not first_run then
+            sys.scanFarm()
         end
 
         print("getOrder")
@@ -85,10 +97,44 @@ local function initServer()
         if ev.needExit() then
             break
         end
+        first_run = true
         print("sleep5S")
         os.sleep(5)
-        sys.scanFarm()
     end
+
+    if system_exit then
+        sysExit()
+    end
+end
+
+local function initServer()
+    print("getChargerSide")
+    robotSide = sys.getChargerSide()
+    if not robotSide then
+        error('Charger not found')
+    end
+    sys.setRobotSide(robotSide)
+
+    ev.initEvents()
+    ev.hookEvents()
+    exec.init()
+
+
+    print("awaitRobotStatus")
+    while not sys.getRobotStatus() do
+        os.sleep(1)
+    end
+
+    print("initDataBase")
+    database.initDataBase()
+
+    print("scanStorage")
+    sys.scanStorage()
+
+    print("scanFarm")
+    sys.scanFarm()
+
+    run()
 end
 
 local function main()

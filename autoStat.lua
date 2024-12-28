@@ -54,10 +54,14 @@ local function handleChild(slot, crop)
         priority = priorities['transplantParent'],
         slotName = availableParent.name
       })
-      database.updateFarm(slot, { isCrop = true, name = 'air' })
+      database.updateFarm(slot, { isCrop = true, name = 'air', fromScan = false })
       database.updateFarm(availableParentSlot, crop)
     elseif stat >= config.autoStatThreshold then
-      local emptySlot = sys.scanEmptySlotStorage(crop)
+      local emptySlot = sys.getEmptySlotStorage()
+      if not emptySlot then
+        return order
+      end
+
       table.insert(order, {
         action = 'transplant',
         slot = slot,
@@ -66,7 +70,7 @@ local function handleChild(slot, crop)
         slotName = 'air',
         priority = priorities['transplant']
       })
-      database.updateFarm(slot, { isCrop = true, name = 'air' })
+      database.updateFarm(slot, { isCrop = true, name = 'air', fromScan = false })
       database.updateStorage(emptySlot, crop)
       table.insert(order, {
         action = 'placeCropStick',
@@ -93,7 +97,7 @@ local function handleChild(slot, crop)
               slotName = parentCrop.name,
               priority = priorities['transplantParent']
             })
-            database.updateFarm(slot, { isCrop = true, name = 'air' })
+            database.updateFarm(slot, { isCrop = true, name = 'air', fromScan = false })
             database.updateFarm(parentSlot, crop)
             table.insert(order, {
               action = 'placeCropStick',
@@ -165,6 +169,7 @@ local function checkCondition()
   end
 
   if storageSlot.isCrop and storageSlot.name ~= 'air' and storageSlot.name ~= 'emptyCrop' and not sys.isWeed(storageSlot) then
+    print('Missing slots in storage')
     return true
   end
 

@@ -50,10 +50,10 @@ end
 local function fetchScan(rawScan)
     local block = rawScan['block']
     if block['name'] == 'minecraft:air' or block['name'] == 'GalacticraftCore:tile.brightAir' then
-        return { isCrop = true, name = 'air' }
+        return { isCrop = true, name = 'air', fromScan = true }
     elseif block['name'] == 'ic2:te' then
         if block['label'] == 'Crop' then
-            return { isCrop = true, name = 'emptyCrop' }
+            return { isCrop = true, name = 'emptyCrop', fromScan = true }
         else
             local crop = rawScan['data']['Crop']
             return {
@@ -62,11 +62,12 @@ local function fetchScan(rawScan)
                 gr = crop['statGrowth'],
                 ga = crop['statGain'],
                 re = crop['statResistance'],
-                tier = config.seedTiers[crop['cropId']]
+                tier = config.seedTiers[crop['cropId']],
+                fromScan = true
             }
         end
     else
-        return { isCrop = false, name = 'block' }
+        return { isCrop = false, name = 'block', fromScan = true }
     end
 end
 
@@ -79,16 +80,6 @@ local function scanStorage()
         if crop then
             database.updateStorage(slot, crop)
         end
-    end
-end
-
-local function scanAndProcess(slot)
-    local raw = gps.workingSlotToPos(slot)
-    local cord = cordtoScan(raw[1], raw[2])
-    local rawScan = sensor.scan(cord[1], 0, cord[2])
-    local crop = fetchScan(rawScan)
-    if crop then
-        database.updateFarm(slot, crop)
     end
 end
 
@@ -106,14 +97,9 @@ local function scanFarm()
     return true
 end
 
-local function scanEmptySlotStorage(newCrop)
-    for slot = 1, config.storageFarmArea, 1 do
-        local raw = gps.storageSlotToPos(slot)
-        local cord = cordtoScan(raw[1], raw[2])
-        local rawScan = sensor.scan(cord[1], 0, cord[2])
-        local crop = fetchScan(rawScan)
-        if crop and crop.isCrop and (crop.name == 'air' or crop.name == 'emptyCrop') then
-            database.updateStorage(slot, newCrop)
+local function getEmptySlotStorage()
+    for slot, crop in pairs(database.getStorage()) do
+        if crop.isCrop and (crop.name == 'emptyCrop' or crop.name == 'air') then
             return slot
         end
     end
@@ -138,7 +124,7 @@ end
 local function createOrderList(handleChild, handleParent)
     local orderList = {}
     for slot, crop in pairs(database.getFarm()) do
-        if crop.isCrop then
+        if crop.isCrop and crop.fromScan then
             local tasks = {}
             if slot % 2 == 0 then
                 tasks = handleChild(slot, crop)
@@ -219,11 +205,12 @@ return {
     createOrderList = createOrderList,
     isWeed = isWeed,
     isComMax = isComMax,
-    scanEmptySlotStorage = scanEmptySlotStorage,
     scanStorage = scanStorage,
     fetchScan = fetchScan,
     getChargerSide = getChargerSide,
     cordtoScan = cordtoScan,
     setRobotSide = setRobotSide,
-    cleanUp = cleanUp
+    cleanUp = cleanUp,
+    getEmptySlotStorage = getEmptySlotStorage
 }
+--scanEmptySlotStorage = scanEmptySlotStorage,
