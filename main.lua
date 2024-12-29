@@ -6,6 +6,7 @@ local sys = require('sysFunction')
 local ev = require('sysEvents')
 local term = require("term")
 local gpu = component.gpu
+local currentMode
 
 local robotSide
 local exec
@@ -53,9 +54,6 @@ local function sysExit()
     print("scanStorage")
     sys.scanStorage()
 
-    --print("scanFarm")
-    --sys.scanFarm()
-
     local order = sys.cleanUp()
     if next(order) ~= nil then
         print("sendCleanUp")
@@ -71,7 +69,7 @@ local function run(firstRun)
         print("awaitRobotStatus")
 
         while not sys.getRobotStatus(3) do
-            os.sleep(0)
+            os.sleep(0.1)
         end
         os.sleep(0.1)
 
@@ -140,7 +138,6 @@ local function initServer()
 
     run(true)
 end
-
 local function main()
     gpu.setResolution(50, 16)
     term.clear()
@@ -151,9 +148,15 @@ local function main()
         local _, _, x, y = event.pull("touch")
         if x >= 20 and x <= 40 and y == 1 then
             exec = require("autoStat")
+            currentMode = 'autoStat'
+            break
+        elseif x >= 20 and x <= 40 and y == 5 then
+            exec = require("autoTier")
+            currentMode = 'autoTier'
             break
         elseif x >= 20 and x <= 40 and y == 10 then
             exec = require("autoSpread")
+            currentMode = 'autoSpread'
             break
         end
     end

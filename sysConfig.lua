@@ -117,10 +117,11 @@ config.robotConfig = {
 }
 
 config.tierSchema = {
-    ["nether_wart"] = { 1, 3, 11, 15, 13 },
+    ["nether_wart"] = { 1, 3, 11, 13 },
     ["stickreed"] = { 5, 7, 9 },
-    ["blazereed"] = { 23, 25, 35 },
-    ["diareed"] = { 31, 19 },
+    ["blazereed"] = { 25, 35 },
+    ["diareed"] = { 17, 19, 31 },
+    ["oil_berries"] = { 15, 23 },
     ["withereed"] = { 33, 29, 27 }
 }
 
