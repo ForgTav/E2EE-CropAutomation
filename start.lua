@@ -5,7 +5,7 @@ local gps = require('robotGPS')
 local actions = require('robotActions')
 local serialization = require("serialization")
 local tunnel = component.tunnel
-local robotStatus = false
+local robotStatus = true
 
 local function sendMessage(msg)
     local messageToSend = serialization.serialize(msg)
@@ -15,7 +15,7 @@ end
 local function transporter(table)
     if table.type == 'order' then
         robotStatus = false
-        for index, order in pairs(table.data) do
+        for _, order in pairs(table.data) do
             if order.action == 'deweed' then
                 gps.go(gps.workingSlotToPos(order.slot))
                 actions.deweed()
@@ -34,7 +34,7 @@ local function transporter(table)
         sendMessage({ action = 'getStatus', robotStatus = robotStatus })
     elseif table.type == 'cleanUp' then
         robotStatus = false
-        for index, order in pairs(table.data) do
+        for _, order in pairs(table.data) do
             if order.farm == 'working' then
                 gps.go(gps.workingSlotToPos(order.slot))
                 actions.removePlant()
@@ -47,20 +47,14 @@ local function transporter(table)
     end
 end
 
-
-
-
-
 local function main()
     actions.initWork()
-    robotStatus = true
-
     while true do
         local _, _, _, _, _, message = event.pull("modem_message")
         local unserilized = serialization.unserialize(message)
         transporter(unserilized)
         robotStatus = true
-        --os.sleep(0.1)
+        os.sleep(0.1)
     end
 end
 

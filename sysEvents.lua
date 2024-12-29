@@ -4,7 +4,6 @@ local self = component.computer
 local needExitFlag = false
 local needCleanupFlag = false
 
-
 local function keyboardEvent(eventName, keyboardAddress, charNum, codeNum, playerName)
   -- Exit if 'q' was pressed
   if charNum == 113 then

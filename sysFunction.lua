@@ -1,11 +1,10 @@
 local component = require('component')
 local event = require("event")
-local os = require('os')
 local config = require('sysConfig')
 local gps = require('sysGPS')
 local database = require('sysDB')
-
 local serialization = require("serialization")
+local ev = require('sysEvents')
 
 local tunnel = component.tunnel
 local sensor = component.sensor
@@ -13,9 +12,10 @@ local robotSide
 
 
 local function SendToLinkedCards(msg)
-    local messageToSend = serialization.serialize(msg)
-    tunnel.send(messageToSend)
+    tunnel.send(serialization.serialize(msg))
 end
+
+
 
 
 
@@ -175,28 +175,19 @@ local function cleanUp()
     return order
 end
 
-
-local function getRobotStatus()
-    local messageToSend = serialization.serialize({ type = "getStatus" })
-    tunnel.send(messageToSend)
-    local _, _, _, _, _, message = event.pull(1, "modem_message")
-
+local function getRobotStatus(timeout)
+    tunnel.send(serialization.serialize({ type = "getStatus" }))
+    local _, _, _, _, _, message = event.pull(timeout, "modem_message")
     if message == nil then
         return false
     end
 
     local unserilized = serialization.unserialize(message)
-
     if unserilized.robotStatus then
         return unserilized.robotStatus
     end
     return false
 end
-
-
-
-
-
 
 return {
     SendToLinkedCards = SendToLinkedCards,
@@ -211,6 +202,6 @@ return {
     cordtoScan = cordtoScan,
     setRobotSide = setRobotSide,
     cleanUp = cleanUp,
-    getEmptySlotStorage = getEmptySlotStorage
+    getEmptySlotStorage = getEmptySlotStorage,
 }
---scanEmptySlotStorage = scanEmptySlotStorage,
+

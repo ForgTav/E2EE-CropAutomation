@@ -2,6 +2,7 @@ local shell = require('shell')
 local scripts = {
     'autoStat.lua',
     'autoTier.lua',
+    'autoSpread.lua',
     'robotActions.lua',
     'robotConfig.lua',
     'robotGPS.lua',

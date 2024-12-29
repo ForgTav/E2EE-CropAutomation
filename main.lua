@@ -6,7 +6,6 @@ local sys = require('sysFunction')
 local ev = require('sysEvents')
 local term = require("term")
 local gpu = component.gpu
-local serialization = require("serialization")
 
 local robotSide
 local exec
@@ -30,15 +29,22 @@ local function tprint(tbl, indent)
     end
 end
 
-local function extraExit()
+local function forceExit()
+    print('forceExit')
     if ev.needCleanup() then
+        print("scanStorage")
+        sys.scanStorage()
+
+        print("scanFarm")
+        sys.scanFarm()
+
+        print('needCleanUp')
         local order = sys.cleanUp()
         if next(order) ~= nil then
             print("sendCleanUp")
-            while not sys.getRobotStatus() do
-                os.sleep(1)
-            end
             sys.SendToLinkedCards({ type = 'cleanUp', data = order })
+        else
+            print("emptyCleanUp")
         end
     end
 end
@@ -47,42 +53,41 @@ local function sysExit()
     print("scanStorage")
     sys.scanStorage()
 
-    print("scanFarm")
-    sys.scanFarm()
+    --print("scanFarm")
+    --sys.scanFarm()
 
     local order = sys.cleanUp()
     if next(order) ~= nil then
         print("sendCleanUp")
-        while not sys.getRobotStatus() do
-            os.sleep(1)
-        end
         sys.SendToLinkedCards({ type = 'cleanUp', data = order })
+        --sys.sendOrder('cleanUp', order)
     end
 end
 
-local function run()
-    local system_exit = false;
-    local first_run = true;
+local function run(firstRun)
+    local systemExit = false;
 
     while true do
-        if exec.checkCondition() then
-            system_exit = true
-            break
+        print("awaitRobotStatus")
+
+        while not sys.getRobotStatus(3) do
+            os.sleep(0)
         end
+        os.sleep(0.1)
 
         if ev.needExit() then
-            extraExit()
+            forceExit()
             break
         end
 
-        print("awaitRobotStatus")
-        while not sys.getRobotStatus() do
-            os.sleep(1)
+        if not firstRun then
+            print("scanFarm")
+            sys.scanFarm()
         end
 
-        print("scanFarm")
-        if not first_run then
-            sys.scanFarm()
+        if exec.checkCondition() then
+            systemExit = true
+            break
         end
 
         print("getOrder")
@@ -92,17 +97,15 @@ local function run()
         else
             print("sendOrder")
             sys.SendToLinkedCards({ type = 'order', data = order })
+            --sys.sendOrder('order', order)
         end
 
-        if ev.needExit() then
-            break
-        end
-        first_run = false
+        firstRun = false
         print("sleep5S")
         os.sleep(5)
     end
 
-    if system_exit then
+    if systemExit then
         sysExit()
     end
 end
@@ -119,11 +122,12 @@ local function initServer()
     ev.hookEvents()
     exec.init()
 
-
     print("awaitRobotStatus")
-    while not sys.getRobotStatus() do
-        os.sleep(1)
+
+    while not sys.getRobotStatus(3) do
+        os.sleep(0)
     end
+    os.sleep(0.1)
 
     print("initDataBase")
     database.initDataBase()
@@ -134,7 +138,7 @@ local function initServer()
     print("scanFarm")
     sys.scanFarm()
 
-    run()
+    run(true)
 end
 
 local function main()
@@ -142,11 +146,14 @@ local function main()
     term.clear()
     drawButton(1, "autoStat")
     drawButton(5, "autoTier WIP")
-    drawButton(10, "autoSpread WIP")
+    drawButton(10, "autoSpread")
     while true do
         local _, _, x, y = event.pull("touch")
         if x >= 20 and x <= 40 and y == 1 then
             exec = require("autoStat")
+            break
+        elseif x >= 20 and x <= 40 and y == 10 then
+            exec = require("autoSpread")
             break
         end
     end
