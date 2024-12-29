@@ -7,7 +7,6 @@ local function handleChild(slot, crop)
     local availableParentSlot, availableParent
     local parentSlots = database.getParentSlots()
 
-    -- Найти пустой родительский слот
     for _, parentSlot in pairs(parentSlots) do
         local parentCrop = database.getFarmSlot(parentSlot)
         if parentCrop and (parentCrop.name == 'emptyCrop' or parentCrop.name == 'air') then
@@ -89,7 +88,21 @@ local function handleChild(slot, crop)
                 priority = config.priorities['removePlant']
             })
         end
+    else
+        if crop.isCrop and crop.name ~= 'emptyCrop' and crop.crossingbase == 0 then
+            table.insert(order, {
+                action = 'placeCropStick',
+                slot = slot,
+                priority = config.priorities['placeCropStick'],
+                count = 1
+            })
+        else
+            return order
+        end
     end
+
+
+
 
     return order
 end

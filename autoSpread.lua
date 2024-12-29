@@ -30,7 +30,16 @@ local function handleChild(slot, crop)
       count = 2
     })
   elseif crop.isCrop and crop.name == "emptyCrop" then
-    return order
+    if crop.crossingbase == 0 then
+      table.insert(order, {
+        action = 'placeCropStick',
+        slot = slot,
+        priority = priorities['placeCropStick'],
+        count = 1
+      })
+    else
+      return order
+    end
   elseif sys.isWeed(crop) then
     table.insert(order, {
       action = 'deweed',

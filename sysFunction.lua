@@ -52,10 +52,10 @@ local function fetchScan(rawScan)
     if block['name'] == 'minecraft:air' or block['name'] == 'GalacticraftCore:tile.brightAir' then
         return { isCrop = true, name = 'air', fromScan = true }
     elseif block['name'] == 'ic2:te' then
+        local crop = rawScan['data']['Crop']
         if block['label'] == 'Crop' then
-            return { isCrop = true, name = 'emptyCrop', fromScan = true }
+            return { isCrop = true, name = 'emptyCrop', crossingbase = crop.crossingBase, fromScan = true }
         else
-            local crop = rawScan['data']['Crop']
             return {
                 isCrop = true,
                 name = crop['cropId'],
@@ -204,4 +204,3 @@ return {
     cleanUp = cleanUp,
     getEmptySlotStorage = getEmptySlotStorage,
 }
-
