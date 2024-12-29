@@ -2,7 +2,7 @@ local config = {
     -- NOTE: EACH CONFIG SHOULD END WITH A COMMA
 
     -- Side Length of Working Farm
-    workingFarmSize = 5,
+    workingFarmSize = 6,
     -- Side Length of Storage Farm
     storageFarmSize = 9,
 
@@ -85,12 +85,43 @@ config.seedTiers = {
     diareed = 12,
 }
 
+config.robotConfig = {
+    -- Side Length of Working Farm
+    workingFarmSize = 6,
+    -- Side Length of Storage Farm
+    storageFarmSize = 9,
+
+    -- Minimum Charge Level
+    needChargeLevel = 0.2,
+
+    -- =========== DO NOT CHANGE ===========
+    -- The coordinate for charger
+    chargerPos = { 0, 0 },
+    -- The coordinate for the container contains crop sticks
+    stickContainerPos = { -1, 0 },
+    -- The coordinate for the container to store seeds, products, etc
+    storagePos = { -2, 0 },
+    -- The coordinate for the farmland that the dislocator is facing
+    relayFarmlandPos = { 1, 1 },
+    -- The coordinate for the transvector dislocator
+    dislocatorPos = { 1, 2 },
+
+    -- The slot for spade
+    spadeSlot = 0,
+    -- The slot for the transvector binder
+    binderSlot = -1,
+    -- The slot for crop sticks
+    stickSlot = -2,
+    -- The slot which the robot will stop storing items
+    storageStopSlot = -3
+}
+
 config.tierSchema = {
-    ["nether_wart"] = { 1, 9, 11 },
-    ["stickreed"] = { 3, 5 },
-    ["blazereed"] = { 7, 15 },
-    ["diareed"] = { 17, 25 },
-    ["withereed"] = { 19, 21, 23 }
+    ["nether_wart"] = { 1, 3, 11, 15, 13 },
+    ["stickreed"] = { 5, 7, 9 },
+    ["blazereed"] = { 23, 25, 35 },
+    ["diareed"] = { 31, 19 },
+    ["withereed"] = { 33, 29, 27 }
 }
 
 config.sidesCharger = {
