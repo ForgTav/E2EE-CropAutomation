@@ -3,23 +3,9 @@ local storage = {}
 local reverseStorage = {}
 local farm = {}
 local reverseFarm = {}
---local order = {}
 local parentSlots = {}
-
-function tprint(tbl, indent)
-  if not indent then indent = 0 end
-  for k, v in pairs(tbl) do
-    formatting = string.rep("  ", indent) .. k .. ": "
-    if type(v) == "table" then
-      print(formatting)
-      tprint(v, indent + 1)
-    elseif type(v) == 'boolean' then
-      print(formatting .. tostring(v))
-    else
-      print(formatting .. v)
-    end
-  end
-end
+local logs = {}
+local logsLimit = 30
 
 -- ======================== PARENT AND CHILD SLOTS ========================
 
@@ -43,16 +29,20 @@ local function getPossibleParentSlots()
   end
 end
 
--- ======================== ORDER LIST ========================
+-- ======================== LOGS LIST ========================
 
---local function getOrder()
---  return order
---end
+local function getLogs()
+  return logs
+end
 
---local function updateOrder(newOrder)
---  order = newOrder
---end
-
+local function setLogs(log)
+  for key, value in pairs(log) do
+    table.insert(logs, value)
+  end
+  if #logs > logsLimit then
+    table.remove(logs, 1)
+  end
+end
 
 -- ======================== WORKING FARM ========================
 
@@ -143,7 +133,9 @@ return {
   getParentSlots = getParentSlots,
   existInFarm = existInFarm,
   existInFarmSlot = existInFarmSlot,
-  deleteParentSlots = deleteParentSlots
+  deleteParentSlots = deleteParentSlots,
+  getLogs = getLogs,
+  setLogs = setLogs
 }
 
 

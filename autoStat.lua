@@ -6,6 +6,7 @@ local sys = require('sysFunction')
 local sensor = component.sensor
 local targetCrop
 
+
 local function handleChild(slot, crop)
   local order = {}
   local availableParentSlot = nil
@@ -70,7 +71,6 @@ local function handleChild(slot, crop)
       if not emptySlot then
         return order
       end
-
       table.insert(order, {
         action = 'transplant',
         slot = slot,
@@ -94,14 +94,12 @@ local function handleChild(slot, crop)
         if parentCrop and parentCrop.isCrop and (parentCrop.name ~= 'emptyCrop' and parentCrop.name ~= 'air') then
           local parentStat = parentCrop.gr + parentCrop.ga - parentCrop.re
           if stat > parentStat then
-            print('child slot:' .. slot .. ' stat: gr=' .. crop.gr .. ' ga=' .. crop.ga .. ' re=' .. crop.re)
-            print('parent slot:' ..
-              parentSlot .. ' stat: gr=' .. parentCrop.gr .. ' ga=' .. parentCrop.ga .. ' re=' .. parentCrop.re)
-            print('-----------------')
             table.insert(order, {
               action = 'transplantParent',
               slot = slot,
+              slotStat = stat,
               to = parentSlot,
+              toStat = parentStat,
               farm = 'working',
               slotName = parentCrop.name,
               priority = priorities['transplantParent']
@@ -163,11 +161,11 @@ local function init()
   local cord = sys.cordtoScan(0, 1)
   local scan = sys.fetchScan(sensor.scan(cord[1], 0, cord[2]))
   if not scan.isCrop or (scan.name == 'air' or scan.name == 'emptyCrop') then
-    print('Not found targetCrop')
+    sys.printCenteredText('Not found targetCrop')
     os.exit()
   end
-  print("targetCrop:" .. scan.name)
-  print("autoStat inited")
+  --print("targetCrop:" .. scan.name)
+  --ui.printCenteredText("autoStat inited")
   targetCrop = scan.name
 end
 
@@ -178,7 +176,8 @@ local function checkCondition()
   end
 
   if storageSlot.isCrop and storageSlot.name ~= 'air' and storageSlot.name ~= 'emptyCrop' and not sys.isWeed(storageSlot) then
-    print('Missing slots in storage')
+    --TODO THROW ERROR
+    --print('Missing slots in storage')
     return true
   end
 

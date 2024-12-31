@@ -4,18 +4,32 @@ local config = require('sysConfig')
 local gps = require('sysGPS')
 local database = require('sysDB')
 local serialization = require("serialization")
-local ev = require('sysEvents')
+local term = require("term")
+local db = require("sysDB")
+
+local gpu = component.gpu
+local screenWidth, screenHeight = gpu.getResolution()
 
 local tunnel = component.tunnel
 local sensor = component.sensor
 local robotSide
+local lastRobotStatus = false
+local lastComputerStatus = ''
 
 
 local function SendToLinkedCards(msg)
     tunnel.send(serialization.serialize(msg))
 end
 
+local function printCenteredText(text)
+    term.clear()
 
+    local startX = math.floor((screenWidth - #text) / 2)
+    local startY = math.floor(screenHeight / 2)
+
+    term.setCursor(startX, startY)
+    term.write(text)
+end
 
 
 
@@ -63,6 +77,9 @@ local function fetchScan(rawScan)
                 ga = crop['statGain'],
                 re = crop['statResistance'],
                 tier = config.seedTiers[crop['cropId']],
+                weedex = crop['storageWeedEX'],
+                water = crop['storageWater'],
+                nutrients = crop['storageNutrients'],
                 fromScan = true
             }
         end
@@ -71,7 +88,7 @@ local function fetchScan(rawScan)
     end
 end
 
-local function scanStorage()
+local function scanStorage(firstRun)
     for slot = 1, config.storageFarmArea, 1 do
         local raw = gps.storageSlotToPos(slot)
         local cord = cordtoScan(raw[1], raw[2])
@@ -80,10 +97,15 @@ local function scanStorage()
         if crop then
             database.updateStorage(slot, crop)
         end
+
+        if firstRun then
+            local scanPercent = (slot / config.storageFarmArea) * 100
+            printCenteredText(string.format("Scan Storage: %.2f%%", scanPercent))
+        end
     end
 end
 
-local function scanFarm()
+local function scanFarm(firstRun)
     for slot = 1, config.workingFarmArea do
         local raw = gps.workingSlotToPos(slot)
         local cord = cordtoScan(raw[1], raw[2])
@@ -91,6 +113,10 @@ local function scanFarm()
         local crop = fetchScan(rawScan)
         if crop then
             database.updateFarm(slot, crop)
+        end
+        if firstRun then
+            local scanPercent = (slot / config.workingFarmArea) * 100
+            printCenteredText(string.format("Scan Farm: %.2f%%", scanPercent))
         end
     end
 
@@ -121,6 +147,14 @@ local function isWeed(crop)
     return crop.name == 'weed' or crop.name == 'Grass'
 end
 
+local function limitedOrderList(list)
+    local result = {}
+    for i = 1, config.maxOrderList do
+        table.insert(result, list[i])
+    end
+    return result
+end
+
 local function createOrderList(handleChild, handleParent)
     local orderList = {}
     for slot, crop in pairs(database.getFarm()) do
@@ -143,6 +177,12 @@ local function createOrderList(handleChild, handleParent)
         end
         return a.priority < b.priority
     end)
+
+    if #orderList > config.maxOrderList then
+        orderList = limitedOrderList(orderList)
+    end
+
+    db.setLogs(orderList)
     return orderList
 end
 
@@ -168,9 +208,9 @@ local function cleanUp()
         end
     end
 
-    table.sort(order, function(a, b)
-        return a.slot < b.slot
-    end)
+    --table.sort(order, function(a, b)
+    --    return a.slot < b.slot
+    --end)
 
     return order
 end
@@ -179,19 +219,37 @@ local function getRobotStatus(timeout)
     tunnel.send(serialization.serialize({ type = "getStatus" }))
     local _, _, _, _, _, message = event.pull(timeout, "modem_message")
     if message == nil then
+        lastRobotStatus = false
         return false
     end
 
     local unserilized = serialization.unserialize(message)
     if unserilized.robotStatus then
+        lastRobotStatus = unserilized.robotStatus
         return unserilized.robotStatus
     end
+    lastRobotStatus = false
     return false
+end
+
+local function getLastRobotStatus()
+    return lastRobotStatus
+end
+
+local function setLastComputerStatus(status)
+    lastComputerStatus = status
+end
+
+local function getLastComputerStatus()
+    return lastComputerStatus
 end
 
 return {
     SendToLinkedCards = SendToLinkedCards,
     getRobotStatus = getRobotStatus,
+    getLastRobotStatus = getLastRobotStatus,
+    getLastComputerStatus = getLastComputerStatus,
+    setLastComputerStatus = setLastComputerStatus,
     scanFarm = scanFarm,
     createOrderList = createOrderList,
     isWeed = isWeed,
@@ -203,4 +261,5 @@ return {
     setRobotSide = setRobotSide,
     cleanUp = cleanUp,
     getEmptySlotStorage = getEmptySlotStorage,
+    printCenteredText = printCenteredText,
 }

@@ -2,6 +2,7 @@ local config = require('sysConfig')
 local database = require('sysDB')
 local sys = require('sysFunction')
 local breadingRound = 0;
+local ui = require("sysUI")
 
 local function handleChild(slot, crop)
     local order = {}
@@ -20,7 +21,6 @@ local function handleChild(slot, crop)
     if crop.isCrop and crop.name ~= 'emptyCrop' then
         local foundedSchemaSlot = false;
         if not sys.isWeed(crop) and config.tierSchema[crop.name] then
-            --local isInCorrectSlot = false
             for _, schemaSlot in pairs(config.tierSchema[crop.name]) do
                 local schemaCrop = database.getFarmSlot(schemaSlot)
                 if schemaCrop.name ~= crop.name then
@@ -43,9 +43,6 @@ local function handleChild(slot, crop)
         if foundedSchemaSlot then
             return order;
         end
-
-
-
 
         if crop.name == 'air' then
             table.insert(order, {
@@ -82,7 +79,7 @@ local function handleChild(slot, crop)
                 priority = config.priorities['placeCropStick'],
                 count = 2
             })
-        elseif sys.isComMax(crop, 'working') then
+        elseif sys.isComMax(crop, 'working') and not availableParentSlot then
             table.insert(order, {
                 action = 'removePlant',
                 slot = slot,
@@ -99,7 +96,7 @@ local function handleChild(slot, crop)
             })
             database.updateFarm(slot, { isCrop = true, name = 'air', fromScan = false })
             database.updateFarm(availableParentSlot, crop)
-        else
+        elseif config.statWhileTier then
             local stat = crop.gr + crop.ga - crop.re
             local foundedSlot = false
             for _, parentSlot in pairs(parentSlots) do
@@ -107,15 +104,12 @@ local function handleChild(slot, crop)
                 if parentCrop and parentCrop.isCrop and crop.name == parentCrop.name then
                     local parentStat = parentCrop.gr + parentCrop.ga - parentCrop.re
                     if stat > parentStat then
-                        print('child slot:' .. slot .. ' stat: gr=' .. crop.gr .. ' ga=' .. crop.ga .. ' re=' .. crop.re)
-                        print('parent slot:' ..
-                            parentSlot ..
-                            ' stat: gr=' .. parentCrop.gr .. ' ga=' .. parentCrop.ga .. ' re=' .. parentCrop.re)
-                        print('-----------------')
                         table.insert(order, {
                             action = 'transplantParent',
                             slot = slot,
+                            slotStat = stat,
                             to = parentSlot,
+                            toStat = parentStat,
                             farm = 'working',
                             slotName = parentCrop.name,
                             priority = config.priorities['transplantParent']
@@ -140,6 +134,12 @@ local function handleChild(slot, crop)
                     priority = config.priorities['removePlant']
                 })
             end
+        else
+            table.insert(order, {
+                action = 'removePlant',
+                slot = slot,
+                priority = config.priorities['removePlant']
+            })
         end
     elseif crop.isCrop and crop.name == 'emptyCrop' and crop.crossingbase == 0 then
         table.insert(order, {
@@ -173,7 +173,7 @@ local function handleParent(slot, crop)
 end
 
 local function init()
-    print("autoTier inited")
+    --print("autoTier inited")
 end
 
 local function checkCondition()
@@ -184,12 +184,12 @@ local function checkCondition()
     end
 
     if storageSlot.isCrop and storageSlot.name ~= 'air' and storageSlot.name ~= 'emptyCrop' and not sys.isWeed(storageSlot) then
-        print('Missing slots in storage')
+        sys.printCenteredText('Missing slots in storage')
         return true
     end
 
     if breadingRound >= config.maxBreedRound then
-        print('maxBreedRound')
+        sys.printCenteredText('maxBreedRound')
         return true
     end
 

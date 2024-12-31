@@ -45,6 +45,7 @@ local function transporter(table)
         end
         actions.restockAll()
     end
+    robotStatus = true
 end
 
 local function main()
@@ -53,7 +54,6 @@ local function main()
         local _, _, _, _, _, message = event.pull("modem_message")
         local unserilized = serialization.unserialize(message)
         transporter(unserilized)
-        robotStatus = true
         os.sleep(0.1)
     end
 end

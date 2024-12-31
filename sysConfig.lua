@@ -6,6 +6,10 @@ local config = {
     -- Side Length of Storage Farm
     storageFarmSize = 9,
 
+    -- Maximum length of orderList
+    maxOrderList = 5,
+
+    statWhileTier = false,
     -- Once complete, remove all extra crop sticks to prevent the working farm from weeding
     cleanUp = true,
     -- Pickup any and all drops (don't change)

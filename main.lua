@@ -3,17 +3,15 @@ local event = require("event")
 local os = require('os')
 local database = require('sysDB')
 local sys = require('sysFunction')
-local ev = require('sysEvents')
 local term = require("term")
+local thread = require("thread")
+local ui = require("sysUI")
 local gpu = component.gpu
 local currentMode
 
 local robotSide
 local exec
-
-local function drawButton(y, text)
-    gpu.set(math.floor((50 - #text) / 2), y, "[ " .. text .. " ]")
-end
+local uiThread
 
 local function tprint(tbl, indent)
     indent = indent or 0
@@ -31,137 +29,146 @@ local function tprint(tbl, indent)
 end
 
 local function forceExit()
-    print('forceExit')
-    if ev.needCleanup() then
-        print("scanStorage")
-        sys.scanStorage()
-
-        print("scanFarm")
-        sys.scanFarm()
-
-        print('needCleanUp')
+    if uiThread and uiThread:status() ~= 'dead' then
+        uiThread:kill()
+    end
+    sys.printCenteredText('Force exit')
+    if ui.needCleanup() then
+        sys.scanStorage(true)
+        sys.scanFarm(true)
         local order = sys.cleanUp()
         if next(order) ~= nil then
-            print("sendCleanUp")
+            sys.printCenteredText('Send cleanup order')
+            while not sys.getRobotStatus(1) do
+                os.sleep(0.1)
+            end
+            os.sleep(0.1)
             sys.SendToLinkedCards({ type = 'cleanUp', data = order })
         else
-            print("emptyCleanUp")
+            sys.printCenteredText('Empty cleanup order')
         end
     end
+    while not sys.getRobotStatus(1) do
+        os.sleep(0.1)
+    end
+    os.sleep(0.1)
+    term.clear()
+    os.exit()
 end
 
 local function sysExit()
-    print("scanStorage")
-    sys.scanStorage()
+    if uiThread and uiThread:status() ~= 'dead' then
+        uiThread:kill()
+    end
+
+    sys.scanStorage(true)
 
     local order = sys.cleanUp()
     if next(order) ~= nil then
-        print("sendCleanUp")
+        sys.printCenteredText('Send cleanup order')
+        while not sys.getRobotStatus(1) do
+            os.sleep(0.1)
+        end
+        os.sleep(0.1)
         sys.SendToLinkedCards({ type = 'cleanUp', data = order })
-        --sys.sendOrder('cleanUp', order)
     end
+    while not sys.getRobotStatus(1) do
+        os.sleep(0.1)
+    end
+    os.sleep(0.1)
+    term.clear()
+    os.exit()
 end
 
 local function run(firstRun)
     local systemExit = false;
 
     while true do
-        print("awaitRobotStatus")
-
+        sys.setLastComputerStatus('Awaiting')
         while not sys.getRobotStatus(3) do
             os.sleep(0.1)
         end
         os.sleep(0.1)
 
-        if ev.needExit() then
+        if ui.needExit() then
             forceExit()
             break
         end
 
+        --sys.setLastComputerStatus('Scans the farm')
         if not firstRun then
-            print("scanFarm")
+            ui.UIloading(true)
             sys.scanFarm()
         end
+        firstRun = false
 
         if exec.checkCondition() then
             systemExit = true
             break
         end
 
-        print("getOrder")
+        --sys.setLastComputerStatus('Create order list')
         local order = sys.createOrderList(exec.handleChild, exec.handleParent)
-        if next(order) == nil then
-            print("emptyOrder")
-        else
-            print("sendOrder")
+        if next(order) ~= nil then
+            --sys.setLastComputerStatus('Send order list')
             sys.SendToLinkedCards({ type = 'order', data = order })
-            --sys.sendOrder('order', order)
         end
 
-        firstRun = false
-        print("sleep5S")
+        ui.UIloading(false)
+        sys.setLastComputerStatus('Sleep 5 seconds..')
         os.sleep(5)
     end
 
     if systemExit then
         sysExit()
     end
+    os.sleep(0.2)
 end
 
 local function initServer()
-    print("getChargerSide")
+    currentMode = ui.drawMainMenu()
+
+    if not currentMode then
+        os.exit()
+    end
+
+    exec = require(currentMode)
+
+    sys.printCenteredText("getChargerSide")
     robotSide = sys.getChargerSide()
+
     if not robotSide then
-        error('Charger not found')
+        sys.printCenteredText('Charger not found')
+        os.exit()
     end
     sys.setRobotSide(robotSide)
 
-    ev.initEvents()
-    ev.hookEvents()
+    --ev.initEvents()
+    --ev.hookEvents()
     exec.init()
 
-    print("awaitRobotStatus")
+    sys.printCenteredText("Awaiting robot")
 
     while not sys.getRobotStatus(3) do
         os.sleep(0)
     end
     os.sleep(0.1)
 
-    print("initDataBase")
+    sys.printCenteredText("initDataBase")
     database.initDataBase()
 
-    print("scanStorage")
-    sys.scanStorage()
+    sys.scanStorage(true)
 
-    print("scanFarm")
-    sys.scanFarm()
+    sys.printCenteredText("scanFarm")
+    sys.scanFarm(true)
 
-    run(true)
-end
-local function main()
-    gpu.setResolution(50, 16)
-    term.clear()
-    drawButton(1, "autoStat")
-    drawButton(5, "autoTier WIP")
-    drawButton(10, "autoSpread")
-    while true do
-        local _, _, x, y = event.pull("touch")
-        if x >= 20 and x <= 40 and y == 1 then
-            exec = require("autoStat")
-            currentMode = 'autoStat'
-            break
-        elseif x >= 20 and x <= 40 and y == 5 then
-            exec = require("autoTier")
-            currentMode = 'autoTier'
-            break
-        elseif x >= 20 and x <= 40 and y == 10 then
-            exec = require("autoSpread")
-            currentMode = 'autoSpread'
-            break
+    uiThread = thread.create(function() ui.initUI() end)
+    local runThread = thread.create(function()
+        while not ui.getStartSystem() do
+            os.sleep(1)
         end
-    end
-    term.clear()
-    initServer()
+        run(true)
+    end)
 end
 
-main()
+initServer()

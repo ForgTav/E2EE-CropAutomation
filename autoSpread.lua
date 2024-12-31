@@ -5,6 +5,7 @@ local os = require('os')
 local sys = require('sysFunction')
 local sensor = component.sensor
 local targetCrop
+local ui = require("sysUI")
 
 local function handleChild(slot, crop)
   local order = {}
@@ -101,17 +102,17 @@ local function handleParent(slot, crop)
   if crop.name == 'air' or (crop.isCrop and crop.name == "emptyCrop") then
     return order
   elseif sys.isWeed(crop) then
-    order[#order + 1] = {
+    table.insert(order, {
       action = 'deweed',
       slot = slot,
       priority = config.priorities['deweed']
-    }
+    })
   elseif sys.isComMax(crop, 'working') then
-    order[#order + 1] = {
+    table.insert(order, {
       action = 'removePlant',
       slot = slot,
       priority = config.priorities['removePlant']
-    }
+    })
   elseif not crop.isCrop then
     database.deleteParentSlots(slot)
   end
@@ -122,11 +123,11 @@ local function init()
   local cord = sys.cordtoScan(0, 1)
   local scan = sys.fetchScan(sensor.scan(cord[1], 0, cord[2]))
   if not scan.isCrop or (scan.name == 'air' or scan.name == 'emptyCrop') then
-    print('Not found targetCrop')
+    sys.printCenteredText('Not found targetCrop')
     os.exit()
   end
-  print("targetCrop:" .. scan.name)
-  print("autoSpread inited")
+  --print("targetCrop:" .. scan.name)
+  --ui.printCenteredText("autoSpread inited")
   targetCrop = scan.name
 end
 
@@ -137,7 +138,8 @@ local function checkCondition()
   end
 
   if storageSlot.isCrop and storageSlot.name ~= 'air' and storageSlot.name ~= 'emptyCrop' and not sys.isWeed(storageSlot) then
-    print('Missing slots in storage')
+    --TODO THROW ERROR
+    --print('Missing slots in storage')
     return true
   end
 
