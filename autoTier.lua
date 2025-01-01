@@ -1,8 +1,16 @@
+local component = require('component')
 local config = require('sysConfig')
 local database = require('sysDB')
 local sys = require('sysFunction')
 local breadingRound = 0;
-local ui = require("sysUI")
+local sensor = component.sensor
+
+local modeConfig = {
+    statWhileTier = false,
+    -- 1 = schema, 2 = targetCrop
+    tierMode = 1,
+    targetCrop = ''
+}
 
 local function handleChild(slot, crop)
     local order = {}
@@ -19,8 +27,8 @@ local function handleChild(slot, crop)
     end
 
     if crop.isCrop and crop.name ~= 'emptyCrop' then
-        local foundedSchemaSlot = false;
-        if not sys.isWeed(crop) and config.tierSchema[crop.name] then
+        if modeConfig.tierMode == 1 and not sys.isWeed(crop) and config.tierSchema[crop.name] then
+            local foundedSchemaSlot = false;
             for _, schemaSlot in pairs(config.tierSchema[crop.name]) do
                 local schemaCrop = database.getFarmSlot(schemaSlot)
                 if schemaCrop.name ~= crop.name then
@@ -30,7 +38,9 @@ local function handleChild(slot, crop)
                         farm = 'working',
                         to = schemaSlot,
                         priority = config.priorities['transplantParent'],
-                        slotName = schemaCrop.name
+                        slotName = schemaCrop.name,
+                        isSchema = true,
+                        targetCrop = false,
                     })
                     database.updateFarm(slot, { isCrop = true, name = 'air', fromScan = false })
                     database.updateFarm(schemaSlot, crop)
@@ -38,11 +48,36 @@ local function handleChild(slot, crop)
                     break
                 end
             end
+            if foundedSchemaSlot then
+                return order;
+            end
+        elseif modeConfig.tierMode == 2 and crop.name == modeConfig.targetCrop then
+            local foundedTargetSlot = false
+            for _, parentSlot in pairs(parentSlots) do
+                local parentCrop = database.getFarm()[parentSlot]
+                if parentCrop and parentCrop.isCrop and parentCrop.name ~= crop.name then
+                    table.insert(order, {
+                        action = 'transplantParent',
+                        slot = slot,
+                        farm = 'working',
+                        to = parentSlot,
+                        priority = config.priorities['transplantParent'],
+                        slotName = parentCrop.name,
+                        targetCrop = true,
+                        isSchema = false,
+                    })
+                    database.updateFarm(slot, { isCrop = true, name = 'air', fromScan = false })
+                    database.updateFarm(parentSlot, crop)
+                    foundedTargetSlot = true
+                    break
+                end
+            end
+            if foundedTargetSlot then
+                return order;
+            end
         end
 
-        if foundedSchemaSlot then
-            return order;
-        end
+
 
         if crop.name == 'air' then
             table.insert(order, {
@@ -92,11 +127,13 @@ local function handleChild(slot, crop)
                 farm = 'working',
                 to = availableParentSlot,
                 priority = config.priorities['transplantParent'],
-                slotName = availableParent.name
+                slotName = availableParent.name,
+                isSchema = false,
+                targetCrop = false,
             })
             database.updateFarm(slot, { isCrop = true, name = 'air', fromScan = false })
             database.updateFarm(availableParentSlot, crop)
-        elseif config.statWhileTier then
+        elseif modeConfig.statWhileTier then
             local stat = crop.gr + crop.ga - crop.re
             local foundedSlot = false
             for _, parentSlot in pairs(parentSlots) do
@@ -112,7 +149,9 @@ local function handleChild(slot, crop)
                             toStat = parentStat,
                             farm = 'working',
                             slotName = parentCrop.name,
-                            priority = config.priorities['transplantParent']
+                            priority = config.priorities['transplantParent'],
+                            isSchema = false,
+                            targetCrop = false,
                         })
                         database.updateFarm(slot, { isCrop = true, name = 'air', fromScan = false })
                         database.updateFarm(parentSlot, crop)
@@ -168,12 +207,19 @@ local function handleParent(slot, crop)
             slot = slot,
             priority = config.priorities['removePlant']
         })
+    elseif not crop.isCrop then
+        database.deleteParentSlots(slot)
     end
     return order
 end
 
 local function init()
-    --print("autoTier inited")
+    modeConfig.statWhileTier = false
+    modeConfig.tierMode = 2
+
+    local cord = sys.cordtoScan(0, 1)
+    local scan = sys.fetchScan(sensor.scan(cord[1], 0, cord[2]))
+    modeConfig.targetCrop = scan.name
 end
 
 local function checkCondition()
@@ -196,9 +242,19 @@ local function checkCondition()
     return false
 end
 
+local function setConfig(key, value)
+    modeConfig[key] = value
+end
+
+local function getConfig(key)
+    return modeConfig[key]
+end
+
 return {
     handleParent = handleParent,
     handleChild = handleChild,
     checkCondition = checkCondition,
-    init = init
+    init = init,
+    setConfig = setConfig,
+    getConfig = getConfig
 }

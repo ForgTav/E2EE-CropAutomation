@@ -5,6 +5,7 @@ local event = require("event")
 local config = require('sysConfig')
 local db = require('sysDB')
 local sys = require('sysFunction')
+
 local gpu = component.gpu
 local screenWidth, screenHeight = gpu.getResolution()
 local menuStartX = math.floor(screenWidth * 0.3)
@@ -16,28 +17,14 @@ local startSystem
 local needExitFlag
 local needCleanupFlag
 local selectedMenuItem
-
+local currentMode
+local modeExec
 
 local farmCords = {}
 local btnExitTable = {
   { text = "[ CleanUp and exit ]", y = 5,  startX = 0 },
   { text = "[ Force exit ]",       y = 10, startX = 0 },
 }
-
-local function tprint(tbl, indent)
-  indent = indent or 0
-  for k, v in pairs(tbl) do
-    local formatting = string.rep("  ", indent) .. k .. ": "
-    if type(v) == "table" then
-      print(formatting)
-      tprint(v, indent + 1)
-    elseif type(v) == 'boolean' then
-      print(formatting .. tostring(v))
-    else
-      print(formatting .. v)
-    end
-  end
-end
 
 local function clearRightSide()
   for y = 1, screenHeight do
@@ -85,8 +72,8 @@ local function drawSysInfo()
   end
 end
 
-local lastScrollPoss = 1
-local scrollPos = 1
+--local lastScrollPoss = 1
+--local scrollPos = 1
 local visibleLines = screenHeight
 
 local function logs2Text()
@@ -95,7 +82,15 @@ local function logs2Text()
 
   for _, log in ipairs(logs) do
     if log.action == "transplantParent" then
-      if log.slotName == 'air' or log.slotName == 'emptyCrop' then
+      if log.isSchema ~= nil and log.isSchema then
+        table.insert(readyLogs, string.format("%s: schema", log.action))
+        table.insert(readyLogs, string.format("from: slot %02d", log.slot))
+        table.insert(readyLogs, string.format("to: slot %02d", log.slot))
+      elseif log.targetCrop ~= nil and log.targetCrop then
+        table.insert(readyLogs, string.format("%s: targetCrop", log.action))
+        table.insert(readyLogs, string.format("from: slot %02d", log.slot))
+        table.insert(readyLogs, string.format("to: slot %02d", log.slot))
+      elseif log.slotName == 'air' or log.slotName == 'emptyCrop' then
         table.insert(readyLogs, string.format("%s: empty slot", log.action))
         table.insert(readyLogs, string.format("from: slot %02d", log.slot))
         table.insert(readyLogs, string.format("to: slot %02d", log.slot))
@@ -125,21 +120,22 @@ local function drawLogsText()
 
   local logs = logs2Text()
   local maxScrollPos = #logs - visibleLines + 1
-  if #logs <= visibleLines then
-    scrollPos = 1
-  else
-    scrollPos = maxScrollPos
-  end
+  --if #logs <= visibleLines then
+  --  scrollPos = 1
+  --else
+  --  scrollPos = maxScrollPos
+  --end
 
   clearRightSide()
   for i = 0, visibleLines - 1 do
-    local lineIndex = scrollPos + i
+    local lineIndex = maxScrollPos + i
     if lineIndex <= #logs then
       gpu.set(InfoStartX, 0 + i + 1, logs[lineIndex])
     end
   end
 end
 
+--[[
 local function initScroll(_, _, _, code)
   local delta = 0
   if code == 200 then
@@ -162,12 +158,69 @@ local function drawLogs()
   if selectedMenuItem ~= 5 then
     return
   end
-  event.listen("key_down", initScroll)
+  --event.listen("key_down", initScroll)
   drawLogsText()
 end
+]] --
 
 
+local function drawAutoTierSettings()
+  clearRightSide()
+  local tiermode = modeExec.getConfig('tierMode')
+  if tiermode == 1 then
+    gpu.set(InfoStartX, startY, string.format("[ Mode: %s ]", 'schema {BETA}'))
+  elseif tiermode == 2 then
+    gpu.set(InfoStartX, startY, string.format("[ Mode: %s ]", modeExec.getConfig('targetCrop')))
+  end
 
+  gpu.set(InfoStartX, startY + 2, string.format("[ AutoStat while tiering: %s ]", modeExec.getConfig('statWhileTier')))
+end
+
+local function setAutoTierSettings(clickX, clickY)
+  local targetKey
+  if clickY == startY then
+    targetKey = 'tierMode'
+  elseif clickY == startY + 2 then
+    targetKey = 'statWhileTier'
+  end
+
+  if not targetKey then
+    return
+  end
+
+  local targetValue
+  local targetText
+  if targetKey == 'tierMode' then
+    targetValue = modeExec.getConfig('tierMode')
+    if targetValue == 1 then
+      targetText = string.format("[ Mode: %s ]", 'schema {BETA}')
+    elseif targetValue == 2 then
+      targetText = string.format("[ Mode: %s ]", modeExec.getConfig('targetCrop'))
+    end
+  elseif targetKey == 'statWhileTier' then
+    targetValue = modeExec.getConfig('statWhileTier')
+    targetText = string.format("[ AutoStat while tiering: %s ]", modeExec.getConfig('statWhileTier'))
+  end
+
+  if (clickX >= InfoStartX and clickX <= InfoStartX + #targetText) then
+    local newValue
+    if targetKey == 'tierMode' then
+      if targetValue == 1 then
+        newValue = 2
+      elseif targetValue == 2 then
+        newValue = 1
+      end
+    elseif targetKey == 'statWhileTier' then
+      if targetValue then
+        newValue = false
+      else
+        newValue = true
+      end
+    end
+    modeExec.setConfig(targetKey, newValue)
+  end
+  drawAutoTierSettings()
+end
 
 local function drawSlotInfo(clickX, clickY)
   clearRightExtraSide()
@@ -261,6 +314,7 @@ local function btnExit()
     gpu.set(startX, math.floor(screenHeight / 2), "System not running")
     return
   end
+
   local blockWidth = screenWidth - menuStartX
   gpu.set(menuStartX + math.floor((blockWidth - #"Exit:") / 2), 2, "Exit:")
   for i, btn in ipairs(btnExitTable) do
@@ -278,16 +332,22 @@ local function btnStart()
 end
 
 local menuButtons = {
-  { text = "Farm",   y = 2,                menuBtn = drawFarmGrid, actionBtns = drawSlotInfo },
-  { text = "System", y = 4,                menuBtn = drawSysInfo },
-  { text = "Start",  y = screenHeight - 4, menuBtn = btnStart },
-  { text = "Exit",   y = screenHeight - 2, menuBtn = btnExit,      actionBtns = exitBtnAction },
-  { text = "Logs",   y = 6,                menuBtn = drawLogs }
+  { text = "Farm",     y = 2,                menuBtn = drawFarmGrid,         actionBtns = drawSlotInfo },
+  { text = "System",   y = 4,                menuBtn = drawSysInfo },
+  { text = "Start",    y = screenHeight - 4, menuBtn = btnStart },
+  { text = "Exit",     y = screenHeight - 2, menuBtn = btnExit,              actionBtns = exitBtnAction },
+  { text = "Logs",     y = 6,                menuBtn = drawLogsText },
+  { text = "AutoTier", y = 8,                menuBtn = drawAutoTierSettings, actionBtns = setAutoTierSettings }
 }
 
 
 
 local function drawMenu()
+  if currentMode ~= 2 then
+    table.remove(menuButtons, 6)
+  end
+
+
   for i = 1, #menuButtons do
     local btn = menuButtons[i]
     term.setCursor(1, btn.y)
@@ -343,9 +403,9 @@ local function drawMainMenu()
   term.write('Please select an operation mode:')
 
   local modeButtons = {
-    { text = "autoStat",   startX = 0, startY = 0 },
-    { text = "autoTier",   startX = 0, startY = 0 },
-    { text = "autoSpread", startX = 0, startY = 0 }
+    { text = "autoStat",   startX = 0, startY = 0, needExec = false },
+    { text = "autoTier",   startX = 0, startY = 0, needExec = true },
+    { text = "autoSpread", startX = 0, startY = 0, needExec = false }
   }
 
   for i, mode in ipairs(modeButtons) do
@@ -361,6 +421,10 @@ local function drawMainMenu()
     for i, btn in ipairs(modeButtons) do
       if (clickX >= btn.startX and clickX <= btn.startX + #btn.text) and btn.startY == clickY then
         term.clear()
+        currentMode = i
+        if btn.needExec then
+          modeExec = require(btn.text)
+        end
         return btn.text
       end
     end

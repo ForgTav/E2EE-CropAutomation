@@ -61,7 +61,9 @@ local function handleChild(slot, crop)
         to = availableParentSlot,
         farm = 'working',
         priority = priorities['transplantParent'],
-        slotName = availableParent.name
+        slotName = availableParent.name,
+        isSchema = false,
+        targetCrop = false,
       })
       database.updateFarm(slot, { isCrop = true, name = 'air', fromScan = false })
       database.updateFarm(availableParentSlot, crop)

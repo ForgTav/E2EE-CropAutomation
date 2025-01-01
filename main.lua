@@ -6,7 +6,6 @@ local sys = require('sysFunction')
 local term = require("term")
 local thread = require("thread")
 local ui = require("sysUI")
-local gpu = component.gpu
 local currentMode
 
 local robotSide
@@ -95,7 +94,6 @@ local function run(firstRun)
             break
         end
 
-        --sys.setLastComputerStatus('Scans the farm')
         if not firstRun then
             ui.UIloading(true)
             sys.scanFarm()
@@ -107,10 +105,8 @@ local function run(firstRun)
             break
         end
 
-        --sys.setLastComputerStatus('Create order list')
         local order = sys.createOrderList(exec.handleChild, exec.handleParent)
         if next(order) ~= nil then
-            --sys.setLastComputerStatus('Send order list')
             sys.SendToLinkedCards({ type = 'order', data = order })
         end
 
@@ -132,8 +128,6 @@ local function initServer()
         os.exit()
     end
 
-    exec = require(currentMode)
-
     sys.printCenteredText("getChargerSide")
     robotSide = sys.getChargerSide()
 
@@ -143,8 +137,8 @@ local function initServer()
     end
     sys.setRobotSide(robotSide)
 
-    --ev.initEvents()
-    --ev.hookEvents()
+    exec = require(currentMode)
+
     exec.init()
 
     sys.printCenteredText("Awaiting robot")
@@ -164,10 +158,16 @@ local function initServer()
 
     uiThread = thread.create(function() ui.initUI() end)
     local runThread = thread.create(function()
-        while not ui.getStartSystem() do
-            os.sleep(1)
+        local success, error = pcall(function()
+            while not ui.getStartSystem() do
+                os.sleep(1)
+            end
+            run(true)
+        end)
+        if not success then
+            term.clear()
+            print("RunThread error: " .. tostring(error))
         end
-        run(true)
     end)
 end
 
