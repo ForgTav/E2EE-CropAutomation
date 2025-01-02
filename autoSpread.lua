@@ -128,8 +128,6 @@ local function init()
     sys.printCenteredText('Not found targetCrop')
     os.exit()
   end
-  --print("targetCrop:" .. scan.name)
-  --ui.printCenteredText("autoSpread inited")
   targetCrop = scan.name
 end
 
@@ -140,8 +138,6 @@ local function checkCondition()
   end
 
   if storageSlot.isCrop and storageSlot.name ~= 'air' and storageSlot.name ~= 'emptyCrop' and not sys.isWeed(storageSlot) then
-    --TODO THROW ERROR
-    --print('Missing slots in storage')
     return true
   end
 

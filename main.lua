@@ -85,7 +85,8 @@ local function run(firstRun)
     while true do
         sys.setLastComputerStatus('Awaiting')
         while not sys.getRobotStatus(3) do
-            os.sleep(0.1)
+            sys.setLastComputerStatus('Sleep 3 seconds..')
+            os.sleep(3)
         end
         os.sleep(0.1)
 

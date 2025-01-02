@@ -21,6 +21,7 @@ local currentMode
 local modeExec
 
 local farmCords = {}
+local storageCords = {}
 local btnExitTable = {
   { text = "[ CleanUp and exit ]", y = 5,  startX = 0 },
   { text = "[ Force exit ]",       y = 10, startX = 0 },
@@ -209,7 +210,7 @@ local function setAutoTierSettings(clickX, clickY)
   drawAutoTierSettings()
 end
 
-local function drawSlotInfo(clickX, clickY)
+local function drawFarmSlotInfo(clickX, clickY)
   clearRightExtraSide()
   local foundedSlot
   for i = 1, #farmCords, 1 do
@@ -253,8 +254,8 @@ end
 local function drawFarmGrid()
   local gridSize = config.workingFarmSize
 
-  gpu.set(InfoStartX, startY, "WORKING FARM")
-  gpu.set(InfoStartX, startY + 1, string.rep("-", (gridSize * 3) - 1))
+  gpu.set(InfoStartX, 1, "WORKING FARM")
+  gpu.set(menuStartX + 1, 2, string.rep("═", screenWidth - menuStartX))
 
   for slot = 1, config.workingFarmArea do
     local x = (slot - 1) // gridSize
@@ -267,17 +268,86 @@ local function drawFarmGrid()
     end
 
     local posX = (InfoStartX + (gridSize - x) * 3) - 3
-    local posY = startY + 2 + (gridSize - y)
+    local posY = startY + 1 + (gridSize - y)
 
     gpu.set(posX, posY, string.format("%02d", slot))
     farmCords[slot] = { x = posX, y = posY }
   end
 
-  gpu.set(InfoStartX, startY + gridSize + 2, string.rep("-", (gridSize * 3) - 1))
+  gpu.set(menuStartX + 1, endY, string.rep("═", screenWidth - menuStartX))
+  gpu.set(menuStartX + 1, endY + 1, 'Click on slot to get info')
+end
+
+local function drawStorageSlotInfo(clickX, clickY)
+  clearRightExtraSide()
+  local foundedSlot
+  for i = 1, #storageCords, 1 do
+    if (clickX >= storageCords[i].x and clickX <= storageCords[i].x + 1) and storageCords[i].y == clickY then
+      foundedSlot = i
+      break
+    end
+  end
+
+  if not foundedSlot then
+    return
+  end
+
+  local crop = db.getStorageSlot(foundedSlot)
+  if crop.isCrop then
+    if crop.name == 'emptyCrop' then
+      gpu.set(menuStartX + 1, endY + 1, crop.name)
+      if crop.crossingbase == 1 then
+        gpu.set(menuStartX + 1, endY + 2, 'Crossing base: true')
+      else
+        gpu.set(menuStartX + 1, endY + 2, 'Crossing base: false')
+      end
+    elseif crop.name == 'air' then
+      gpu.set(menuStartX + 1, endY + 1, crop.name)
+    elseif crop.name ~= 'weed' or crop.name ~= 'Grass' then
+      gpu.set(menuStartX + 1, endY + 1, string.format("%s Tier: %s", crop.name, crop.tier))
+
+      gpu.set(menuStartX + 1, endY + 2, string.format("Growth: %d", crop.gr))
+      gpu.set(menuStartX + 1, endY + 3, string.format("Gain: %d", crop.ga))
+      gpu.set(menuStartX + 1, endY + 4, string.format("Resistance: %d", crop.re))
+
+      gpu.set(menuStartX + 20, endY + 2, string.format("Nutrients: %d", crop.nutrients))
+      gpu.set(menuStartX + 20, endY + 3, string.format("Water: %d", crop.water))
+      gpu.set(menuStartX + 20, endY + 4, string.format("WeedEx: %d", crop.weedex))
+    end
+  else
+    gpu.set(menuStartX + 1, endY + 1, crop.name)
+  end
+end
+
+local function drawStorageGrid()
+  local gridSize = config.storageFarmSize
+
+
+  gpu.set(InfoStartX, 1, "STORAGE FARM")
+  gpu.set(menuStartX + 1, 2, string.rep("═", screenWidth - menuStartX))
+
+  for slot = 1, config.storageFarmArea do
+    local x = (slot - 1) // gridSize
+    local row = (slot - 1) % gridSize
+    local y
+    if x % 2 == 0 then
+      y = row + 1
+    else
+      y = -row + gridSize
+    end
+
+    local posX = InfoStartX + x * 3
+    local posY = startY + 1 + (gridSize - y)
+
+    gpu.set(posX, posY, string.format("%02d", slot))
+    storageCords[slot] = { x = posX, y = posY }
+  end
 
   gpu.set(menuStartX + 1, endY, string.rep("═", screenWidth - menuStartX))
   gpu.set(menuStartX + 1, endY + 1, 'Click on slot to get info')
 end
+
+
 
 local function exitBtnAction(clickX, clickY)
   if not startSystem then
@@ -314,17 +384,18 @@ end
 local function btnStart()
   if not startSystem then
     startSystem = true
-    gpu.set(2, screenHeight - 4, "[ Active ]")
+    gpu.set(2, screenHeight - 2, "[ Active ]")
   end
 end
 
 local menuButtons = {
-  { text = "Farm",     y = 2,                menuBtn = drawFarmGrid,         actionBtns = drawSlotInfo },
-  { text = "System",   y = 4,                menuBtn = drawSysInfo },
-  { text = "Start",    y = screenHeight - 4, menuBtn = btnStart },
-  { text = "Exit",     y = screenHeight - 2, menuBtn = btnExit,              actionBtns = exitBtnAction },
-  { text = "Logs",     y = 6,                menuBtn = drawLogsText },
-  { text = "AutoTier", y = 8,                menuBtn = drawAutoTierSettings, actionBtns = setAutoTierSettings }
+  { text = "Farm",     y = 2,                menuBtn = drawFarmGrid,         actionBtns = drawFarmSlotInfo },
+  { text = "System",   y = 6,                menuBtn = drawSysInfo },
+  { text = "Start",    y = screenHeight - 2, menuBtn = btnStart },
+  { text = "Exit",     y = screenHeight,     menuBtn = btnExit,              actionBtns = exitBtnAction },
+  { text = "Logs",     y = 8,                menuBtn = drawLogsText },
+  { text = "AutoTier", y = 10,               menuBtn = drawAutoTierSettings, actionBtns = setAutoTierSettings },
+  { text = "Storage",  y = 4,                menuBtn = drawStorageGrid,      actionBtns = drawStorageSlotInfo },
 }
 
 

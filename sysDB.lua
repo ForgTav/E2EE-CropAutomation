@@ -111,6 +111,9 @@ local function existInStorage(crop)
   end
 end
 
+local function getSlotInReverse(crop)
+  return reverseStorage[crop.name]
+end
 
 --local function nextStorageSlot()
 --  return #storage + 1
