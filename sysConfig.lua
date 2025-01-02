@@ -8,10 +8,6 @@ local config = {
 
     -- Maximum length of orderList
     maxOrderList = 5,
-    -- Once complete, remove all extra crop sticks to prevent the working farm from weeding
-    cleanUp = true,
-    -- Pickup any and all drops (don't change)
-    keepDrops = true,
 
     -- Minimum tier for the working farm during autoTier
     autoTierThreshold = 13,
