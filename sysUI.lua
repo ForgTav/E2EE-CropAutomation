@@ -172,16 +172,12 @@ local function drawAutoTierSettings()
   elseif tiermode == 2 then
     gpu.set(InfoStartX, startY, string.format("[ Mode: %s ]", modeExec.getConfig('targetCrop')))
   end
-
-  gpu.set(InfoStartX, startY + 2, string.format("[ AutoStat while tiering: %s ]", modeExec.getConfig('statWhileTier')))
 end
 
 local function setAutoTierSettings(clickX, clickY)
   local targetKey
   if clickY == startY then
     targetKey = 'tierMode'
-  elseif clickY == startY + 2 then
-    targetKey = 'statWhileTier'
   end
 
   if not targetKey then
@@ -197,9 +193,6 @@ local function setAutoTierSettings(clickX, clickY)
     elseif targetValue == 2 then
       targetText = string.format("[ Mode: %s ]", modeExec.getConfig('targetCrop'))
     end
-  elseif targetKey == 'statWhileTier' then
-    targetValue = modeExec.getConfig('statWhileTier')
-    targetText = string.format("[ AutoStat while tiering: %s ]", modeExec.getConfig('statWhileTier'))
   end
 
   if (clickX >= InfoStartX and clickX <= InfoStartX + #targetText) then
@@ -209,12 +202,6 @@ local function setAutoTierSettings(clickX, clickY)
         newValue = 2
       elseif targetValue == 2 then
         newValue = 1
-      end
-    elseif targetKey == 'statWhileTier' then
-      if targetValue then
-        newValue = false
-      else
-        newValue = true
       end
     end
     modeExec.setConfig(targetKey, newValue)

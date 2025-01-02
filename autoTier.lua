@@ -6,7 +6,6 @@ local breadingRound = 0;
 local sensor = component.sensor
 
 local modeConfig = {
-    statWhileTier = false,
     -- 1 = schema, 2 = targetCrop
     tierMode = 1,
     targetCrop = ''
@@ -133,46 +132,6 @@ local function handleChild(slot, crop)
             })
             database.updateFarm(slot, { isCrop = true, name = 'air', fromScan = false })
             database.updateFarm(availableParentSlot, crop)
-        elseif modeConfig.statWhileTier then
-            local stat = crop.gr + crop.ga - crop.re
-            local foundedSlot = false
-            for _, parentSlot in pairs(parentSlots) do
-                local parentCrop = database.getFarm()[parentSlot]
-                if parentCrop and parentCrop.isCrop and crop.name == parentCrop.name then
-                    local parentStat = parentCrop.gr + parentCrop.ga - parentCrop.re
-                    if stat > parentStat then
-                        table.insert(order, {
-                            action = 'transplantParent',
-                            slot = slot,
-                            slotStat = stat,
-                            to = parentSlot,
-                            toStat = parentStat,
-                            farm = 'working',
-                            slotName = parentCrop.name,
-                            priority = config.priorities['transplantParent'],
-                            isSchema = false,
-                            targetCrop = false,
-                        })
-                        database.updateFarm(slot, { isCrop = true, name = 'air', fromScan = false })
-                        database.updateFarm(parentSlot, crop)
-                        table.insert(order, {
-                            action = 'placeCropStick',
-                            slot = slot,
-                            priority = config.priorities['placeCropStick'],
-                            count = 2
-                        })
-                        foundedSlot = true
-                        break
-                    end
-                end
-            end
-            if not foundedSlot then
-                table.insert(order, {
-                    action = 'removePlant',
-                    slot = slot,
-                    priority = config.priorities['removePlant']
-                })
-            end
         else
             table.insert(order, {
                 action = 'removePlant',
@@ -214,7 +173,6 @@ local function handleParent(slot, crop)
 end
 
 local function init()
-    modeConfig.statWhileTier = false
     modeConfig.tierMode = 2
 
     local cord = sys.cordtoScan(0, 1)
