@@ -302,34 +302,7 @@ local function drawFarmGrid()
   gpu.set(menuStartX + 1, endY, string.rep("═", screenWidth - menuStartX))
   gpu.set(menuStartX + 1, endY + 1, 'Click on slot to get info')
 end
---[[
-local function drawFarmGrid()
-  local gridSize = config.workingFarmSize
 
-  gpu.set(InfoStartX, 1, "WORKING FARM")
-  gpu.set(menuStartX + 1, 2, string.rep("═", screenWidth - menuStartX))
-
-  for slot = 1, config.workingFarmArea do
-    local x = (slot - 1) // gridSize
-    local row = (slot - 1) % gridSize
-    local y
-    if x % 2 == 0 then
-      y = row + 1
-    else
-      y = -row + gridSize
-    end
-
-    local posX = (InfoStartX + (gridSize - x) * 3) - 3
-    local posY = startY + 1 + (gridSize - y)
-
-    gpu.set(posX, posY, string.format("%02d", slot))
-    farmCords[slot] = { x = posX, y = posY }
-  end
-
-  gpu.set(menuStartX + 1, endY, string.rep("═", screenWidth - menuStartX))
-  gpu.set(menuStartX + 1, endY + 1, 'Click on slot to get info')
-end
-]] --
 local function drawStorageSlotInfo(clickX, clickY)
   clearRightExtraSide()
   local foundedSlot
@@ -411,7 +384,6 @@ local function exitBtnAction(clickX, clickY)
       if i == 1 then
         needCleanupFlag = true
       end
-      --printCenteredText('Awaiting robot operation..')
       break
     end
   end
@@ -441,35 +413,39 @@ local function btnStart()
 end
 
 local menuButtons = {
-  { text = "Farm",     y = 2,                menuBtn = drawFarmGrid,         actionBtns = drawFarmSlotInfo },
-  { text = "System",   y = 6,                menuBtn = drawSysInfo },
-  { text = "Start",    y = screenHeight - 2, menuBtn = btnStart },
-  { text = "Exit",     y = screenHeight,     menuBtn = btnExit,              actionBtns = exitBtnAction },
-  { text = "Logs",     y = 8,                menuBtn = drawLogsText },
-  { text = "AutoTier", y = 10,               menuBtn = drawAutoTierSettings, actionBtns = setAutoTierSettings },
-  { text = "Storage",  y = 4,                menuBtn = drawStorageGrid,      actionBtns = drawStorageSlotInfo },
+  { text = "Farm",     y = 2,                menuBtn = drawFarmGrid,         actionBtns = drawFarmSlotInfo,    diasbled = false },
+  { text = "System",   y = 6,                menuBtn = drawSysInfo,          diasbled = false },
+  { text = "Start",    y = screenHeight - 2, menuBtn = btnStart,             diasbled = false },
+  { text = "Exit",     y = screenHeight,     menuBtn = btnExit,              actionBtns = exitBtnAction,       diasbled = false },
+  { text = "Logs",     y = 8,                menuBtn = drawLogsText,         diasbled = false },
+  { text = "AutoTier", y = 10,               menuBtn = drawAutoTierSettings, actionBtns = setAutoTierSettings, diasbled = false },
+  { text = "Storage",  y = 4,                menuBtn = drawStorageGrid,      actionBtns = drawStorageSlotInfo, diasbled = false },
 }
 
 
 
 local function drawMenu()
-  if currentMode ~= 2 and menuButtons[6].text == 'AutoTier' then
-    table.remove(menuButtons, 6)
+  if currentMode ~= 2 then
+    menuButtons[6].diasbled = true
+  else
+    menuButtons[6].diasbled = false
   end
 
   for i = 1, #menuButtons do
     local btn = menuButtons[i]
-    term.setCursor(1, btn.y)
-    gpu.fill(1, btn.y, menuStartX - 1, 1, " ")
-    if i == selectedMenuItem then
-      gpu.set(2, btn.y, "[ " .. btn.text .. " ]")
-    else
-      if i == 3 and startSystem then
-        gpu.set(2, btn.y, "[ Active ]")
-        gpu.set(menuStartX, btn.y, "║")
+    if not btn.diasbled then
+      term.setCursor(1, btn.y)
+      gpu.fill(1, btn.y, menuStartX - 1, 1, " ")
+      if i == selectedMenuItem then
+        gpu.set(2, btn.y, "[ " .. btn.text .. " ]")
       else
-        gpu.set(2, btn.y, "  " .. btn.text .. "  ")
-        gpu.set(menuStartX, btn.y, "║")
+        if i == 3 and startSystem then
+          gpu.set(2, btn.y, "[ Active ]")
+          gpu.set(menuStartX, btn.y, "║")
+        else
+          gpu.set(2, btn.y, "  " .. btn.text .. "  ")
+          gpu.set(menuStartX, btn.y, "║")
+        end
       end
     end
   end
@@ -479,9 +455,14 @@ local function handleMouseClick(_, _, x, y, button)
   if x <= menuStartX then
     for i, btn in pairs(menuButtons) do
       if y == btn.y then
+        if btn.diasbled then
+          break
+        end
+
         if i == selectedMenuItem then
           break
         end
+
         if i ~= 3 then
           selectedMenuItem = i
           clearRightSide()
