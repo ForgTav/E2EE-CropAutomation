@@ -1,21 +1,24 @@
 local shell = require('shell')
 local scripts = {
-    'setup.lua',
-    'serverApi.lua',
-    'action.lua',
-    'database.lua',
-    'events.lua',
-    'gps.lua',
-    'scanner.lua',
-    'config.lua',
     'autoStat.lua',
     'autoTier.lua',
     'autoSpread.lua',
+    'robotActions.lua',
+    'robotConfig.lua',
+    'robotGPS.lua',
+    'robotSetup.lua',
+    'start.lua',
+    'sysConfig.lua',
+    'sysDB.lua',
+    'sysGPS.lua',
+    'sysSetup.lua',
+    'main.lua',
+    'sysFunction.lua',
+    'sysUI.lua',
     'uninstall.lua'
 }
 
--- UNINSTALL
-for i=1, #scripts do
+for i = 1, #scripts do
     shell.execute(string.format('rm %s', scripts[i]))
     print(string.format('Uninstalled %s', scripts[i]))
 end

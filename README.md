@@ -3,19 +3,17 @@
 These Open Computers (OC) scripts will automatically tier-up, stat-up, and spread (duplicate) IC2 crops for you. OC is a very powerful yet complicated mod using custom scripts, but fear not. I have made everything here as straightforward as possible to help you get your crop bot running in no time without any prior knowledge of OC.
 
 # Bare Minimum Components
-
-Obtaining these components will require access to EV circuits and epoxid (mid-late HV). It is possible to save some resources by not including the internet card, but that will require manually copying and pasting the code from GitHub which is NOT recommended for multiple reasons. Both inventory upgrades are necessary.
-
 - OC Electronics Assembler
 - OC Charger
 - OC Sensor
 - Tier 3 Computer Case x2
 - Linked card x2
-- Tier 2 Memory x2
+- Tier 2 Memory x3
 - Tier 2 Accelerated Processing Unit x2
 - Tier 1 Redstone Card
 - Tier 1 Hard Disk Drive x2
-- Tier 1 Screen x2
+- Tier 1 Screen
+- Tier 2 Screen
 - Keyboard x2
 - Disk Drive (Block) 
 - Internet Card x2
@@ -30,15 +28,13 @@ Obtaining these components will require access to EV circuits and epoxid (mid-la
 
 Find a location with good environmental stats. It is recommended to set everything up in a Jungle or Swamp biome at Y=130 as that will give you the highest humidity and air quality stats. If not, crops run the risk of randomly dying and leaving the farms susceptible to weeds. Do not place any solid blocks above the farm as that will reduce the air quality. The whole farm can easily fit into a single chunk for easy chunk loading.
 
-![Farm Top](media/farm_first_step.png?)
+![Farm Top](media/prepare_farm.png?)
 
-![Farm Side](media/farm_first_step_side.png?)
+First note the orientation of the robot sitting atop the OC charger. It must face towards the right-most column of the working farm. Adjacent to the OC charger is the crop stick chest which can be a few things: any sort of large chest, a storage drawer (orientation does not matter). If the crop stick chest is ever empty, bad things will happen. Next to that is a trash can for any random drops that the robot picks up such as weeds, seed bags, and crop sticks but this can be swapped with another chest to recycle some of the materials. The transvector dislocator sits facing the top of the blank farmland (where a crop would go). The blank farmland itself acts as a buffer between the working and storage farms. There is no need to use a crop-matron, as it hydrates or fertilizes only half of the working farm. If you want to install a crop matron, the main thing is that its height should not be above ground level.
 
-First note the orientation of the robot sitting atop the OC charger. It must face towards the right-most column of the working farm. Adjacent to the OC charger is the crop stick chest which can be a few things: any sort of large chest, a JABBA barrel, or storage drawer (orientation does not matter). If the crop stick chest is ever empty, bad things will happen. Next to that is a trash can for any random drops that the robot picks up such as weeds, seed bags, and crop sticks but this can be swapped with another chest to recycle some of the materials. The transvector dislocator sits facing the top of the blank farmland (where a crop would go). The blank farmland itself acts as a buffer between the working and storage farms. Lastly, a crop-matron sits one y-level lower than the OC charger and hydrates most of the crops which boosts their stats and helps them grow faster.
+The location of the water is completely flexible: they do not have to be in the same locations as in the photo (underneath all five grates) and you can have as many as you would like on both the working farm and storage farm. BUT if you want to use the autoTier scheme {BETA}, stick to the location in the photo. However, **there MUST be a block on top of each water** and no two can be next to each other. The block can be literally anything, even a lily pad will work, so long as there is something.
 
-The location of the water is completely flexible: they do not have to be in the same locations as in the photo (underneath all five grates) and you can have as many as you would like on both the working farm and storage farm. However, **there MUST be a block on top of each water** and no two can be next to each other. The block can be literally anything, even a lily pad will work, so long as there is something.
-
-The starting crops must be placed manually in the checkerboard pattern seen in the photo. This layout goes for all three programs. If you cannot fill the entire checkerboard to start, the absolute minimum required is two (one as the target crop and the other next to it for crossbreeding). Even worse, if you have just a single seed of your target crop, it is possible to start with a different crop next to it for crossbreeding (ie. Stickreed). It is not necessary to place empty crop sticks to fill the rest of the checkerboard. The target crop is used by autoStat and autoSpread to identify the crop you want to stat-up or spread to the storage farm, respectively.
+The starting crops must be placed manually in the checkerboard pattern seen in the photo. This layout goes for all three programs. If you have only one seed, place it in the target group cage, and any mode will use it to start spreading.
 
 ![Farm Bottom](media/Farm_Bottom.png?)
 
@@ -57,53 +53,69 @@ Underneath the farm, you can see that there are three additional dirt blocks bel
 7) Follow the commands on screen 'install' --> 'Y' --> 'Y' (Note: The OpenOS floppy disk is no longer needed in the robot afterwards)
 8) Install the required scripts by copying this line of code into the robot (middle-click to paste)
 
-        wget https://raw.githubusercontent.com/ForgTav/E2EE-CropAutomation/main/setup.lua && setup
+        wget https://raw.githubusercontent.com/ForgTav/E2EE-CropAutomation/main/robotSetup.lua && robotSetup
    
-10) Place the Weeding Trowel and Transvector Binder into the last and second to last slot of the robot, respectively. Crop sticks will go in the third, but it is not required to put them in yourself. An axe or mattock can also be placed into the tool slot of the robot to speed up destroying crops (optional). See image below.
+9) Place the Weeding Trowel and Transvector Binder into the last and second to last slot of the robot, respectively. Crop sticks will go in the third, but it is not required to put them in yourself. An axe or mattock can also be placed into the tool slot of the robot to speed up destroying crops (optional). See image below.
+10) Print `` start `` on the robot command line
 
 ![Robot Inventory](media/Robot_Inventory.png?)
 
 
 # Building the Computer
-![Robot Components](media/Com_Components.png?)
+![Robot Components](media/Computer_Components.png?)
 1) Place the computer case.
 2) Place screen and keyboard on top the case
 3) Shift-click all of the components into the computer case
 4) Power on
 5) Follow the commands on screen 'install' --> 'Y' --> 'Y' (Note: The OpenOS floppy disk is no longer needed in the computer afterwards)
 6) Install the required scripts by copying this line of code into the computer (middle-click to paste)
+   
+        wget https://raw.githubusercontent.com/ForgTav/E2EE-CropAutomation/main/sysSetup.lua && sysSetup
+7) Connect the sensor to the computer or monitor using a cable from OpenComputers.
 
-        wget https://raw.githubusercontent.com/ForgTav/E2EE-CropAutomation/main/startServer.lua
-
-![Robot Components](media/install_computer.png?)
-![Robot Components](media/install_computer2.png?)
-
-
-# BEFORE running the Programs
-Before launching the programs, you need to check if the computer is turned on. If it is off, turn it on and enter the command startServer.
-
-    startServer
+![Robot Components](media/building_computer.png?)
+![Robot Components](media/building_computer_2.png?)
 
 
-# Running the Programs on robot
+# Running the system
+Launching the system on the computer using the command main.
 
-The first program **autoTier** will automatically tier-up your crops until the max breeding round is reached (configurable), the storage farm is full, or ALL crops meet the specified tier threshold which defaults to 13. Note that unrecognized crops will be moved to the storage farm first before replacing any of the lower tier crops in the working farm. Statting-up crops during this program is also a configurable option, but that will slow down the process significantly. To run, simply enter:
+    main
 
-    autoTier
 
-The second program **autoStat** will automatically stat-up your target crop until the Gr + Ga - Re is at least 52 (configurable) for ALL crops on the working farm. Note that the maximum growth and resistance stats for parent crops are also configurable parameters which default to 21 and 2, respectively. Any crops with stats higher than these will be interpreted as weeds and removed. To run, simply enter:
+# autoTier
+The program **autoTier** will automatically tier-up your crops until the max breeding round is reached (configurable) or the storage farm is full.
 
-    autoStat
+1) Schema Mode[BETA]: Used for breeding plants according to a specified scheme. You can start with a reed crop. The final layout will look as shown in the image.
+![Schema_Beta](media/schema_beta.png?)
 
-The third program **autoSpread** will automatically spread (duplicate) your target crop until the storage farm is full. New crops will only be moved to the storage farm if their Gr + Ga - Re is at least 50 (configurable). Note that the maximum growth and resistance stats for child crops are also configurable parameters which default to 23 and 2, respectively. To run, simply enter:
+Target Crop Mode: Focuses on a specific target plant. The target plant is determined during initialization through scanning in target crop slot. Moves found target plants to parent slots
 
-    autoSpread
+Modes are switched through the interface in the "AutoTier" menu, where you can choose between: "schema {BETA}" and a specific plant (targetCrop)
 
-Lastly, these programs can be chained together which may be helpful if you have brand new crops (ie. 1/1/1 spruce saplings) and want them to immediately start spreading once they are fully statted-up. Note that keepMutations in the config should probably be set to false (default) otherwise the storage farm will be overwritten once the second program begins. To run autoSpread after autoStat, simply enter:
+Initially, at startup, (targetCrop) is default.
 
-    autoStat && autoSpread
+# autoStat
+The autoStat program will automatically improve the traits of your target crop until the sum of Gr + Ga - Re reaches at least 52 for the target crop on the working farm. Any plants with traits above these will be interpreted as weeds and removed. If a plant is different from the target crop, it will be destroyed.
 
-Turn off the OC Charger to pause the robot during any of these programs. The robot will not resume until it is fully charged. Press 'Q' while in the interface of the robot to terminate the program immediately, or press 'C' to terminate the program immediately AND cleanup. Lastly, changing anything in the config requires you to restart your robot.
+# autoSpread
+The program **autoSpread** will automatically spread (duplicate) your target crop until the storage farm is full.
+
+
+# Interface
+After you enter "main", the mode selection menu will open. Choose a mode by clicking the left mouse button.
+![Schema_Beta](media/ui_start.png?)
+
+
+
+The main process tracking menu then opens. Tabs are located on the left side of the menu, while information is displayed on the right. At the bottom, there are "start" and "exit" buttons. The "start" button launches the system, and "exit" terminates it. In the "Exit" tab, there are two exit modes available: "Cleanup" and "Force exit." The "Cleanup" mode removes all unnecessary plants from the farm before ending the program.
+![Schema_Beta](media/ui_after_init.png?)
+
+Slot 00, where the charger is located, is directly below slot 01 on the working farm or two blocks to the left of slot 03 in the storage. This allows the system to determine the location of each plant.
+
+
+When the system prepares a new order for the robot, the phrase "Loading..." appears in the top right corner. During this time, the user interface becomes unresponsive. This is due to single-threading.
+![Schema_Beta](media/ui_loading.png?)
 
 # Troubleshooting
 
@@ -117,7 +129,7 @@ _Solution: Check the orientation of the transvector dislocator. This can only ha
 
 3) The Robot is destroying all of the crops that were manually placed
 
-_Solution: Either the resistance or growth stats of the parent crops are too high. By default, anything above 2 resistance or 21 growth is treated like a weed and will be removed. These values, including the maximum stats of child crops, are all easily changed in the config._
+_Solution: Either the resistance or growth stats of the parent crops are too high. By default, anything above 2 resistance or 21 growth is treated like a weed and will be removed._
 
 4) Crops are randomly dying OR the farms are being overrun with weeds OR there are single crop sticks where there should be double
 
@@ -131,6 +143,12 @@ _Solution: This is from having outdated java certificates. Try updating your jav
 
 _Solution: The execute complex refers to using the && operator. Double check that you installed at least Tier 2 memory. Anything less will prevent you from joining commands together._
 
+7)  The robot is inactive after startup
+
+_Solution: Ensure the charger is connected correctly. The Mekanism cube cannot directly transfer energy to the charger._
+
+# Known Issues
+1) If you plant a crop in the last slot, the system will consider the storage farm to be full.
 
 ## Other Helpful Commands
 
@@ -148,7 +166,7 @@ To remove any one file installed on the robot, enter
     
 
 ## Thanks
-Huge thanks to huchenlei, xyqyear and DylanTaylor1!
+Huge thanks to Margatroid for the help with debugging and the ideas contributed to this project.
 
 This project is based on [GTNH-CropAutomation](https://github.com/DylanTaylor1/GTNH-CropAutomation) by [DylanTaylor1](https://github.com/DylanTaylor1).
 

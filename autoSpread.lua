@@ -1,151 +1,153 @@
-local action = require('action')
+local component = require('component')
+local config = require('sysConfig')
+local database = require('sysDB')
 local os = require('os')
-local database = require('database')
-local gps = require('gps')
-local scanner = require('scanner')
-local config = require('config')
-local events = require('events')
-local serverApi = require('serverApi')
-local emptySlot
+local sys = require('sysFunction')
+local sensor = component.sensor
 local targetCrop
--- =================== MINOR FUNCTIONS ======================
+local ui = require("sysUI")
 
-local function findEmpty()
-    local farm = database.getFarm()
-
-    for slot = 1, config.workingFarmArea, 2 do
-        local crop = farm[slot]
-        if crop ~= nil and (crop.name == 'air' or crop.name == 'emptyCrop') then
-            emptySlot = slot
-            return true
-        end
+local function handleChild(slot, crop)
+  local order = {}
+  local availableParentSlot = nil
+  local availableParent = nil
+  local parentSlots = database.getParentSlots()
+  for _, parentSlot in pairs(parentSlots) do
+    local parentCrop = database.getFarmSlot(parentSlot)
+    if parentCrop and (parentCrop.name == 'emptyCrop' or parentCrop.name == 'air') then
+      availableParentSlot = parentSlot
+      availableParent = parentCrop
+      break
     end
+  end
+
+  local priorities = config.priorities
+
+  if crop.name == 'air' then
+    table.insert(order, {
+      action = 'placeCropStick',
+      slot = slot,
+      priority = priorities['placeCropStick'],
+      count = 2
+    })
+  elseif crop.isCrop and crop.name == "emptyCrop" then
+    if crop.crossingbase == 0 then
+      table.insert(order, {
+        action = 'placeCropStick',
+        slot = slot,
+        priority = priorities['placeCropStick'],
+        count = 1
+      })
+    else
+      return order
+    end
+  elseif sys.isWeed(crop) then
+    table.insert(order, {
+      action = 'deweed',
+      slot = slot,
+      priority = priorities['deweed']
+    })
+  elseif sys.isComMax(crop, 'working') and not availableParentSlot then
+    table.insert(order, {
+      action = 'removePlant',
+      slot = slot,
+      priority = priorities['removePlant']
+    })
+  elseif crop.name == targetCrop then
+    if availableParentSlot then
+      table.insert(order, {
+        action = 'transplantParent',
+        slot = slot,
+        to = availableParentSlot,
+        farm = 'working',
+        priority = priorities['transplantParent'],
+        slotName = availableParent.name,
+        isSchema = false,
+        targetCrop = false,
+      })
+      database.updateFarm(slot, { isCrop = true, name = 'air', fromScan = false })
+      database.updateFarm(availableParentSlot, crop)
+    else
+      local emptySlot = sys.getEmptySlotStorage()
+      if not emptySlot then
+        return order
+      end
+      table.insert(order, {
+        action = 'transplant',
+        slot = slot,
+        to = emptySlot,
+        farm = 'storage',
+        slotName = 'air',
+        priority = priorities['transplant']
+      })
+      database.updateFarm(slot, { isCrop = true, name = 'air', fromScan = false })
+      database.updateStorage(emptySlot, crop)
+      table.insert(order, {
+        action = 'placeCropStick',
+        slot = slot,
+        priority = priorities['placeCropStick'],
+        count = 2
+      })
+    end
+  else
+    table.insert(order, {
+      action = 'removePlant',
+      slot = slot,
+      priority = priorities['removePlant']
+    })
+  end
+  return order
+end
+
+local function handleParent(slot, crop)
+  local order = {}
+  if crop.name == 'air' or (crop.isCrop and crop.name == "emptyCrop") then
+    return order
+  elseif sys.isWeed(crop) then
+    table.insert(order, {
+      action = 'deweed',
+      slot = slot,
+      priority = config.priorities['deweed']
+    })
+  elseif sys.isComMax(crop, 'working') then
+    table.insert(order, {
+      action = 'removePlant',
+      slot = slot,
+      priority = config.priorities['removePlant']
+    })
+  elseif not crop.isCrop then
+    database.deleteParentSlots(slot)
+  end
+  return order
+end
+
+local function init()
+  local cord = sys.cordtoScan(0, 1)
+  local scan = sys.fetchScan(sensor.scan(cord[1], 0, cord[2]))
+  if not scan.isCrop or (scan.name == 'air' or scan.name == 'emptyCrop') then
+    sys.printCenteredText('Not found targetCrop')
+    os.exit()
+  end
+  targetCrop = scan.name
+end
+
+local function checkCondition()
+  local storageSlot = database.getStorageSlot(config.storageFarmArea)
+  if not storageSlot then
     return false
-end
+  end
 
-
-local function checkChild(slot, crop)
-    if crop.isCrop and crop.name ~= 'emptyCrop' then
-        if crop.name == 'air' then
-            action.placeCropStick(2)
-        elseif scanner.isWeed(crop, 'storage') then
-            action.deweed()
-            action.placeCropStick()
-        elseif scanner.isComMax(crop, 'storage') then
-            action.removePlant()
-            action.placeCropStick(2)
-        elseif crop.name == targetCrop then
-            local stat = crop.gr + crop.ga - crop.re
-
-            -- Make sure no parent on the working farm is empty
-            if stat >= config.autoStatThreshold and findEmpty() and crop.gr <= config.workingMaxGrowth and crop.re <= config.workingMaxResistance then
-                action.transplant(gps.workingSlotToPos(slot), gps.workingSlotToPos(emptySlot))
-                action.placeCropStick(2)
-                database.updateFarm(emptySlot, crop)
-
-                -- No parent is empty, put in storage
-            elseif stat >= config.autoSpreadThreshold then
-                action.transplant(gps.workingSlotToPos(slot), gps.storageSlotToPos(database.nextStorageSlot()))
-                database.addToStorage(crop)
-                action.placeCropStick(2)
-
-                -- Stats are not high enough
-            else
-                action.removePlant()
-                action.placeCropStick(2)
-            end
-        elseif config.keepMutations and (not database.existInStorage(crop)) then
-            action.transplant(gps.workingSlotToPos(slot), gps.storageSlotToPos(database.nextStorageSlot()))
-            action.placeCropStick(2)
-            database.addToStorage(crop)
-        else
-            action.removePlant()
-            action.placeCropStick(2)
-        end
-    end
-end
-
-
-local function checkParent(slot, crop)
-    if crop.isCrop and crop.name ~= 'air' and crop.name ~= 'emptyCrop' then
-        if scanner.isWeed(crop, 'working') then
-            action.deweed()
-        elseif scanner.isComMax(crop, 'working') then
-            action.removePlant()
-        end
-        database.updateFarm(slot, { isCrop = true, name = 'emptyCrop' })
-    end
-end
-
--- ====================== THE LOOP ======================
-
-local function spreadOnce(firstRun)
-    for slot = 1, config.workingFarmArea, 1 do
-        -- Terminal Condition
-        if #database.getStorage() >= config.storageFarmArea then
-            print('autoSpread: Storage Full!')
-            return false
-        end
-
-        -- Terminal Condition
-        if events.needExit() then
-            print('autoSpread: Received Exit Command!')
-            return false
-        end
-
-        os.sleep(0)
-
-        -- Scan
-        gps.go(gps.workingSlotToPos(slot))
-        local crop = serverApi.sendToLinkedCards(serverApi.initGetCrop())
-
-        if firstRun then
-            database.updateFarm(slot, crop)
-            if slot == 1 then
-                targetCrop = database.getFarm()[1].name
-                print(string.format('autoSpread: Target %s', targetCrop))
-            end
-        end
-
-        if slot % 2 == 0 then
-            checkChild(slot, crop)
-        else
-            checkParent(slot, crop)
-        end
-
-        if action.needCharge() then
-            action.charge()
-        end
-    end
+  if storageSlot.isCrop and storageSlot.name ~= 'air' and storageSlot.name ~= 'emptyCrop' and not sys.isWeed(storageSlot) then
     return true
+  end
+
+  return false
 end
 
--- ======================== MAIN ========================
 
-local function main()
-    action.initWork()
-    print('autoSpread: Scanning Farm')
-    -- First Run
-    spreadOnce(true)
-    action.restockAll()
-
-    -- Loop
-    while spreadOnce(false) do
-        action.restockAll()
-    end
-
-    -- Terminated Early
-    if events.needExit() then
-        action.restockAll()
-    end
-
-    -- Finish
-    if config.cleanUp then
-        action.cleanUp()
-    end
-
-    events.unhookEvents()
-    print('autoSpread: Complete!')
-end
-
-main()
+return {
+  handleParent = handleParent,
+  handleChild = handleChild,
+  checkCondition = checkCondition,
+  init = init
+}

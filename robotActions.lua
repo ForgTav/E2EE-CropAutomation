@@ -3,15 +3,12 @@ local os = require('os')
 local robot = require('robot')
 local sides = require('sides')
 local computer = require('computer')
-local database = require('database')
-local gps = require('gps')
-local config = require('config')
-local events = require('events')
-local scanner = require('scanner')
-local serverApi = require('serverApi')
+local config = require('robotConfig')
+local gps = require('robotGPS')
 local inventory_controller = component.inventory_controller
 local redstone = component.redstone
-local restockAll, cleanUp -- Forward declaration
+
+
 
 local function needCharge()
     return computer.energy() / computer.maxEnergy() < config.needChargeLevel
@@ -32,7 +29,6 @@ local function fullInventory()
     return true
 end
 
-
 local function restockStick()
     local selectedSlot = robot.select()
     gps.go(config.stickContainerPos)
@@ -48,6 +44,7 @@ local function restockStick()
 
     robot.select(selectedSlot)
 end
+
 
 
 local function dumpInventory()
@@ -69,6 +66,8 @@ local function dumpInventory()
 
     robot.select(selectedSlot)
 end
+
+
 
 
 local function placeCropStick(count)
@@ -117,8 +116,10 @@ local function deweed()
     robot.select(selectedSlot)
 end
 
-local function removePlant()
-    local selectedSlot = robot.select()
+local function removePlant(needCropStick)
+    if needCropStick == nil then
+        needCropStick = false
+    end
 
     if config.keepDrops and fullInventory() then
         gps.save()
@@ -126,16 +127,20 @@ local function removePlant()
         gps.resume()
     end
 
+    local selectedSlot = robot.select()
+
+
     robot.swingDown()
     if config.KeepDrops then
         robot.suckDown()
+    end
+    if needCropStick then
+        placeCropStick(2)
     end
 
     --inventory_controller.equip()
     robot.select(selectedSlot)
 end
-
-
 
 
 local function pulseDown()
@@ -144,10 +149,23 @@ local function pulseDown()
     redstone.setOutput(sides.down, 0)
 end
 
+local function transplant(order)
+    local dest = nil
+    local src = gps.workingSlotToPos(order.slot)
+    if order.farm == 'storage' then
+        dest = gps.storageSlotToPos(order.to)
+    elseif order.farm == 'working' then
+        dest = gps.workingSlotToPos(order.to)
+    else
+        return
+    end
 
-local function transplant(src, dest)
+    print('src = ' .. order.slot)
+    print('dest = ' .. order.to)
+
     local selectedSlot = robot.select()
-    gps.save()
+
+    --gps.save()
     robot.select(robot.inventorySize() + config.binderSlot)
     inventory_controller.equip()
 
@@ -161,13 +179,7 @@ local function transplant(src, dest)
     robot.useDown(sides.down, true)
     gps.go(dest)
 
-    local crop = serverApi.sendToLinkedCards(serverApi.initGetCrop())
-
-    if crop.name == 'air' then
-        placeCropStick()
-    elseif crop.isCrop == false then
-        database.addToStorage(crop)
-        gps.go(gps.storageSlotToPos(database.nextStorageSlot()))
+    if order.slotName == 'air' then
         placeCropStick()
     end
 
@@ -186,36 +198,16 @@ local function transplant(src, dest)
         robot.suckDown()
     end
 
-    gps.resume()
+    --gps.resume()
     robot.select(selectedSlot)
 end
 
-
-function cleanUp()
-    for slot = 1, config.workingFarmArea, 1 do
-        -- Scan
-        gps.go(gps.workingSlotToPos(slot))
-        --local crop = scanner.scan()
-        local crop = serverApi.sendToLinkedCards(serverApi.initGetCrop())
-
-        -- Remove all children and empty parents
-        if slot % 2 == 0 or crop.name == 'emptyCrop' then
-            robot.swingDown()
-
-            -- Remove bad parents
-        elseif crop.isCrop and crop.name ~= 'air' then
-            if scanner.isWeed(crop, 'working') then
-                robot.swingDown()
-            end
-        end
-
-        -- Pickup
-        if config.KeepDrops then
-            robot.suckDown()
-        end
-    end
-    events.setNeedCleanup(false)
-    restockAll()
+local function charge()
+    gps.go(config.chargerPos)
+    gps.turnTo(1)
+    repeat
+        os.sleep(0.5)
+    until fullyCharged()
 end
 
 local function primeBinder()
@@ -234,33 +226,14 @@ local function primeBinder()
 end
 
 
-local function charge()
-    gps.go(config.chargerPos)
-    gps.turnTo(1)
-    repeat
-        os.sleep(0.5)
-        if events.needExit() then
-            if events.needCleanup() and config.cleanUp then
-                events.setNeedCleanup(false)
-                cleanUp()
-            end
-            os.exit() -- Exit here to leave robot in starting position
-        end
-    until fullyCharged()
-end
-
-
-function restockAll()
+local function restockAll()
     dumpInventory()
     restockStick()
     charge()
 end
 
 local function initWork()
-    events.initEvents()
-    events.hookEvents()
     charge()
-    database.resetStorage()
     primeBinder()
     restockAll()
 end
@@ -277,6 +250,5 @@ return {
     removePlant = removePlant,
     pulseDown = pulseDown,
     transplant = transplant,
-    cleanUp = cleanUp,
     initWork = initWork
 }

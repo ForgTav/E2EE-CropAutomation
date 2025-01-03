@@ -1,176 +1,193 @@
-local action = require('action')
+local component = require('component')
+local config = require('sysConfig')
+local database = require('sysDB')
 local os = require('os')
-local database = require('database')
-local gps = require('gps')
-local scanner = require('scanner')
-local config = require('config')
-local events = require('events')
-local serverApi = require('serverApi')
-local lowestStat = 0
-local lowestStatSlot = 0
+local sys = require('sysFunction')
+local sensor = component.sensor
 local targetCrop
 
--- =================== MINOR FUNCTIONS ======================
 
-local function updateLowest()
-    local farm = database.getFarm()
-    lowestStat = 99
-    lowestStatSlot = 0
-
-    -- Find lowest stat slot
-    for slot = 1, config.workingFarmArea, 2 do
-        local crop = farm[slot]
-        if crop.isCrop then
-            if crop.name == 'air' or crop.name == 'emptyCrop' then
-                lowestStat = 0
-                lowestStatSlot = slot
-                break
-            elseif crop.name ~= targetCrop then
-                local stat = crop.gr + crop.ga - crop.re - 2
-                if stat < lowestStat then
-                    lowestStat = stat
-                    lowestStatSlot = slot
-                end
-            else
-                local stat = crop.gr + crop.ga - crop.re
-                if stat < lowestStat then
-                    lowestStat = stat
-                    lowestStatSlot = slot
-                end
-            end
-        end
+local function handleChild(slot, crop)
+  local order = {}
+  local availableParentSlot = nil
+  local availableParent = nil
+  local parentSlots = database.getParentSlots()
+  for _, parentSlot in pairs(parentSlots) do
+    local parentCrop = database.getFarmSlot(parentSlot)
+    if parentCrop and (parentCrop.name == 'emptyCrop' or parentCrop.name == 'air') then
+      availableParentSlot = parentSlot
+      availableParent = parentCrop
+      break
     end
+  end
+
+  local priorities = config.priorities
+
+  if crop.name == 'air' then
+    table.insert(order, {
+      action = 'placeCropStick',
+      slot = slot,
+      priority = priorities['placeCropStick'],
+      count = 2
+    })
+  elseif crop.isCrop and crop.name == "emptyCrop" then
+    if crop.crossingbase == 0 then
+      table.insert(order, {
+        action = 'placeCropStick',
+        slot = slot,
+        priority = priorities['placeCropStick'],
+        count = 1
+      })
+    else
+      return order
+    end
+  elseif sys.isWeed(crop) then
+    table.insert(order, {
+      action = 'deweed',
+      slot = slot,
+      priority = priorities['deweed']
+    })
+  elseif sys.isComMax(crop, 'working') and not availableParentSlot then
+    table.insert(order, {
+      action = 'removePlant',
+      slot = slot,
+      priority = priorities['removePlant']
+    })
+  elseif crop.name == targetCrop then
+    local stat = crop.gr + crop.ga - crop.re
+    if availableParentSlot then
+      table.insert(order, {
+        action = 'transplantParent',
+        slot = slot,
+        to = availableParentSlot,
+        farm = 'working',
+        priority = priorities['transplantParent'],
+        slotName = availableParent.name,
+        isSchema = false,
+        targetCrop = false,
+      })
+      database.updateFarm(slot, { isCrop = true, name = 'air', fromScan = false })
+      database.updateFarm(availableParentSlot, crop)
+    elseif stat >= config.autoStatThreshold then
+      local emptySlot = sys.getEmptySlotStorage()
+      if not emptySlot then
+        return order
+      end
+      table.insert(order, {
+        action = 'transplant',
+        slot = slot,
+        to = emptySlot,
+        farm = 'storage',
+        slotName = 'air',
+        priority = priorities['transplant']
+      })
+      database.updateFarm(slot, { isCrop = true, name = 'air', fromScan = false })
+      database.updateStorage(emptySlot, crop)
+      table.insert(order, {
+        action = 'placeCropStick',
+        slot = slot,
+        priority = priorities['placeCropStick'],
+        count = 2
+      })
+    else
+      local foundedSlot = false
+      for _, parentSlot in pairs(parentSlots) do
+        local parentCrop = database.getFarm()[parentSlot]
+        if parentCrop and parentCrop.isCrop and (parentCrop.name ~= 'emptyCrop' and parentCrop.name ~= 'air') then
+          local parentStat = parentCrop.gr + parentCrop.ga - parentCrop.re
+          if stat > parentStat then
+            table.insert(order, {
+              action = 'transplantParent',
+              slot = slot,
+              slotStat = stat,
+              to = parentSlot,
+              toStat = parentStat,
+              farm = 'working',
+              slotName = parentCrop.name,
+              priority = priorities['transplantParent'],
+              isSchema = false,
+              targetCrop = false,
+            })
+            database.updateFarm(slot, { isCrop = true, name = 'air', fromScan = false })
+            database.updateFarm(parentSlot, crop)
+            table.insert(order, {
+              action = 'placeCropStick',
+              slot = slot,
+              priority = priorities['placeCropStick'],
+              count = 2
+            })
+            foundedSlot = true
+            break
+          end
+        end
+      end
+      if not foundedSlot then
+        table.insert(order, {
+          action = 'removePlant',
+          slot = slot,
+          priority = priorities['removePlant']
+        })
+      end
+    end
+  else
+    table.insert(order, {
+      action = 'removePlant',
+      slot = slot,
+      priority = priorities['removePlant']
+    })
+  end
+  return order
 end
 
-
-local function checkChild(slot, crop, firstRun)
-    if crop.isCrop and crop.name ~= 'emptyCrop' then
-        if crop.name == 'air' then
-            action.placeCropStick(2)
-        elseif scanner.isWeed(crop, 'working') then
-            action.deweed()
-            action.placeCropStick()
-        elseif scanner.isComMax(crop, 'working') then
-            action.removePlant()
-            action.placeCropStick(2)
-        elseif firstRun then
-            return
-        elseif crop.name == targetCrop then
-            local stat = crop.gr + crop.ga - crop.re
-
-            if stat > lowestStat then
-                action.transplant(gps.workingSlotToPos(slot), gps.workingSlotToPos(lowestStatSlot))
-                action.placeCropStick(2)
-                database.updateFarm(lowestStatSlot, crop)
-                updateLowest()
-            else
-                action.removePlant()
-                action.placeCropStick(2)
-            end
-        elseif config.keepMutations and (not database.existInStorage(crop)) then
-            action.transplant(gps.workingSlotToPos(slot), gps.storageSlotToPos(database.nextStorageSlot()))
-            action.placeCropStick(2)
-            database.addToStorage(crop)
-        else
-            action.removePlant()
-            action.placeCropStick(2)
-        end
-    end
+local function handleParent(slot, crop)
+  local order = {}
+  if crop.name == 'air' or (crop.isCrop and crop.name == "emptyCrop") then
+    return order
+  elseif sys.isWeed(crop) then
+    order[#order + 1] = {
+      action = 'deweed',
+      slot = slot,
+      priority = config.priorities['deweed']
+    }
+  elseif sys.isComMax(crop, 'working') then
+    order[#order + 1] = {
+      action = 'removePlant',
+      slot = slot,
+      priority = config.priorities['removePlant']
+    }
+  elseif not crop.isCrop then
+    database.deleteParentSlots(slot)
+  end
+  return order
 end
 
-
-local function checkParent(slot, crop, firstRun)
-    if crop.isCrop and crop.name ~= 'air' and crop.name ~= 'emptyCrop' then
-        if scanner.isWeed(crop, 'working') then
-            action.deweed()
-        elseif scanner.isComMax(crop, 'working') then
-            action.removePlant()
-        end
-        database.updateFarm(slot, { isCrop = true, name = 'emptyCrop' })
-        if not firstRun then
-            updateLowest()
-        end
-    end
+local function init()
+  local cord = sys.cordtoScan(0, 1)
+  local scan = sys.fetchScan(sensor.scan(cord[1], 0, cord[2]))
+  if not scan.isCrop or (scan.name == 'air' or scan.name == 'emptyCrop') then
+    sys.printCenteredText('Not found targetCrop')
+    os.exit()
+  end
+  targetCrop = scan.name
 end
 
--- ====================== THE LOOP ======================
+local function checkCondition()
+  local storageSlot = database.getStorageSlot(config.storageFarmArea)
+  if not storageSlot then
+    return false
+  end
 
-local function statOnce(firstRun)
-    for slot = 1, config.workingFarmArea, 1 do
-        -- Terminal Condition
-        if #database.getStorage() >= config.storageFarmArea then
-            print('autoStat: Storage Full!')
-            return false
-        end
-
-        -- Terminal Condition
-        if lowestStat >= config.autoStatThreshold then
-            print('autoStat: Minimum Stat Threshold Reached!')
-            return false
-        end
-
-        -- Terminal Condition
-        if events.needExit() then
-            print('autoStat: Received Exit Command!')
-            return false
-        end
-
-        os.sleep(0)
-
-        -- Scan
-        gps.go(gps.workingSlotToPos(slot))
-        --local crop = scanner.scan()
-        local crop = serverApi.sendToLinkedCards(serverApi.initGetCrop())
-
-        if firstRun then
-            database.updateFarm(slot, crop)
-            if slot == 1 then
-                targetCrop = database.getFarm()[1].name
-                print(string.format('autoStat: Target %s', targetCrop))
-            end
-        end
-
-        if slot % 2 == 0 then
-            checkChild(slot, crop, firstRun)
-        else
-            checkParent(slot, crop, firstRun)
-        end
-
-        if action.needCharge() then
-            action.charge()
-        end
-    end
+  if storageSlot.isCrop and storageSlot.name ~= 'air' and storageSlot.name ~= 'emptyCrop' and not sys.isWeed(storageSlot) then
     return true
+  end
+
+  return false
 end
 
--- ======================== MAIN ========================
 
-local function main()
-    action.initWork()
-    print('autoStat: Scanning Farm')
-
-    -- First Run
-    statOnce(true)
-    action.restockAll()
-    updateLowest()
-
-    -- Loop
-    while statOnce(false) do
-        action.restockAll()
-    end
-
-    -- Terminated Early
-    if events.needExit() then
-        action.restockAll()
-    end
-
-    -- Finish
-    if config.cleanUp then
-        action.cleanUp()
-    end
-
-    events.unhookEvents()
-    print('autoStat: Complete!')
-end
-
-main()
+return {
+  handleParent = handleParent,
+  handleChild = handleChild,
+  checkCondition = checkCondition,
+  init = init
+}

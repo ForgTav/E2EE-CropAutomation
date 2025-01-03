@@ -1,18 +1,17 @@
 local shell = require('shell')
-local args = {...}
+local args = { ... }
 local branch
 local repo
 local scripts = {
-    'serverApi.lua',
-    'action.lua',
-    'database.lua',
-    'events.lua',
-    'gps.lua',
-    'scanner.lua',
-    'config.lua',
     'autoStat.lua',
     'autoTier.lua',
     'autoSpread.lua',
+    'main.lua',
+    'sysConfig.lua',
+    'sysDB.lua',
+    'sysFunction.lua',
+    'sysGPS.lua',
+    'sysUI.lua',
     'uninstall.lua'
 }
 
@@ -31,6 +30,6 @@ else
 end
 
 -- INSTALL
-for i=1, #scripts do
+for i = 1, #scripts do
     shell.execute(string.format('wget -f %s%s/%s', repo, branch, scripts[i]))
 end
