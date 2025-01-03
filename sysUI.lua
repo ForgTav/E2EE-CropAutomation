@@ -297,7 +297,7 @@ local function drawFarmGrid()
   end
 
   if gridOffset > 0 then
-    gpu.set(menuStartX + 1, endY - 1, 'XX = slot-free mode')
+    gpu.set(InfoStartX, endY - 1, 'XX = slot-free mode')
   end
   gpu.set(menuStartX + 1, endY, string.rep("═", screenWidth - menuStartX))
   gpu.set(menuStartX + 1, endY + 1, 'Click on slot to get info')

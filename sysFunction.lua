@@ -215,23 +215,6 @@ local function cleanUp()
     return order
 end
 
-local function getRobotStatus(timeout)
-    tunnel.send(serialization.serialize({ type = "getStatus" }))
-    local _, _, _, _, _, message = event.pull(timeout, "modem_message")
-    if message == nil then
-        lastRobotStatus = false
-        return false
-    end
-
-    local unserilized = serialization.unserialize(message)
-    if unserilized.robotStatus then
-        lastRobotStatus = unserilized.robotStatus
-        return unserilized.robotStatus
-    end
-    lastRobotStatus = false
-    return false
-end
-
 local function sendRobotConfig()
     local robotConfig = {
         workingFarmSize = config.workingFarmSize,
@@ -251,6 +234,32 @@ local function sendRobotConfig()
     end
     return false
 end
+
+local function getRobotStatus(timeout)
+    tunnel.send(serialization.serialize({ type = "getStatus" }))
+    local _, _, _, _, _, message = event.pull(timeout, "modem_message")
+    if message == nil then
+        lastRobotStatus = false
+        return false
+    end
+
+    local unserilized = serialization.unserialize(message)
+
+    if unserilized.needConfig ~= nil and unserilized.needConfig == true then
+        while not sendRobotConfig() do
+            os.sleep(1)
+        end
+    end
+
+    if unserilized.robotStatus then
+        lastRobotStatus = unserilized.robotStatus
+        return unserilized.robotStatus
+    end
+    lastRobotStatus = false
+    return false
+end
+
+
 
 
 
@@ -284,5 +293,5 @@ return {
     cleanUp = cleanUp,
     getEmptySlotStorage = getEmptySlotStorage,
     printCenteredText = printCenteredText,
-    sendRobotConfig = sendRobotConfig,
+    sendRobotConfig = sendRobotConfig
 }

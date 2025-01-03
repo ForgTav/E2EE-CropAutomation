@@ -32,25 +32,29 @@ local function transporter(table)
         end
         actions.restockAll()
     elseif table.type == 'getStatus' then
-        sendMessage({ action = 'getStatus', robotStatus = robotStatus })
+        local needConfig = false
+        if config.workingFarmSize == nil then
+            needConfig = true
+        elseif config.storageFarmSize == nil then
+            needConfig = true
+        elseif config.storageOffset == nil then
+            needConfig = true
+        end
+
+        sendMessage({ action = 'getStatus', robotStatus = robotStatus, needConfig = needConfig })
     elseif table.type == 'robotConfig' then
-        if table.data.workingFarmSize then
-            config.workingFarmSize = table.data.workingFarmSize
+        local robotConfig = table.data
+        if robotConfig.workingFarmSize then
+            config.workingFarmSize = robotConfig.workingFarmSize
         end
 
-        if table.data.storageFarmSize then
-            config.storageFarmSize = table.data.storageFarmSize
+        if robotConfig.storageFarmSize then
+            config.storageFarmSize = robotConfig.storageFarmSize
         end
 
-        if table.data.storageOffset then
-            config.storageOffset = table.data.storageOffset
+        if robotConfig.storageOffset then
+            config.storageOffset = robotConfig.storageOffset
         end
-
-
-
-        print(config.workingFarmSize)
-        print(config.storageFarmSize)
-        print(config.storageOffset)
 
         sendMessage({ action = 'robotConfig', answer = true })
     elseif table.type == 'cleanUp' then
