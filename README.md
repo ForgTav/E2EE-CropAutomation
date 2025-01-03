@@ -166,7 +166,7 @@ To remove any one file installed on the robot, enter
     
 
 ## Thanks
-Huge thanks to huchenlei, xyqyear and DylanTaylor1!
+Huge thanks to Margatroid for the help with debugging and the ideas contributed to this project.
 
 This project is based on [GTNH-CropAutomation](https://github.com/DylanTaylor1/GTNH-CropAutomation) by [DylanTaylor1](https://github.com/DylanTaylor1).
 
