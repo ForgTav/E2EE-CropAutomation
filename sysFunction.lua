@@ -196,6 +196,11 @@ local function cleanUp()
                 farm = 'working',
                 slot = slot,
             })
+        elseif slot % 2 == 0 then
+            table.insert(order, {
+                farm = 'working',
+                slot = slot,
+            })
         end
     end
 
