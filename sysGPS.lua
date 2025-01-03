@@ -2,12 +2,13 @@
 local config = require('sysConfig')
 
 -- ======================== WORKING FARM ========================
---  _________________   5x5 Slot Map
--- |25 16 15 06 05|
--- |24 17 14 07 04|  One down from 01 is (0,0)
--- |23 18 WW 08 03|  WW - Water
--- |22 19 12 09 02|
--- |21 20 11 10 01|
+--  _________________   6x6 Slot Map
+-- |31 30 19 18 07 06|
+-- |32 29 20 17 08 05|
+-- |33 28 21 16 09 04|  One down from 01 is (0,0)
+-- |34 27 22 15 10 03|
+-- |35 26 23 14 11 02|
+-- |36 25 24 13 12 01|
 --  ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
 
 local function workingSlotToPos(slot)
@@ -43,7 +44,7 @@ local function storageSlotToPos(slot)
     local y
 
     if x % 2 == 0 then
-        y = row - config.storageFarmSize + config.workingFarmSize + 1
+        y = row - config.storageFarmSize + config.workingFarmSize + 1 + config.workingFarmDefaultSize - config.workingFarmSize
     else
         y = -row + config.workingFarmSize
     end

@@ -4,6 +4,7 @@ local event = require("event")
 local gps = require('robotGPS')
 local actions = require('robotActions')
 local serialization = require("serialization")
+local config = require('robotConfig')
 local tunnel = component.tunnel
 local robotStatus = true
 
@@ -32,6 +33,26 @@ local function transporter(table)
         actions.restockAll()
     elseif table.type == 'getStatus' then
         sendMessage({ action = 'getStatus', robotStatus = robotStatus })
+    elseif table.type == 'robotConfig' then
+        if table.data.workingFarmSize then
+            config.workingFarmSize = table.data.workingFarmSize
+        end
+
+        if table.data.storageFarmSize then
+            config.storageFarmSize = table.data.storageFarmSize
+        end
+
+        if table.data.storageOffset then
+            config.storageOffset = table.data.storageOffset
+        end
+
+
+
+        print(config.workingFarmSize)
+        print(config.storageFarmSize)
+        print(config.storageOffset)
+
+        sendMessage({ action = 'robotConfig', answer = true })
     elseif table.type == 'cleanUp' then
         robotStatus = false
         for _, order in pairs(table.data) do

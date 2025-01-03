@@ -25,7 +25,7 @@ local function storageSlotToPos(slot)
     local y
 
     if x % 2 == 0 then
-        y = row - config.storageFarmSize + config.workingFarmSize + 1
+        y = row - config.storageFarmSize + config.workingFarmSize + 1 + config.storageOffset
     else
         y = -row + config.workingFarmSize
     end

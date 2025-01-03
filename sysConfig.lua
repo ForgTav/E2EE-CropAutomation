@@ -2,7 +2,11 @@ local config = {
     -- NOTE: EACH CONFIG SHOULD END WITH A COMMA
 
     -- Side Length of Working Farm
-    workingFarmSize = 6,
+    workingFarmSize = nil,
+    workingFarmDefaultSize = 6,
+    workingFarmStatSize = 5,
+    workingFarmSpreadSize = 5,
+    workingFarmTierSize = 6,
     -- Side Length of Storage Farm
     storageFarmSize = 9,
 
@@ -27,7 +31,7 @@ local config = {
     maxBreedRound = 1000,
 }
 
-config.workingFarmArea = config.workingFarmSize ^ 2
+config.workingFarmArea = nil
 config.storageFarmArea = config.storageFarmSize ^ 2
 
 config.seedTiers = {

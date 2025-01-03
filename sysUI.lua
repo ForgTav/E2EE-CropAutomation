@@ -253,6 +253,58 @@ end
 
 local function drawFarmGrid()
   local gridSize = config.workingFarmSize
+  local defaultGrid = config.workingFarmDefaultSize
+  local gridOffset = config.workingFarmDefaultSize - config.workingFarmSize
+
+  gpu.set(InfoStartX, 1, "WORKING FARM")
+  gpu.set(menuStartX + 1, 2, string.rep("═", screenWidth - menuStartX))
+
+  for slot = 1, defaultGrid ^ 2 do
+    local x = (slot - 1) // defaultGrid
+    local row = (slot - 1) % defaultGrid
+    local y
+    if x % 2 == 0 then
+      y = row + 1
+    else
+      y = -row + defaultGrid
+    end
+
+    local posX = (InfoStartX + (defaultGrid - x) * 3) - 3
+    local posY = startY + 1 + (defaultGrid - y)
+
+    gpu.set(posX, posY, 'XX')
+    --farmCords[slot] = { x = posX, y = posY }
+  end
+
+
+  for slot = 1, config.workingFarmArea do
+    local x = (slot - 1) // gridSize
+    local row = (slot - 1) % gridSize
+    local y
+    if x % 2 == 0 then
+      y = row + 1
+    else
+      y = -row + gridSize
+    end
+    x = x - gridOffset
+    y = y - gridOffset
+
+    local posX = (InfoStartX + (gridSize - x) * 3) - 3
+    local posY = startY + 1 + (gridSize - y)
+
+    gpu.set(posX, posY, string.format("%02d", slot))
+    farmCords[slot] = { x = posX, y = posY }
+  end
+
+  if gridOffset > 0 then
+    gpu.set(menuStartX + 1, endY - 1, 'XX = slot-free mode')
+  end
+  gpu.set(menuStartX + 1, endY, string.rep("═", screenWidth - menuStartX))
+  gpu.set(menuStartX + 1, endY + 1, 'Click on slot to get info')
+end
+--[[
+local function drawFarmGrid()
+  local gridSize = config.workingFarmSize
 
   gpu.set(InfoStartX, 1, "WORKING FARM")
   gpu.set(menuStartX + 1, 2, string.rep("═", screenWidth - menuStartX))
@@ -277,7 +329,7 @@ local function drawFarmGrid()
   gpu.set(menuStartX + 1, endY, string.rep("═", screenWidth - menuStartX))
   gpu.set(menuStartX + 1, endY + 1, 'Click on slot to get info')
 end
-
+]] --
 local function drawStorageSlotInfo(clickX, clickY)
   clearRightExtraSide()
   local foundedSlot
@@ -401,10 +453,9 @@ local menuButtons = {
 
 
 local function drawMenu()
-  if currentMode ~= 2 then
+  if currentMode ~= 2 and menuButtons[6].text == 'AutoTier' then
     table.remove(menuButtons, 6)
   end
-
 
   for i = 1, #menuButtons do
     local btn = menuButtons[i]

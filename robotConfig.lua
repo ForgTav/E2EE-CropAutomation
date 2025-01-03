@@ -2,9 +2,11 @@ local config = {
     -- NOTE: EACH CONFIG SHOULD END WITH A COMMA
 
     -- Side Length of Working Farm
-    workingFarmSize = 6,
+    workingFarmSize = nil,
     -- Side Length of Storage Farm
-    storageFarmSize = 9,
+    storageFarmSize = nil,
+    
+    storageOffset = nil,
 
     -- Pickup any and all drops (don't change)
     keepDrops = true,

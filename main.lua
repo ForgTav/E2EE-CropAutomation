@@ -6,6 +6,7 @@ local sys = require('sysFunction')
 local term = require("term")
 local thread = require("thread")
 local ui = require("sysUI")
+local config = require("sysConfig")
 local currentMode
 
 local robotSide
@@ -127,6 +128,15 @@ local function initServer()
 
     if not currentMode then
         os.exit()
+    else
+        if currentMode == "autoStat" then
+            config.workingFarmSize = config.workingFarmStatSize
+        elseif currentMode == "autoSpread" then
+            config.workingFarmSize = config.workingFarmSpreadSize
+        elseif currentMode == "autoTier" then
+            config.workingFarmSize = config.workingFarmTierSize
+        end
+        config.workingFarmArea = config.workingFarmSize ^ 2
     end
 
     sys.printCenteredText("getChargerSide")
@@ -149,6 +159,10 @@ local function initServer()
     end
     os.sleep(0.1)
 
+    while not sys.sendRobotConfig() do
+        os.sleep(3)
+    end
+
     sys.printCenteredText("initDataBase")
     database.initDataBase()
 
@@ -167,7 +181,9 @@ local function initServer()
         end)
         if not success then
             term.clear()
-            print("RunThread error: " .. tostring(error))
+            if error ~= nil and error.reason ~= 'terminated' then
+                print("RunThread error: " .. tostring(error))
+            end
         end
     end)
 end
