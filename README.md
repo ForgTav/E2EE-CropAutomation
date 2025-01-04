@@ -149,11 +149,7 @@ _Solution: Possibly change location. Crops have minimum environmental stat requi
 
 _Solution: This is from having outdated java certificates. Try updating your java (21 is recommended), but be prepared to manually install the files by copy-pasting the code from GitHub. The "Other Helpful Commands" section below can help with that._
 
-6) There is an "execute_complex" error when downloading the files from GitHub or trying to run autoStat && autoSpread
-
-_Solution: The execute complex refers to using the && operator. Double check that you installed at least Tier 2 memory. Anything less will prevent you from joining commands together._
-
-7)  The robot is inactive after startup
+6)  The robot is inactive after startup
 
 _Solution: Ensure the charger is connected correctly. The Mekanism cube cannot directly transfer energy to the charger._
 
