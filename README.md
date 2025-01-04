@@ -49,7 +49,7 @@ Underneath the farm, you can see that there are three additional dirt blocks bel
 2) Insert all of the components into the computer case like on image
 3) Click assemble and wait until it completes (~3 min).
 4) Rename the robot in an anvil.
-5) Place the robot on the OC Charger which can also be powered directly by any GT cable. The OC Charger must be activated using some form of redstone such as a lever.
+5) Place the robot on the OC Charger which can also be powered. The OC Charger must be activated using some form of redstone such as a lever.
 6) Insert the OpenOS floppy disk into the disk slot of the robot and press the power button
 7) Follow the commands on screen 'install' --> 'Y' --> 'Y' (Note: The OpenOS floppy disk is no longer needed in the robot afterwards)
 8) Install the required scripts by copying this line of code into the robot (middle-click to paste)
