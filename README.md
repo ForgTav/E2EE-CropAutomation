@@ -111,7 +111,12 @@ After you enter "main", the mode selection menu will open. Choose a mode by clic
 
 
 
-The main process tracking menu then opens. Tabs are located on the left side of the menu, while information is displayed on the right. At the bottom, there are "start" and "exit" buttons. The "start" button launches the system, and "exit" terminates it. In the "Exit" tab, there are two exit modes available: "Cleanup" and "Force exit." The "Cleanup" mode removes all unnecessary plants from the farm before ending the program.
+The main process tracking menu then opens. Tabs are located on the left side of the menu, while information is displayed on the right. At the bottom, there are "start" and "exit" buttons.
+
+The "start" button launches the system, and "exit" terminates it. 
+
+In the "Exit" tab, there are two exit modes available: "Cleanup" and "Force exit." The "Cleanup" mode removes all unnecessary plants from the farm before ending the program.
+
 ![Schema_Beta](media/ui_after_init.png?)
 
 Slot 00, where the charger is located, is directly below slot 01 on the working farm or two blocks to the left of slot 03 in the storage. This allows the system to determine the location of each plant.
