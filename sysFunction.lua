@@ -54,7 +54,7 @@ end
 local function getChargerSide()
     for i = 1, #config.sidesCharger do
         local cur_scan = sensor.scan(config.sidesCharger[i][1], 0, config.sidesCharger[i][2])
-        if cur_scan.block and cur_scan.block.name == 'opencomputers:charger' then
+        if cur_scan ~= nil and cur_scan.block and cur_scan.block.name == 'opencomputers:charger' then
             return i
         end
     end
