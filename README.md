@@ -23,6 +23,7 @@ These Open Computers (OC) scripts will automatically tier-up, stat-up, and sprea
 - OpenOS Floppy Disk
 - Transvector Binder (Thaumcraft, Thaumic Tinkerer)
 - Transvector Dislocator (Thaumcraft,Thaumic Tinkerer)
+- Weeding Trowel (IC2)
 
 # Building the Farms
 
