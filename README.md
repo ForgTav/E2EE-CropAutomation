@@ -44,7 +44,7 @@ Underneath the farm, you can see that there are three additional dirt blocks bel
 
 # Building the Robot
 ![Robot Components](media/Robot_Components.png?)
-1) Insert the computer case into the OC Electronics Assembler which can be powered directly by any GT cable.
+1) Insert the computer case into the OC Electronics Assembler which can be powered.
 2) Insert all of the components into the computer case like on image
 3) Click assemble and wait until it completes (~3 min).
 4) Rename the robot in an anvil.
