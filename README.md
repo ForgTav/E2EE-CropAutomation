@@ -151,7 +151,7 @@ _Solution: This is from having outdated java certificates. Try updating your jav
 
 6)  The robot is inactive after startup
 
-_Solution: Ensure the charger is connected correctly. The Mekanism cube cannot directly transfer energy to the charger._
+_Solution: Ensure the charger is connected correctly. The Mekanism cube cannot directly transfer energy to the charger. Or mechanism cable cant power OS charger._
 
 # Known Issues
 1) If you plant a crop in the last slot, the system will consider the storage farm to be full.
