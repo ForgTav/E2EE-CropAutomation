@@ -177,6 +177,10 @@ local function init()
 
     local cord = sys.cordtoScan(0, 1)
     local scan = sys.fetchScan(sensor.scan(cord[1], 0, cord[2]))
+    if not scan.isCrop or (scan.name == 'air' or scan.name == 'emptyCrop') then
+        sys.printCenteredText('Not found targetCrop')
+        os.exit()
+    end
     modeConfig.targetCrop = scan.name
 end
 
