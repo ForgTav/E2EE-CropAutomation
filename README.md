@@ -93,7 +93,7 @@ The program **autoTier** will automatically tier-up your crops until the max bre
 1) Schema Mode[BETA]: Used for breeding plants according to a specified scheme. You can start with a reed crop. The final layout will look as shown in the image.
 ![Schema_Beta](media/schema_beta.png?)
 
-Target Crop Mode: Focuses on a specific target plant. The target plant is determined during initialization through scanning in target crop slot. Moves found target plants to parent slots
+2) Target Crop Mode: Focuses on a specific target plant. The target plant is determined during initialization through scanning in target crop slot. Moves found target plants to parent slots
 
 Modes are switched through the interface in the "AutoTier" menu, where you can choose between: "schema {BETA}" and a specific plant (targetCrop)
 
