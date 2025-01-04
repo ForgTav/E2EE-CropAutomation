@@ -61,12 +61,6 @@ Underneath the farm, you can see that there are three additional dirt blocks bel
 ![Robot Components](media/building_computer_2.png?)
 
 
-# Running the system
-Launching the system on the computer using the command main.
-
-    main
-
-
 # Building the Robot
 ![Robot Components](media/Robot_Components.png?)
 1) Insert the computer case into the OC Electronics Assembler which can be powered.
@@ -84,6 +78,12 @@ Launching the system on the computer using the command main.
 10) Print `` start `` on the robot command line
 
 ![Robot Inventory](media/Robot_Inventory.png?)
+
+
+# Running the system
+Launching the system on the computer using the command main.
+
+    main
 
 
 
