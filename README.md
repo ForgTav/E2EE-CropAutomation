@@ -113,7 +113,7 @@ After you enter "main", the mode selection menu will open. Choose a mode by clic
 
 The main process tracking menu then opens. Tabs are located on the left side of the menu, while information is displayed on the right. At the bottom, there are "start" and "exit" buttons.
 
-The "start" button launches the system, and "exit" terminates it. 
+The "Start" button launches the system, and "Exit" terminates it. 
 
 In the "Exit" tab, there are two exit modes available: "Cleanup" and "Force exit." The "Cleanup" mode removes all unnecessary plants from the farm before ending the program.
 
