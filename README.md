@@ -23,6 +23,7 @@ These Open Computers (OC) scripts will automatically tier-up, stat-up, and sprea
 - OpenOS Floppy Disk
 - Transvector Binder (Thaumcraft, Thaumic Tinkerer)
 - Transvector Dislocator (Thaumcraft,Thaumic Tinkerer)
+- Weeding Trowel (IC2)
 
 # Building the Farms
 
@@ -42,29 +43,12 @@ Underneath the farm, you can see that there are three additional dirt blocks bel
 
 
 
-# Building the Robot
-![Robot Components](media/Robot_Components.png?)
-1) Insert the computer case into the OC Electronics Assembler which can be powered directly by any GT cable.
-2) Insert all of the components into the computer case like on image
-3) Click assemble and wait until it completes (~3 min).
-4) Rename the robot in an anvil.
-5) Place the robot on the OC Charger which can also be powered directly by any GT cable. The OC Charger must be activated using some form of redstone such as a lever.
-6) Insert the OpenOS floppy disk into the disk slot of the robot and press the power button
-7) Follow the commands on screen 'install' --> 'Y' --> 'Y' (Note: The OpenOS floppy disk is no longer needed in the robot afterwards)
-8) Install the required scripts by copying this line of code into the robot (middle-click to paste)
-
-        wget https://raw.githubusercontent.com/ForgTav/E2EE-CropAutomation/main/robotSetup.lua && robotSetup
-   
-9) Place the Weeding Trowel and Transvector Binder into the last and second to last slot of the robot, respectively. Crop sticks will go in the third, but it is not required to put them in yourself. An axe or mattock can also be placed into the tool slot of the robot to speed up destroying crops (optional). See image below.
-10) Print `` start `` on the robot command line
-
-![Robot Inventory](media/Robot_Inventory.png?)
 
 
 # Building the Computer
 ![Robot Components](media/Computer_Components.png?)
 1) Place the computer case.
-2) Place screen and keyboard on top the case
+2) Place screen and keyboard like on image
 3) Shift-click all of the components into the computer case
 4) Power on
 5) Follow the commands on screen 'install' --> 'Y' --> 'Y' (Note: The OpenOS floppy disk is no longer needed in the computer afterwards)
@@ -77,10 +61,30 @@ Underneath the farm, you can see that there are three additional dirt blocks bel
 ![Robot Components](media/building_computer_2.png?)
 
 
+# Building the Robot
+![Robot Components](media/Robot_Components.png?)
+1) Insert the computer case into the OC Electronics Assembler which can be powered.
+2) Insert all of the components into the computer case like on image
+3) Click assemble and wait until it completes (~3 min).
+4) Rename the robot in an anvil.
+5) Place the robot on the OC Charger which can also be powered. The OC Charger must be activated using some form of redstone such as a lever.
+6) Insert the OpenOS floppy disk into the disk slot of the robot and press the power button
+7) Follow the commands on screen 'install' --> 'Y' --> 'Y' (Note: The OpenOS floppy disk is no longer needed in the robot afterwards)
+8) Install the required scripts by copying this line of code into the robot (middle-click to paste)
+
+        wget https://raw.githubusercontent.com/ForgTav/E2EE-CropAutomation/main/robotSetup.lua && robotSetup
+   
+9) Place the Weeding Trowel and Transvector Binder into the last and second to last slot of the robot, respectively. Crop sticks will go in the third, but it is not required to put them in yourself. An axe or mattock can also be placed into the tool slot of the robot to speed up destroying crops (optional). See image below.
+10) Print `` start `` on the robot command line
+
+![Robot Inventory](media/Robot_Inventory.png?)
+
+
 # Running the system
 Launching the system on the computer using the command main.
 
     main
+
 
 
 # autoTier
