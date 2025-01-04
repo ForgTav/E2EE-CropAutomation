@@ -85,7 +85,8 @@ Launching the system on the computer using the command main.
 
     main
 
-
+# autoStat
+The autoStat program will automatically improve the traits of your target crop until the sum of Gr + Ga - Re reaches at least 52 for the target crop on the working farm. Any plants with traits above these will be interpreted as weeds and removed. If a plant is different from the target crop, it will be destroyed.
 
 # autoTier
 The program **autoTier** will automatically tier-up your crops until the max breeding round is reached (configurable) or the storage farm is full.
@@ -99,8 +100,6 @@ Modes are switched through the interface in the "AutoTier" menu, where you can c
 
 Initially, at startup, (targetCrop) is default.
 
-# autoStat
-The autoStat program will automatically improve the traits of your target crop until the sum of Gr + Ga - Re reaches at least 52 for the target crop on the working farm. Any plants with traits above these will be interpreted as weeds and removed. If a plant is different from the target crop, it will be destroyed.
 
 # autoSpread
 The program **autoSpread** will automatically spread (duplicate) your target crop until the storage farm is full.
