@@ -48,7 +48,7 @@ Underneath the farm, you can see that there are three additional dirt blocks bel
 # Building the Computer
 ![Robot Components](media/Computer_Components.png?)
 1) Place the computer case.
-2) Place screen and keyboard on top the case
+2) Place screen and keyboard like on image
 3) Shift-click all of the components into the computer case
 4) Power on
 5) Follow the commands on screen 'install' --> 'Y' --> 'Y' (Note: The OpenOS floppy disk is no longer needed in the computer afterwards)
