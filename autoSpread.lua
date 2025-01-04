@@ -137,7 +137,8 @@ local function checkCondition()
     return false
   end
 
-  if storageSlot.isCrop and storageSlot.name ~= 'air' and storageSlot.name ~= 'emptyCrop' and not sys.isWeed(storageSlot) then
+  if storageSlot.isCrop and storageSlot.name ~= 'air' then
+    sys.printCenteredText('Missing slots in storage')
     return true
   end
 
