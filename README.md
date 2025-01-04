@@ -125,13 +125,15 @@ Slot 00, where the charger is located, is directly below slot 01 on the working 
 When the system prepares a new order for the robot, the phrase "Loading..." appears in the top right corner. During this time, the user interface becomes unresponsive. This is due to single-threading.
 ![Schema_Beta](media/ui_loading.png?)
 
+XX slots on the working farm indicate those that are not used in the current mode. Be careful when starting the system and ensure that there are no plants in the unused slots.
+
 # Troubleshooting
 
 1) The Transvector Dislocator is randomly moved to somewhere on the working farm
 
 _Solution: Cover your water sources. Otherwise the order of the transvector binder will get messed up and teleport the dislocator instead of a crop._
 
-4) The Robot is randomly moved to somewhere on the working farm
+2) The Robot is randomly moved to somewhere on the working farm
 
 _Solution: Check the orientation of the transvector dislocator. This can only happen if the dislocator is facing up instead of forward._
 
@@ -171,6 +173,10 @@ To edit (or create) a new file, enter
 To remove any one file installed on the robot, enter
 
     rm <filename>
+
+To uninstall the system on computer or robot, enter
+
+    uninstall
     
 
 ## Thanks
