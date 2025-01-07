@@ -240,8 +240,8 @@ local function sendRobotConfig()
     return false
 end
 
-local function getRobotStatus(timeout)
-    tunnel.send(serialization.serialize({ type = "getStatus" }))
+local function getRobotStatus(timeout, mode)
+    tunnel.send(serialization.serialize({ type = "getStatus", currentMode = mode }))
     local _, _, _, _, _, message = event.pull(timeout, "modem_message")
     if message == nil then
         lastRobotStatus = false

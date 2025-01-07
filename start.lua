@@ -6,6 +6,7 @@ local actions = require('robotActions')
 local serialization = require("serialization")
 local config = require('robotConfig')
 local tunnel = component.tunnel
+local lastMode
 local robotStatus = true
 
 local function sendMessage(msg)
@@ -41,7 +42,18 @@ local function transporter(table)
             needConfig = true
         end
 
-        sendMessage({ action = 'getStatus', robotStatus = robotStatus, needConfig = needConfig })
+        if lastMode == nil and table.currentMode ~= nil then
+            lastMode = table.currentMode
+        elseif lastMode ~= nil and table.currentMode ~= lastMode then
+            needConfig = true
+            lastMode = table.currentMode
+        end
+
+        if needConfig then
+            sendMessage({ action = 'getStatus', robotStatus = false, needConfig = needConfig })
+        else
+            sendMessage({ action = 'getStatus', robotStatus = robotStatus })
+        end
     elseif table.type == 'robotConfig' then
         local robotConfig = table.data
         if robotConfig.workingFarmSize then
@@ -55,7 +67,7 @@ local function transporter(table)
         if robotConfig.storageOffset then
             config.storageOffset = robotConfig.storageOffset
         end
-
+        
         sendMessage({ action = 'robotConfig', answer = true })
     elseif table.type == 'cleanUp' then
         robotStatus = false
