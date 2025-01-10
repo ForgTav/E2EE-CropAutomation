@@ -109,7 +109,7 @@ local function handleParent(slot, crop)
       slot = slot,
       priority = config.priorities['deweed']
     })
-  elseif sys.isComMax(crop, 'working') then
+  elseif slot ~= 1 and sys.isComMax(crop, 'working') then
     table.insert(order, {
       action = 'removePlant',
       slot = slot,
