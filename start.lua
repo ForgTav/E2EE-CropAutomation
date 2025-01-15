@@ -50,10 +50,11 @@ local function transporter(table)
         end
 
         if needConfig then
-            sendMessage({ action = 'getStatus', robotStatus = false, needConfig = needConfig })
+            sendMessage({ action = 'getStatus', robotStatus = false, needConfig = needConfig, emptyCropSticks = actions.getEmptyCropSticksFlag() })
         else
-            sendMessage({ action = 'getStatus', robotStatus = robotStatus })
+            sendMessage({ action = 'getStatus', robotStatus = robotStatus, emptyCropSticks = actions.getEmptyCropSticksFlag() })
         end
+        
     elseif table.type == 'robotConfig' then
         local robotConfig = table.data
         if robotConfig.workingFarmSize then
@@ -67,7 +68,9 @@ local function transporter(table)
         if robotConfig.storageOffset then
             config.storageOffset = robotConfig.storageOffset
         end
-        
+
+        actions.setEmptyCropSticksFlag(false)
+
         sendMessage({ action = 'robotConfig', answer = true })
     elseif table.type == 'cleanUp' then
         robotStatus = false

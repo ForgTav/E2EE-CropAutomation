@@ -14,6 +14,7 @@ local tunnel = component.tunnel
 local sensor = component.sensor
 local robotSide
 local lastRobotStatus = false
+local emptyCropSticks = false
 local lastComputerStatus = ''
 
 
@@ -196,7 +197,7 @@ local function cleanUp()
                 farm = 'working',
                 slot = slot,
             })
-        elseif slot % 2 == 0 then
+        elseif slot % 2 == 0 and crop.isCrop and crop.name ~= 'air' then
             table.insert(order, {
                 farm = 'working',
                 slot = slot,
@@ -256,6 +257,10 @@ local function getRobotStatus(timeout, mode)
         end
     end
 
+    if unserilized.emptyCropSticks ~= nil and unserilized.emptyCropSticks == true then
+        emptyCropSticks = unserilized.emptyCropSticks
+    end
+
     if unserilized.robotStatus then
         lastRobotStatus = unserilized.robotStatus
         return unserilized.robotStatus
@@ -276,14 +281,25 @@ local function setLastComputerStatus(status)
     lastComputerStatus = status
 end
 
+local function getEmptyCropSticks()
+    return emptyCropSticks
+end
+
+local function setEmptyCropSticks(status)
+    emptyCropSticks = status
+end
+
 local function getLastComputerStatus()
     return lastComputerStatus
 end
+
 
 return {
     SendToLinkedCards = SendToLinkedCards,
     getRobotStatus = getRobotStatus,
     getLastRobotStatus = getLastRobotStatus,
+    getEmptyCropSticks = getEmptyCropSticks,
+    setEmptyCropSticks = setEmptyCropSticks,
     getLastComputerStatus = getLastComputerStatus,
     setLastComputerStatus = setLastComputerStatus,
     scanFarm = scanFarm,
