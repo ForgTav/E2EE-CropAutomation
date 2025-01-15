@@ -43,6 +43,10 @@ local function restockStick()
     end
 
     robot.select(selectedSlot)
+
+    if robot.count(robot.inventorySize() + config.stickSlot) < 3 * 3 then
+        return false;
+    end
 end
 
 
@@ -77,9 +81,11 @@ local function placeCropStick(count)
         count = 1
     end
 
-    if robot.count(robot.inventorySize() + config.stickSlot) < count + 1 then
+    if robot.count(robot.inventorySize() + config.stickSlot) < (count + 1) * 3 then
         gps.save()
-        restockStick()
+        if not restockStick() then
+            return;
+        end
         gps.resume()
     end
 
