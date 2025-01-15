@@ -120,6 +120,12 @@ end
 --end
 
 local function initDataBase()
+  storage = {}
+  reverseStorage = {}
+  farm = {}
+  reverseFarm = {}
+  parentSlots = {}
+  logs = {}
   getPossibleParentSlots()
 end
 

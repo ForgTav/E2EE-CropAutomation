@@ -14,7 +14,7 @@ local function handleChild(slot, crop)
   local parentSlots = database.getParentSlots()
   for _, parentSlot in pairs(parentSlots) do
     local parentCrop = database.getFarmSlot(parentSlot)
-    if parentCrop and (parentCrop.name == 'emptyCrop' or parentCrop.name == 'air') then
+    if parentCrop and parentCrop.isCrop and parentCrop.name ~= targetCrop then
       availableParentSlot = parentSlot
       availableParent = parentCrop
       break
@@ -144,17 +144,17 @@ local function handleParent(slot, crop)
   if crop.name == 'air' or (crop.isCrop and crop.name == "emptyCrop") then
     return order
   elseif sys.isWeed(crop) then
-    order[#order + 1] = {
+    table.insert(order, {
       action = 'deweed',
       slot = slot,
       priority = config.priorities['deweed']
-    }
-  elseif sys.isComMax(crop, 'working') then
-    order[#order + 1] = {
+    })
+  elseif slot ~= 1 and sys.isComMax(crop, 'working') then
+    table.insert(order, {
       action = 'removePlant',
       slot = slot,
       priority = config.priorities['removePlant']
-    }
+    })
   elseif not crop.isCrop then
     database.deleteParentSlots(slot)
   end
@@ -177,7 +177,8 @@ local function checkCondition()
     return false
   end
 
-  if storageSlot.isCrop and storageSlot.name ~= 'air' and storageSlot.name ~= 'emptyCrop' and not sys.isWeed(storageSlot) then
+  if storageSlot.isCrop and storageSlot.name ~= 'air' then
+    sys.printCenteredText('Missing slots in storage')
     return true
   end
 

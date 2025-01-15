@@ -39,7 +39,7 @@ local function forceExit()
         local order = sys.cleanUp()
         if next(order) ~= nil then
             sys.printCenteredText('Send cleanup order')
-            while not sys.getRobotStatus(1) do
+            while not sys.getRobotStatus(1, currentMode) do
                 os.sleep(0.1)
             end
             os.sleep(0.1)
@@ -48,7 +48,7 @@ local function forceExit()
             sys.printCenteredText('Empty cleanup order')
         end
     end
-    while not sys.getRobotStatus(1) do
+    while not sys.getRobotStatus(1, currentMode) do
         os.sleep(0.1)
     end
     os.sleep(0.1)
@@ -66,13 +66,13 @@ local function sysExit()
     local order = sys.cleanUp()
     if next(order) ~= nil then
         sys.printCenteredText('Send cleanup order')
-        while not sys.getRobotStatus(1) do
+        while not sys.getRobotStatus(1, currentMode) do
             os.sleep(0.1)
         end
         os.sleep(0.1)
         sys.SendToLinkedCards({ type = 'cleanUp', data = order })
     end
-    while not sys.getRobotStatus(1) do
+    while not sys.getRobotStatus(1, currentMode) do
         os.sleep(0.1)
     end
     os.sleep(0.1)
@@ -85,7 +85,7 @@ local function run(firstRun)
 
     while true do
         sys.setLastComputerStatus('Awaiting')
-        while not sys.getRobotStatus(3) do
+        while not sys.getRobotStatus(3, currentMode) do
             sys.setLastComputerStatus('Sleep 3 seconds..')
             os.sleep(3)
         end
@@ -144,6 +144,9 @@ local function initServer()
         config.workingFarmArea = config.workingFarmSize ^ 2
     end
 
+    sys.printCenteredText("initDataBase")
+    database.initDataBase()
+
     sys.printCenteredText("getChargerSide")
     robotSide = sys.getChargerSide()
 
@@ -159,7 +162,7 @@ local function initServer()
 
     sys.printCenteredText("Awaiting robot")
 
-    while not sys.getRobotStatus(3) do
+    while not sys.getRobotStatus(3, currentMode) do
         os.sleep(0)
     end
     os.sleep(0.1)
@@ -167,9 +170,6 @@ local function initServer()
     while not sys.sendRobotConfig() do
         os.sleep(3)
     end
-
-    sys.printCenteredText("initDataBase")
-    database.initDataBase()
 
     sys.scanStorage(true)
 

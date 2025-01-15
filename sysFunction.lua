@@ -55,7 +55,7 @@ end
 local function getChargerSide()
     for i = 1, #config.sidesCharger do
         local cur_scan = sensor.scan(config.sidesCharger[i][1], 0, config.sidesCharger[i][2])
-        if cur_scan.block and cur_scan.block.name == 'opencomputers:charger' then
+        if cur_scan ~= nil and cur_scan.block and cur_scan.block.name == 'opencomputers:charger' then
             return i
         end
     end
@@ -241,8 +241,8 @@ local function sendRobotConfig()
     return false
 end
 
-local function getRobotStatus(timeout)
-    tunnel.send(serialization.serialize({ type = "getStatus" }))
+local function getRobotStatus(timeout, mode)
+    tunnel.send(serialization.serialize({ type = "getStatus", currentMode = mode }))
     local _, _, _, _, _, message = event.pull(timeout, "modem_message")
     if message == nil then
         lastRobotStatus = false

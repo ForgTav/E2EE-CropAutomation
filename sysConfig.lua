@@ -36,7 +36,8 @@ config.storageFarmArea = config.storageFarmSize ^ 2
 
 config.seedTiers = {
     weed = 0,
-    accacia_sapling = 1,
+    dark_oak_sapling = 1,
+    acacia_sapling = 1,
     jungle_sapling = 1,
     wheat = 1,
     beetroots = 1,

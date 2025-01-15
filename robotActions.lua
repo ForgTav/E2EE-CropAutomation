@@ -167,9 +167,6 @@ local function transplant(order)
         return
     end
 
-    print('src = ' .. order.slot)
-    print('dest = ' .. order.to)
-
     local selectedSlot = robot.select()
 
     --gps.save()
