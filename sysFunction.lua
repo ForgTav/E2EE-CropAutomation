@@ -294,6 +294,7 @@ return {
     SendToLinkedCards = SendToLinkedCards,
     getRobotStatus = getRobotStatus,
     getLastRobotStatus = getLastRobotStatus,
+    getEmptyCropSticks = getEmptyCropSticks,
     getLastComputerStatus = getLastComputerStatus,
     setLastComputerStatus = setLastComputerStatus,
     scanFarm = scanFarm,
