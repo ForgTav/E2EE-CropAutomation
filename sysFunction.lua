@@ -257,7 +257,7 @@ local function getRobotStatus(timeout, mode)
         end
     end
 
-    if unserilized.missingCropSticks ~= nil and unserilized.missingCropSticks == true then
+    if unserilized.emptyCropSticks ~= nil and unserilized.emptyCropSticks == true then
         emptyCropSticks = unserilized.emptyCropSticks
     end
 
