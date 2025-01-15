@@ -107,6 +107,11 @@ local function run(firstRun)
             break
         end
 
+        if sys.getEmptyCropSticks() then
+            systemExit = true
+            break
+        end
+
         local order = sys.createOrderList(exec.handleChild, exec.handleParent)
         if next(order) ~= nil then
             sys.SendToLinkedCards({ type = 'order', data = order })

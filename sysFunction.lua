@@ -14,6 +14,7 @@ local tunnel = component.tunnel
 local sensor = component.sensor
 local robotSide
 local lastRobotStatus = false
+local emptyCropSticks = false
 local lastComputerStatus = ''
 
 
@@ -256,6 +257,10 @@ local function getRobotStatus(timeout)
         end
     end
 
+    if unserilized.missingCropSticks ~= nil and unserilized.missingCropSticks == true then
+        emptyCropSticks = unserilized.emptyCropSticks
+    end
+
     if unserilized.robotStatus then
         lastRobotStatus = unserilized.robotStatus
         return unserilized.robotStatus
@@ -276,9 +281,14 @@ local function setLastComputerStatus(status)
     lastComputerStatus = status
 end
 
+local function getEmptyCropSticks()
+    return emptyCropSticks
+end
+
 local function getLastComputerStatus()
     return lastComputerStatus
 end
+
 
 return {
     SendToLinkedCards = SendToLinkedCards,

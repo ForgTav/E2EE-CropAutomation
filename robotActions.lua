@@ -7,7 +7,7 @@ local config = require('robotConfig')
 local gps = require('robotGPS')
 local inventory_controller = component.inventory_controller
 local redstone = component.redstone
-
+local emptyCropSticks = false;
 
 
 local function needCharge()
@@ -45,6 +45,7 @@ local function restockStick()
     robot.select(selectedSlot)
 
     if robot.count(robot.inventorySize() + config.stickSlot) < 3 * 3 then
+        emptyCropSticks = true;
         return false;
     end
 end
@@ -244,6 +245,12 @@ local function initWork()
     restockAll()
 end
 
+local function getEmptyCropSticksFlag()
+    return emptyCropSticks;
+end
+
+
+
 
 return {
     needCharge = needCharge,
@@ -256,5 +263,6 @@ return {
     removePlant = removePlant,
     pulseDown = pulseDown,
     transplant = transplant,
-    initWork = initWork
+    initWork = initWork,
+    getEmptyCropSticksFlag = getEmptyCropSticksFlag
 }

@@ -41,7 +41,7 @@ local function transporter(table)
             needConfig = true
         end
 
-        sendMessage({ action = 'getStatus', robotStatus = robotStatus, needConfig = needConfig })
+        sendMessage({ action = 'getStatus', robotStatus = robotStatus, needConfig = needConfig, emptyCropSticks = actions.getEmptyCropSticksFlag() })
     elseif table.type == 'robotConfig' then
         local robotConfig = table.data
         if robotConfig.workingFarmSize then
