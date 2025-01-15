@@ -197,7 +197,7 @@ local function cleanUp()
                 farm = 'working',
                 slot = slot,
             })
-        elseif slot % 2 == 0 and crop.isCrop then
+        elseif slot % 2 == 0 and crop.isCrop and crop.name ~= 'air' then
             table.insert(order, {
                 farm = 'working',
                 slot = slot,
