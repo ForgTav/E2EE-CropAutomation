@@ -97,17 +97,17 @@ local function run(firstRun)
         end
 
         if not firstRun then
+            if sys.getEmptyCropSticks() then
+                systemExit = true
+                break
+            end
+
             ui.UIloading(true)
             sys.scanFarm()
         end
         firstRun = false
 
         if exec.checkCondition() then
-            systemExit = true
-            break
-        end
-
-        if sys.getEmptyCropSticks() then
             systemExit = true
             break
         end
@@ -166,6 +166,8 @@ local function initServer()
         os.sleep(0)
     end
     os.sleep(0.1)
+    
+    sys.setEmptyCropSticks(false);
 
     while not sys.sendRobotConfig() do
         os.sleep(3)

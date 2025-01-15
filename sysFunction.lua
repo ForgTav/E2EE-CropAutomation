@@ -285,6 +285,10 @@ local function getEmptyCropSticks()
     return emptyCropSticks
 end
 
+local function setEmptyCropSticks(status)
+    emptyCropSticks = status
+end
+
 local function getLastComputerStatus()
     return lastComputerStatus
 end
@@ -295,6 +299,7 @@ return {
     getRobotStatus = getRobotStatus,
     getLastRobotStatus = getLastRobotStatus,
     getEmptyCropSticks = getEmptyCropSticks,
+    setEmptyCropSticks = setEmptyCropSticks,
     getLastComputerStatus = getLastComputerStatus,
     setLastComputerStatus = setLastComputerStatus,
     scanFarm = scanFarm,
