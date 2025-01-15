@@ -86,7 +86,7 @@ local function placeCropStick(count)
         if emptyCropSticks then
             return;
         end
-        
+
         gps.save()
         if not restockStick() then
             return;
@@ -250,6 +250,9 @@ local function getEmptyCropSticksFlag()
     return emptyCropSticks;
 end
 
+local function setEmptyCropSticksFlag(flag)
+    emptyCropSticks = flag;
+end
 
 
 
@@ -265,5 +268,6 @@ return {
     pulseDown = pulseDown,
     transplant = transplant,
     initWork = initWork,
-    getEmptyCropSticksFlag = getEmptyCropSticksFlag
+    getEmptyCropSticksFlag = getEmptyCropSticksFlag,
+    setEmptyCropSticksFlag = setEmptyCropSticksFlag
 }

@@ -69,6 +69,8 @@ local function transporter(table)
             config.storageOffset = robotConfig.storageOffset
         end
 
+        actions.setEmptyCropSticksFlag(false)
+
         sendMessage({ action = 'robotConfig', answer = true })
     elseif table.type == 'cleanUp' then
         robotStatus = false
