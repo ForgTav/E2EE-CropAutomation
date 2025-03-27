@@ -54,7 +54,7 @@ Underneath the farm, you can see that there are three additional dirt blocks bel
 5) Follow the commands on screen 'install' --> 'Y' --> 'Y' (Note: The OpenOS floppy disk is no longer needed in the computer afterwards)
 6) Install the required scripts by copying this line of code into the computer (middle-click to paste)
    
-        wget https://raw.githubusercontent.com/ForgTav/E2EE-CropAutomation/main/sysSetup.lua && sysSetup
+       wget https://raw.githubusercontent.com/ForgTav/E2EE-CropAutomation/main/sysSetup.lua && sysSetup
 7) Connect the sensor to the computer or monitor using a cable from OpenComputers.
 
 ![Robot Components](media/building_computer.png?)
@@ -72,7 +72,7 @@ Underneath the farm, you can see that there are three additional dirt blocks bel
 7) Follow the commands on screen 'install' --> 'Y' --> 'Y' (Note: The OpenOS floppy disk is no longer needed in the robot afterwards)
 8) Install the required scripts by copying this line of code into the robot (middle-click to paste)
 
-        wget https://raw.githubusercontent.com/ForgTav/E2EE-CropAutomation/main/robotSetup.lua && robotSetup
+       wget https://raw.githubusercontent.com/ForgTav/E2EE-CropAutomation/main/robotSetup.lua && robotSetup
    
 9) Place the Weeding Trowel and Transvector Binder into the last and second to last slot of the robot, respectively. Crop sticks will go in the third, but it is not required to put them in yourself. An axe or mattock can also be placed into the tool slot of the robot to speed up destroying crops (optional). See image below.
 10) Print `` start `` on the robot command line
