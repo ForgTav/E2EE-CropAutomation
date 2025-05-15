@@ -9,7 +9,7 @@ local config = require('sysConfig')
 -- |34 27 22 15 10 03|
 -- |35 26 23 14 11 02|
 -- |36 25 24 13 12 01|
---  ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
+--  ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
 
 local function workingSlotToPos(slot)
     local x = (slot - 1) // config.workingFarmSize

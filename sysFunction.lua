@@ -205,6 +205,16 @@ local function cleanUp()
         end
     end
 
+    local cord = cordtoScan(1, 1)
+    local rawScan = sensor.scan(cord[1], 0, cord[2])
+    local blankCrop = fetchScan(rawScan)
+
+    if blankCrop.isCrop and (blankCrop.name == 'emptyCrop' or isWeed(blankCrop)) then
+        table.insert(order, {
+            farm = 'blankFarm'
+        })
+    end
+
     for slot, crop in pairs(database.getStorage()) do
         if crop.isCrop and (crop.name == 'emptyCrop' or isWeed(crop)) then
             table.insert(order, {

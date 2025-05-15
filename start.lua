@@ -81,6 +81,10 @@ local function transporter(table)
             elseif order.farm == 'storage' then
                 gps.go(gps.storageSlotToPos(order.slot))
                 actions.removePlant()
+            elseif order.farm == 'blankFarm' then
+                gps.go({1,1})
+                print('blankFarm')
+                actions.removePlant()
             end
         end
         actions.restockAll()
