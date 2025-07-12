@@ -1,6 +1,4 @@
---local robot = require('robot')
 local config = require('sysConfig')
-
 -- ======================== WORKING FARM ========================
 --  _________________   6x6 Slot Map
 -- |31 30 19 18 07 06|
@@ -12,14 +10,16 @@ local config = require('sysConfig')
 --  ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
 
 local function workingSlotToPos(slot)
-    local x = (slot - 1) // config.workingFarmSize
-    local row = (slot - 1) % config.workingFarmSize
+    local workingFarmSize = config.workingFarmSize
+
+    local x = (slot - 1) // workingFarmSize
+    local row = (slot - 1) % workingFarmSize
     local y
 
     if x % 2 == 0 then
         y = row + 1
     else
-        y = -row + config.workingFarmSize
+        y = -row + workingFarmSize
     end
 
     return { -x, y }
@@ -39,22 +39,21 @@ end
 --  ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
 
 local function storageSlotToPos(slot)
-    local x = (slot - 1) // config.storageFarmSize + 2
-    local row = (slot - 1) % config.storageFarmSize
-    local storageOffset = config.workingFarmDefaultSize - config.workingFarmSize
+    local workingFarmSize = config.workingFarmSize
+    local storageFarmSize = config.storageFarmSize
+
+    local x = (slot - 1) // storageFarmSize + 2
+    local row = (slot - 1) % storageFarmSize
     local y
 
     if x % 2 == 0 then
-        y = row - config.storageFarmSize + config.workingFarmSize + 1 + storageOffset
+        y = row - storageFarmSize + workingFarmSize + 1
     else
-        y = -row + config.workingFarmSize + storageOffset
+        y = -row + workingFarmSize
     end
 
     return { x, y }
 end
-
-
-
 
 return {
     workingSlotToPos = workingSlotToPos,

@@ -6,28 +6,31 @@ local savedPos = {}
 
 
 local function workingSlotToPos(slot)
-    local x = (slot - 1) // config.workingFarmSize
-    local row = (slot - 1) % config.workingFarmSize
+    local workingFarmSize = config.workingFarmSize
+    local x = (slot - 1) // workingFarmSize
+    local row = (slot - 1) % workingFarmSize
     local y
 
     if x % 2 == 0 then
         y = row + 1
     else
-        y = -row + config.workingFarmSize
+        y = -row + workingFarmSize
     end
 
     return { -x, y }
 end
 
 local function storageSlotToPos(slot)
-    local x = (slot - 1) // config.storageFarmSize + 2
-    local row = (slot - 1) % config.storageFarmSize
+    local workingFarmSize = config.workingFarmSize
+    local storageFarmSize = config.storageFarmSize
+    local x = (slot - 1) // storageFarmSize + 2
+    local row = (slot - 1) % storageFarmSize
     local y
 
     if x % 2 == 0 then
-        y = row - config.storageFarmSize + config.workingFarmSize + 1 + config.storageOffset
+        y = row - storageFarmSize + workingFarmSize + 1
     else
-        y = -row + config.workingFarmSize + config.storageOffset
+        y = -row + workingFarmSize
     end
 
     return { x, y }

@@ -3,14 +3,12 @@ local args = { ... }
 local branch
 local repo
 local scripts = {
-    'autoStat.lua',
-    'autoTier.lua',
-    'autoSpread.lua',
     'main.lua',
     'sysConfig.lua',
     'sysDB.lua',
     'sysFunction.lua',
     'sysGPS.lua',
+    'sysLogic.lua',
     'sysUI.lua',
     'uninstall.lua'
 }

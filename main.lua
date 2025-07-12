@@ -1,198 +1,81 @@
 local component = require('component')
-local event = require("event")
 local os = require('os')
-local database = require('sysDB')
-local sys = require('sysFunction')
 local term = require("term")
 local thread = require("thread")
+local db = require('sysDB')
 local ui = require("sysUI")
-local config = require("sysConfig")
-local currentMode
+local logic = require("sysLogic")
 
-local robotSide
-local exec
-local uiThread
-
-local function tprint(tbl, indent)
-    indent = indent or 0
-    for k, v in pairs(tbl) do
-        local formatting = string.rep("  ", indent) .. k .. ": "
-        if type(v) == "table" then
-            print(formatting)
-            tprint(v, indent + 1)
-        elseif type(v) == 'boolean' then
-            print(formatting .. tostring(v))
+local function checkGPU()
+    if component.isAvailable("gpu") then
+        local gpu = component.gpu
+        local w, h = gpu.maxResolution()
+        if w < 80 or h < 25 then
+            print("Requires at least a Tier 2 Graphics Card and compatible Screen.")
+            return false
         else
-            print(formatting .. v)
+            return true
         end
     end
+
+    return false
 end
 
-local function forceExit()
-    if uiThread and uiThread:status() ~= 'dead' then
-        uiThread:kill()
+local function checkLinkedCard()
+    if component.isAvailable("tunnel") then
+        return true
     end
-    sys.printCenteredText('Force exit')
-    if ui.needCleanup() then
-        sys.scanStorage(true)
-        sys.scanFarm(true)
-        local order = sys.cleanUp()
-        if next(order) ~= nil then
-            sys.printCenteredText('Send cleanup order')
-            while not sys.getRobotStatus(1, currentMode) do
-                os.sleep(0.1)
-            end
-            os.sleep(0.1)
-            sys.SendToLinkedCards({ type = 'cleanUp', data = order })
-        else
-            sys.printCenteredText('Empty cleanup order')
-        end
-    end
-    while not sys.getRobotStatus(1, currentMode) do
-        os.sleep(0.1)
-    end
-    os.sleep(0.1)
-    term.clear()
-    os.exit()
+    print("Requires a Linked Card to communicate with robot.")
+    return false
 end
 
-local function sysExit()
-    if uiThread and uiThread:status() ~= 'dead' then
-        uiThread:kill()
+local function checkMemory()
+    local computer = require("computer")
+    local totalMemory = computer.totalMemory()
+
+    if totalMemory >= 786432 then
+        return true
+    else
+        print("Insufficient memory: requires additional or higher-tier RAM/Memory modules.")
+        return false
     end
-
-    sys.scanStorage(true)
-
-    local order = sys.cleanUp()
-    if next(order) ~= nil then
-        sys.printCenteredText('Send cleanup order')
-        while not sys.getRobotStatus(1, currentMode) do
-            os.sleep(0.1)
-        end
-        os.sleep(0.1)
-        sys.SendToLinkedCards({ type = 'cleanUp', data = order })
-    end
-    while not sys.getRobotStatus(1, currentMode) do
-        os.sleep(0.1)
-    end
-    os.sleep(0.1)
-    term.clear()
-    os.exit()
-end
-
-local function run(firstRun)
-    local systemExit = false;
-
-    while true do
-        sys.setLastComputerStatus('Awaiting')
-        while not sys.getRobotStatus(3, currentMode) do
-            sys.setLastComputerStatus('Sleep 3 seconds..')
-            os.sleep(3)
-        end
-        os.sleep(0.1)
-
-        if ui.needExit() then
-            forceExit()
-            break
-        end
-
-        if not firstRun then
-            ui.UIloading(true)
-            sys.scanFarm()
-
-            if sys.getEmptyCropSticks() then
-                systemExit = true
-                break
-            end
-        end
-        firstRun = false
-
-        if exec.checkCondition() then
-            systemExit = true
-            break
-        end
-
-        local order = sys.createOrderList(exec.handleChild, exec.handleParent)
-        if next(order) ~= nil then
-            sys.SendToLinkedCards({ type = 'order', data = order })
-        end
-
-        ui.UIloading(false)
-        sys.setLastComputerStatus('Sleep 5 seconds..')
-        os.sleep(5)
-    end
-
-    if systemExit then
-        sysExit()
-    end
-    os.sleep(0.2)
 end
 
 local function initServer()
-    currentMode = ui.drawMainMenu()
-
-    if not currentMode then
-        os.exit()
-    else
-        if currentMode == "autoStat" then
-            config.workingFarmSize = config.workingFarmStatSize
-        elseif currentMode == "autoSpread" then
-            config.workingFarmSize = config.workingFarmSpreadSize
-        elseif currentMode == "autoTier" then
-            config.workingFarmSize = config.workingFarmTierSize
-        end
-        config.workingFarmArea = config.workingFarmSize ^ 2
-    end
-
-    sys.printCenteredText("initDataBase")
-    database.initDataBase()
-
-    sys.printCenteredText("getChargerSide")
-    robotSide = sys.getChargerSide()
-
-    if not robotSide then
-        sys.printCenteredText('Charger not found')
-        os.exit()
-    end
-    sys.setRobotSide(robotSide)
-
-    exec = require(currentMode)
-
-    exec.init()
-
-    sys.printCenteredText("Awaiting robot")
-
-    while not sys.getRobotStatus(3, currentMode) do
-        os.sleep(0)
-    end
-    os.sleep(0.1)
-
-    sys.setEmptyCropSticks(false);
-
-    while not sys.sendRobotConfig() do
-        os.sleep(3)
-    end
-
-    sys.scanStorage(true)
-
-    sys.printCenteredText("scanFarm")
-    sys.scanFarm(true)
-
-    uiThread = thread.create(function() ui.initUI() end)
-    local runThread = thread.create(function()
-        local success, error = pcall(function()
-            while not ui.getStartSystem() do
-                os.sleep(1)
-            end
-            run(true)
+    local uiThread = thread.create(function()
+        local _success, _error = pcall(function()
+            ui.initUI()
         end)
-        if not success then
+        if not _success and _error and _error.reason ~= 'terminated' then
             term.clear()
-            if error ~= nil and error.reason ~= 'terminated' then
-                print("RunThread error: " .. tostring(error))
-            end
+            error("uiThread error: " .. tostring(error), 2)
+        end
+    end)
+    local runThread = thread.create(function()
+        local _success, _error = pcall(function()
+            logic.initLogic()
+        end)
+        if not _success and _error and _error.reason ~= 'terminated' then
+            term.clear()
+            print("System thread error: " .. tostring(_error))
         end
     end)
 end
 
-initServer()
+local function checkComponents()
+    db.initDataBase()
+    if not checkGPU() then
+        os.exit()
+    end
+
+    if not checkLinkedCard() then
+        os.exit()
+    end
+
+    if not checkMemory() then
+        os.exit()
+    end
+
+    initServer()
+end
+checkComponents()

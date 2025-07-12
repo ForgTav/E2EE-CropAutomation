@@ -2,43 +2,79 @@ local component = require('component')
 local event = require("event")
 local config = require('sysConfig')
 local gps = require('sysGPS')
-local database = require('sysDB')
 local serialization = require("serialization")
-local term = require("term")
 local db = require("sysDB")
+local computer = require('computer')
 
-local gpu = component.gpu
-local screenWidth, screenHeight = gpu.getResolution()
-
-local tunnel = component.tunnel
-local sensor = component.sensor
-local robotSide
-local lastRobotStatus = false
-local emptyCropSticks = false
-local lastComputerStatus = ''
-
-
-local function SendToLinkedCards(msg)
-    tunnel.send(serialization.serialize(msg))
+local function getSensor()
+    if component.isAvailable("sensor") then
+        return component.sensor
+    end
+    return nil
 end
 
-local function printCenteredText(text)
-    term.clear()
-
-    local startX = math.floor((screenWidth - #text) / 2)
-    local startY = math.floor(screenHeight / 2)
-
-    term.setCursor(startX, startY)
-    term.write(text)
+local function getTunnel()
+    if component.isAvailable("tunnel") then
+        return component.tunnel
+    end
+    return nil
 end
 
+local function getChargerSide()
+    local sidesCharger = {
+        { 0,  -1 },
+        { 1,  0 },
+        { 0,  1 },
+        { -1, 0 },
+    }
 
+    local sensor = getSensor()
+    if not sensor then return nil end
 
-local function setRobotSide(side)
-    robotSide = side
+    for i = 1, #sidesCharger do
+        local cur_scan = sensor.scan(sidesCharger[i][1], 0, sidesCharger[i][2])
+        if cur_scan ~= nil and cur_scan.block and cur_scan.block.name == 'opencomputers:charger' then
+            return i
+        end
+    end
+    return nil
+end
+
+local function sendTunnelRequest(request, expectedType, timeout)
+    timeout = timeout or 3
+    local tunnel = getTunnel()
+    if not tunnel then return nil end
+    tunnel.send(serialization.serialize(request))
+
+    local startTime = computer.uptime()
+    repeat
+        local remaining = timeout - (computer.uptime() - startTime)
+        if remaining <= 0 then break end
+        local _, _, _, _, _, message = event.pull(remaining, "modem_message")
+        if message then
+            local decoded = serialization.unserialize(message)
+            if decoded and decoded.type == expectedType then
+                return decoded
+            end
+        end
+    until false
+
+    return nil
+end
+
+local function sendTunnelRequestNoReply(request)
+    local tunnel = getTunnel()
+    if not tunnel then return nil end
+    tunnel.send(serialization.serialize(request))
+end
+
+local function getRobotStatus()
+    local response = sendTunnelRequest({ type = "getStatus" }, "getStatus", 3)
+    return response and response.robotStatus or false
 end
 
 local function cordtoScan(x, y)
+    local robotSide = db.getSystemData('robotSide')
     if robotSide == 1 then
         return { x, (-y - 1) }
     elseif robotSide == 2 then
@@ -52,146 +88,130 @@ local function cordtoScan(x, y)
     end
 end
 
-local function getChargerSide()
-    for i = 1, #config.sidesCharger do
-        local cur_scan = sensor.scan(config.sidesCharger[i][1], 0, config.sidesCharger[i][2])
-        if cur_scan ~= nil and cur_scan.block and cur_scan.block.name == 'opencomputers:charger' then
-            return i
-        end
-    end
-    return nil
-end
-
 local function fetchScan(rawScan)
-    local block = rawScan['block']
-    if block['name'] == 'minecraft:air' or block['name'] == 'GalacticraftCore:tile.brightAir' then
-        return { isCrop = true, name = 'air', fromScan = true }
-    elseif block['name'] == 'ic2:te' then
-        local crop = rawScan['data']['Crop']
-        if block['label'] == 'Crop' then
-            return { isCrop = true, name = 'emptyCrop', crossingbase = crop.crossingBase, fromScan = true }
-        else
+    local block = rawScan.block
+    local data = rawScan.data or {}
+    local crop = data.Crop or {}
+
+    local blockName = block.name
+    local blockLabel = block.label or ""
+
+    if blockName == "minecraft:air" or blockName == "GalacticraftCore:tile.brightAir" then
+        return { isCrop = true, name = "air", fromScan = true }
+    elseif blockName == "ic2:te" then
+        if blockLabel == "Crop" then
             return {
                 isCrop = true,
-                name = crop['cropId'],
-                gr = crop['statGrowth'],
-                ga = crop['statGain'],
-                re = crop['statResistance'],
-                tier = config.seedTiers[crop['cropId']],
-                weedex = crop['storageWeedEX'],
-                water = crop['storageWater'],
-                nutrients = crop['storageNutrients'],
+                name = "emptyCrop",
+                crossingbase = crop.crossingBase or 0,
+                fromScan = true
+            }
+        else
+            local cropId = crop.cropId or "unknown"
+            return {
+                isCrop = true,
+                name = cropId,
+                gr = crop.statGrowth or 0,
+                ga = crop.statGain or 0,
+                re = crop.statResistance or 0,
+                tier = config.seedTiers[cropId] or 0,
+                weedex = crop.storageWeedEX or 0,
+                water = crop.storageWater or 0,
+                nutrients = crop.storageNutrients or 0,
                 fromScan = true
             }
         end
     else
-        return { isCrop = false, name = 'block', fromScan = true }
+        return { isCrop = false, name = "block", fromScan = true }
     end
 end
 
-local function scanStorage(firstRun)
-    for slot = 1, config.storageFarmArea, 1 do
-        local raw = gps.storageSlotToPos(slot)
-        local cord = cordtoScan(raw[1], raw[2])
-        local rawScan = sensor.scan(cord[1], 0, cord[2])
-        local crop = fetchScan(rawScan)
-        if crop then
-            database.updateStorage(slot, crop)
-        end
-
-        if firstRun then
-            local scanPercent = (slot / config.storageFarmArea) * 100
-            printCenteredText(string.format("Scan Storage: %.2f%%", scanPercent))
-        end
-    end
-end
-
-local function scanFarm(firstRun)
-    for slot = 1, config.workingFarmArea do
-        local raw = gps.workingSlotToPos(slot)
-        local cord = cordtoScan(raw[1], raw[2])
-        local rawScan = sensor.scan(cord[1], 0, cord[2])
-        local crop = fetchScan(rawScan)
-        if crop then
-            database.updateFarm(slot, crop)
-        end
-        if firstRun then
-            local scanPercent = (slot / config.workingFarmArea) * 100
-            printCenteredText(string.format("Scan Farm: %.2f%%", scanPercent))
-        end
-    end
-
-    return true
-end
-
-local function getEmptySlotStorage()
-    for slot, crop in pairs(database.getStorage()) do
-        if crop.isCrop and (crop.name == 'emptyCrop' or crop.name == 'air') then
-            return slot
-        end
-    end
-end
-
-local function isComMax(crop, farm)
-    if farm == 'working' then
-        return crop.gr > config.workingMaxGrowth or
-            crop.re > config.workingMaxResistance or
-            (crop.name == 'venomilia' and crop.gr > 7)
-    elseif farm == 'storage' then
-        return crop.gr > config.storageMaxGrowth or
-            crop.re > config.storageMaxResistance or
-            (crop.name == 'venomilia' and crop.gr > 7)
-    end
+local function isMaxStat(crop)
+    return crop.gr > config.maxGrowth or
+        crop.ga > config.maxGain or
+        crop.re > config.maxResistance or
+        (crop.name == 'venomilia' and crop.gr > 7)
 end
 
 local function isWeed(crop)
     return crop.name == 'weed' or crop.name == 'Grass'
 end
 
-local function limitedOrderList(list)
-    local result = {}
-    for i = 1, config.maxOrderList do
-        table.insert(result, list[i])
-    end
-    return result
-end
+local function scanStorage()
+    db.deleteStorage()
+    os.sleep(0.1)
 
-local function createOrderList(handleChild, handleParent)
-    local orderList = {}
-    for slot, crop in pairs(database.getFarm()) do
-        if crop.isCrop and crop.fromScan then
-            local tasks = {}
-            if slot % 2 == 0 then
-                tasks = handleChild(slot, crop)
-            else
-                tasks = handleParent(slot, crop)
-            end
-            for _, task in pairs(tasks) do
-                table.insert(orderList, task)
-            end
+    local sensor = getSensor()
+    if not sensor then
+        db.setLogs('ERROR – OC Sensor not found')
+        return nil
+    end
+
+    local emptyCounter = 0
+
+    local storageFarmArea = 9 ^ 2
+    for slot = 1, storageFarmArea, 1 do
+        local raw = gps.storageSlotToPos(slot)
+        local cord = cordtoScan(raw[1], raw[2])
+        local rawScan = sensor.scan(cord[1], 0, cord[2])
+        local crop = fetchScan(rawScan)
+        if crop then
+            db.updateStorage(slot, crop)
+        end
+        if crop.name == 'air' then
+            emptyCounter = emptyCounter + 1
         end
     end
 
-    table.sort(orderList, function(a, b)
-        if a.priority == b.priority then
-            return a.slot < b.slot
-        end
-        return a.priority < b.priority
-    end)
-
-    if #orderList > config.maxOrderList then
-        orderList = limitedOrderList(orderList)
-    end
-
-    db.setLogs(orderList)
-    return orderList
+    db.setSystemData('systemStorageEmptySlots', emptyCounter)
 end
 
+local function scanFarm()
+    db.deleteFarm()
+    os.sleep(0.1)
+
+    local sensor = getSensor()
+    if not sensor then
+        db.setLogs('ERROR – OC Sensor not found')
+        return nil
+    end
+    local workingFarmSize = config.workingFarmSize
+    local workingFarmArea = workingFarmSize ^ 2
+    local foundedCrop = false
+
+    for slot = 1, workingFarmArea do
+        local raw = gps.workingSlotToPos(slot)
+        local cord = cordtoScan(raw[1], raw[2])
+        local rawScan = sensor.scan(cord[1], 0, cord[2])
+        local crop = fetchScan(rawScan)
+
+        if crop then
+            if not foundedCrop and crop.isCrop and crop.name ~= "air" and crop.name ~= "emptyCrop" and not isWeed(crop) then
+                foundedCrop = true
+            end
+            db.updateFarm(slot, crop)
+        end
+    end
+
+    if not foundedCrop then
+        db.setLogs('Order - Looks like there’s nothing planted in the working farm.')
+        db.setSystemData('systemEnabled', false)
+
+        return false;
+    end
+
+    return true
+end
 
 local function cleanUp()
+    local sensor = getSensor()
+    if not sensor then
+        db.setLogs('ERROR – OC Sensor not found')
+        return nil
+    end
     local order = {}
 
-    for slot, crop in pairs(database.getFarm()) do
+    for slot, crop in pairs(db.getFarm()) do
         if crop.isCrop and (crop.name == 'emptyCrop' or isWeed(crop)) then
             table.insert(order, {
                 farm = 'working',
@@ -215,7 +235,7 @@ local function cleanUp()
         })
     end
 
-    for slot, crop in pairs(database.getStorage()) do
+    for slot, crop in pairs(db.getStorage()) do
         if crop.isCrop and (crop.name == 'emptyCrop' or isWeed(crop)) then
             table.insert(order, {
                 farm = 'storage',
@@ -224,105 +244,769 @@ local function cleanUp()
         end
     end
 
-    --table.sort(order, function(a, b)
-    --    return a.slot < b.slot
-    --end)
-
     return order
 end
 
-local function sendRobotConfig()
-    local robotConfig = {
-        workingFarmSize = config.workingFarmSize,
-        storageFarmSize = config.storageFarmSize,
-        storageOffset = config.workingFarmDefaultSize - config.workingFarmSize
-    }
-
-    tunnel.send(serialization.serialize({ type = "robotConfig", data = robotConfig }))
-    local _, _, _, _, _, message = event.pull(2, "modem_message")
-    if message == nil then
-        return false
+local function getEmptySlotStorage()
+    for slot, crop in pairs(db.getStorage()) do
+        if crop.isCrop and (crop.name == 'emptyCrop' or crop.name == 'air') then
+            return slot
+        end
     end
-
-    local unserilized = serialization.unserialize(message)
-    if unserilized.answer then
-        return unserilized.answer
-    end
-    return false
 end
 
-local function getRobotStatus(timeout, mode)
-    tunnel.send(serialization.serialize({ type = "getStatus", currentMode = mode }))
-    local _, _, _, _, _, message = event.pull(timeout, "modem_message")
-    if message == nil then
-        lastRobotStatus = false
+local function forceScan(farm, slot)
+    local sensor = getSensor()
+    if not sensor then
+        db.setLogs('ERROR – OC Sensor not found')
         return false
     end
 
-    local unserilized = serialization.unserialize(message)
+    local rawCord
 
-    if unserilized.needConfig ~= nil and unserilized.needConfig == true then
-        while not sendRobotConfig() do
-            os.sleep(1)
+    if farm == 1 then
+        rawCord = gps.workingSlotToPos(slot)
+    elseif farm == 2 then
+        rawCord = gps.storageSlotToPos(slot)
+    else
+        return false;
+    end
+
+    local cord = cordtoScan(rawCord[1], rawCord[2])
+    local rawScan = sensor.scan(cord[1], 0, cord[2])
+    local crop = fetchScan(rawScan)
+    if crop and farm == 1 then
+        db.updateFarm(slot, crop)
+        return true;
+    elseif crop and farm == 2 then
+        db.updateStorage(slot, crop)
+        return true;
+    end
+
+    return false;
+end
+
+local function doTransplante()
+    local transplateFromFarm = db.getSystemData('transplateFromFarm')
+    local transplateToFarm = db.getSystemData('transplateToFarm')
+    local transplateFromSlot = db.getSystemData('transplateFromSlot')
+    local transplateToSlot = db.getSystemData('transplateToSlot')
+
+    if not transplateFromFarm or not transplateToFarm or not transplateFromSlot or not transplateToSlot then
+        return false
+    end
+
+    while not getRobotStatus() do
+        os.sleep(1)
+    end
+
+    if not forceScan(transplateFromFarm, transplateFromSlot) then
+        db.setLogs('Actions - Unable to scan crop in "From" slot')
+        return false
+    elseif not forceScan(transplateToFarm, transplateToSlot) then
+        db.setLogs('Actions - Unable to scan crop in "To" slot')
+        return false
+    end
+
+    local fromCrop, toCrop, fromFarm, toFarm
+
+    if transplateFromFarm == 1 then
+        fromCrop = db.getFarmSlot(transplateFromSlot)
+        fromFarm = 'working'
+    elseif transplateFromFarm == 2 then
+        fromCrop = db.getStorageSlot(transplateFromSlot)
+        fromFarm = 'storage'
+    end
+
+
+    if not fromCrop then
+        db.setLogs('Actions - No crop found in "From" slot')
+        return false
+    end
+
+    if not fromCrop.isCrop then
+        db.setLogs('Actions - "From" is not a valid crop')
+        return false
+    end
+
+    if fromCrop.name == "air" then
+        db.setLogs('Actions - "From" crop is air')
+        return false
+    elseif fromCrop.name == "emptyCrop" then
+        db.setLogs('Actions - "From" crop is an empty crop')
+        return false
+    elseif isWeed(fromCrop) then
+        db.setLogs('Actions - "From" crop is a weed')
+        return false
+    end
+
+    if transplateToFarm == 1 then
+        toCrop = db.getFarmSlot(transplateToSlot)
+        toFarm = 'working'
+    elseif transplateToFarm == 2 then
+        toCrop = db.getStorageSlot(transplateToSlot)
+        toFarm = 'storage'
+    end
+
+    if not toCrop then
+        db.setLogs('Actions - No crop found in "To" slot')
+        return false
+    end
+
+    if not toCrop.isCrop then
+        db.setLogs('Actions - "To" is not a valid crop')
+        return false
+    end
+
+    local toSlotName = toCrop.name
+    local destroyTo = false;
+
+    if toCrop.name == "air" then
+        destroyTo = true
+    elseif toCrop.name == "emptyCrop" then
+        destroyTo = true
+    elseif isWeed(toCrop) then
+        destroyTo = true
+    end
+
+    if transplateFromFarm == transplateToFarm and transplateFromSlot == transplateToSlot then
+        db.setLogs('Actions - Same crop in both From and To – lets hope its intentional')
+        toSlotName = 'air'
+        destroyTo = true
+    end
+
+    local order = {
+        fromSlot = transplateFromSlot,
+        toSlot = transplateToSlot,
+        fromFarm = fromFarm,
+        toFarm = toFarm,
+        toSlotName = toSlotName,
+        destroyTo = destroyTo
+    }
+    db.setLogs(string.format('Manual transplant from %s[%d] to %s[%d]', fromFarm, transplateFromSlot, toFarm,
+        transplateToSlot))
+
+    while not getRobotStatus() do
+        os.sleep(1)
+    end
+    os.sleep(0.1)
+
+    sendTunnelRequestNoReply({ type = 'manualTransplant', data = order })
+    os.sleep(1)
+
+    while not getRobotStatus() do
+        os.sleep(1)
+    end
+    os.sleep(0.1)
+
+    if not forceScan(transplateFromFarm, transplateFromSlot) then
+        db.setLogs('Actions - Unable to scan crop in "From" slot')
+        return false
+    elseif not forceScan(transplateToFarm, transplateToSlot) then
+        db.setLogs('Actions - Unable to scan crop in "To" slot')
+        return false
+    end
+
+    return true;
+end
+
+local function scanCropStickChest()
+    local sensor = getSensor()
+    if not sensor then
+        db.setLogs('ERROR – OC Sensor not found')
+        return nil
+    end
+
+    local cord = cordtoScan(-1, 0)
+    local rawScan = sensor.scan(cord[1], 0, cord[2])
+    local cropsticks = 0
+
+    if rawScan and rawScan.data and rawScan.data.items then
+        for _, item in ipairs(rawScan.data.items) do
+            if item.name == 'ic2:crop_stick' then
+                cropsticks = cropsticks + (item.size or 0)
+            end
+        end
+    end
+    db.setSystemData('cropSticksCount', cropsticks)
+end
+
+local function scanTrashOrChest()
+    local sensor = getSensor()
+    if not sensor then
+        db.setLogs('ERROR – OC Sensor not found')
+        return nil
+    end
+
+    local cord = cordtoScan(-2, 0)
+    local rawScan = sensor.scan(cord[1], 0, cord[2])
+    local total = 0
+    local occupied = 0
+    local result = 0
+
+    if rawScan and rawScan.data and rawScan.data.items then
+        for _, item in pairs(rawScan.data.items) do
+            total = total + 1
+            if item.id and item.id ~= 0 then
+                occupied = occupied + 1
+            end
         end
     end
 
-    if unserilized.emptyCropSticks ~= nil and unserilized.emptyCropSticks == true then
-        emptyCropSticks = unserilized.emptyCropSticks
+    if total ~= 0 then
+        result = math.floor((occupied / total) * 100)
     end
 
-    if unserilized.robotStatus then
-        lastRobotStatus = unserilized.robotStatus
-        return unserilized.robotStatus
+    db.setSystemData('trashOrChestCount', result)
+end
+
+local function drawMessage(message, color)
+    local gpu = component.gpu
+    gpu.setForeground(color or 0xFFFFFF)
+    print(message)
+end
+
+local function scanTargetCrop()
+    local sensor = getSensor()
+    if not sensor then
+        db.setLogs('ERROR – OC Sensor not found')
+        return nil
     end
-    lastRobotStatus = false
+
+    local slot = 1
+    local raw = gps.workingSlotToPos(slot)
+    local cord = cordtoScan(raw[1], raw[2])
+    local rawScan = sensor.scan(cord[1], 0, cord[2])
+    local crop = fetchScan(rawScan)
+    if crop and crop.isCrop then
+        db.setSystemData('systemTargetCrop', crop.name)
+    end
+end
+
+local function scanSystemRobot(firstRun)
+    db.setSystemData('IWRobotTools', false)
+    local connectionSuccess = false
+    local connectionData = {}
+    local allPassed = true
+
+    local linkedCardError = true
+    local redstoneCardError = true
+    local inventoryUpgradeError = true
+    local inventoryControllerError = true
+    local weedingTrowelError = true
+    local transvectorBinderError = true
+
+    if firstRun then
+        drawMessage("Scanning robot", 0xFFFFFF)
+    end
+
+    for attempt = 1, 3 do
+        local robotStatus = getRobotStatus()
+        if robotStatus then
+            os.sleep(0.1)
+            local robotData = sendTunnelRequest({ type = 'scanSystemRobot' }, 'scanSystemRobot', 3)
+            if robotData and robotData.data then
+                connectionSuccess = true
+                connectionData = robotData.data
+                break
+            end
+        end
+        os.sleep(0.5)
+    end
+
+    if not connectionSuccess then
+        linkedCardError = false
+        redstoneCardError = false
+        inventoryUpgradeError = false
+        inventoryControllerError = false
+        weedingTrowelError = false
+        transvectorBinderError = false
+        allPassed = false
+    else
+        linkedCardError = connectionData.linkedCard
+        redstoneCardError = connectionData.redstoneCard
+        inventoryUpgradeError = connectionData.inventoryUpgrade
+        inventoryControllerError = connectionData.inventoryController
+        weedingTrowelError = connectionData.weedingTrowel
+        transvectorBinderError = connectionData.transvectorBinder
+    end
+
+    if not linkedCardError then
+        if firstRun then
+            drawMessage("Error: Linked Card error detected!", 0xFF0000)
+        end
+        allPassed = false
+    elseif firstRun then
+        drawMessage("Success: Linked Card check passed.", 0x00FF00)
+    end
+
+    if not redstoneCardError then
+        if firstRun then
+            drawMessage("Error: Redstone Card error detected!", 0xFF0000)
+        end
+        allPassed = false
+    elseif firstRun then
+        drawMessage("Success: Redstone Card check passed.", 0x00FF00)
+    end
+
+    if not inventoryUpgradeError then
+        if firstRun then
+            drawMessage("Error: Inventory Upgrade error detected!", 0xFF0000)
+        end
+        allPassed = false
+    elseif firstRun then
+        drawMessage("Success: Inventory Upgrade check passed.", 0x00FF00)
+    end
+
+    if not inventoryControllerError then
+        if firstRun then
+            drawMessage("Error: Inventory Controller error detected!", 0xFF0000)
+        end
+        allPassed = false
+    elseif firstRun then
+        drawMessage("Success: Inventory Controller check passed.", 0x00FF00)
+    end
+
+
+    if not weedingTrowelError then
+        if firstRun then
+            drawMessage("Error: Weeding Trowel detected!", 0xFF0000)
+        end
+        allPassed = false
+    elseif firstRun then
+        drawMessage("Success: Weeding Trowel passed.", 0x00FF00)
+    end
+
+
+    if not transvectorBinderError then
+        if firstRun then
+            drawMessage("Error: Transvector Binder error detected!", 0xFF0000)
+        end
+        allPassed = false
+    elseif firstRun then
+        drawMessage("Success: Transvector Binder check passed.", 0x00FF00)
+    end
+
+    db.setSystemData('IWRobotTools', allPassed)
+    db.setSystemData('linkedCard', linkedCardError)
+    db.setSystemData('redstoneCard', redstoneCardError)
+    db.setSystemData('inventoryUpgrade', inventoryUpgradeError)
+    db.setSystemData('inventoryController', inventoryControllerError)
+    db.setSystemData('weedingTrowel', weedingTrowelError)
+    db.setSystemData('transvectorBinder', transvectorBinderError)
+end
+
+local function checkSensor(firstRun)
+    if component.isAvailable("sensor") then
+        if firstRun then
+            drawMessage("Success: Sensor check passed.", 0x00FF00)
+        end
+        db.setSystemData('IWSensor', true)
+        return true
+    end
+    if firstRun then
+        drawMessage("Error: Sensor error detected!", 0xFF0000)
+    end
+    db.setSystemData('IWSensor', false)
     return false
 end
 
+local function checkCharger(firstRun)
+    local robotSide = getChargerSide()
+    if not robotSide then
+        if firstRun then
+            drawMessage("Error: Charger error detected!", 0xFF0000)
+        end
+        db.setSystemData('IWCharger', false)
+        return false
+    end
 
+    if firstRun then
+        drawMessage("Success: Charger check passed.", 0x00FF00)
+    end
 
-
-
-local function getLastRobotStatus()
-    return lastRobotStatus
+    db.setSystemData('IWCharger', true)
+    db.setSystemData('robotSide', robotSide)
+    return true;
 end
 
-local function setLastComputerStatus(status)
-    lastComputerStatus = status
+local function checkCropChest(firstRun)
+    local sensor = getSensor()
+    if not sensor then
+        db.setLogs('ERROR – OC Sensor not found')
+        return false
+    end
+    local cord = cordtoScan(-1, 0)
+    local rawScan = sensor.scan(cord[1], 0, cord[2])
+    if rawScan and rawScan.data then
+        local scanBlock = rawScan.data
+        if scanBlock and scanBlock.items then
+            if firstRun then
+                drawMessage("Success: Cropstick Chest check passed.", 0x00FF00)
+            end
+            db.setSystemData('IWCropChest', true)
+            return true
+        end
+    end
+
+    if firstRun then
+        drawMessage("Error: Cropstick Chest error detected!", 0xFF0000)
+    end
+    db.setSystemData('IWCropChest', false)
+    return false
 end
 
-local function getEmptyCropSticks()
-    return emptyCropSticks
+local function checkTrashOrChest(firstRun)
+    local sensor = getSensor()
+    if not sensor then
+        db.setLogs('ERROR – OC Sensor not found')
+        return false
+    end
+
+    local cord = cordtoScan(-2, 0)
+    local rawScan = sensor.scan(cord[1], 0, cord[2])
+    if rawScan and rawScan.data then
+        local scanBlock = rawScan.data
+        if scanBlock and scanBlock.items then
+            if firstRun then
+                drawMessage("Success: Trash or chest check passed.", 0x00FF00)
+            end
+            db.setSystemData('IWTrashOrChest', true)
+            return true
+        end
+    end
+    if firstRun then
+        drawMessage("Error: Trash or chest error detected!", 0xFF0000)
+    end
+    db.setSystemData('IWTrashOrChest', false)
+    return false
 end
 
-local function setEmptyCropSticks(status)
-    emptyCropSticks = status
+local function checkRobot(firstRun)
+    if firstRun then
+        drawMessage("Scanning robot", 0xFFFFFF)
+    end
+
+    for i = 1, 3 do
+        if firstRun then
+            print('Attempt ' .. i)
+        end
+        local robotStatus = getRobotStatus()
+        if robotStatus then
+            if firstRun then
+                drawMessage("Success: Robot check passed.", 0x00FF00)
+            end
+            db.setSystemData('IWRobotConnection', true)
+            scanSystemRobot()
+            return true
+        end
+        os.sleep(0.5)
+    end
+
+    if firstRun then
+        drawMessage("Error: Robot error detected!", 0xFF0000)
+    end
+    db.setSystemData('IWRobotConnection', false)
+    return false
 end
 
-local function getLastComputerStatus()
-    return lastComputerStatus
+local function checkFarm(firstRun)
+    local sensor = getSensor()
+    if not sensor then
+        db.setLogs('ERROR – OC Sensor not found')
+        return nil
+    end
+
+    local workingFarmSize = config.workingFarmSize
+    local farmWaterSucces = false
+    local farmWaterBlockSuccess = false
+    local farmFarmlandError = true
+    local farmGridError = true
+    local allPassed = true
+    if firstRun then
+        drawMessage("Analyze Farm Grid", 0xFFFFFF)
+    end
+
+    for slot = 1, workingFarmSize ^ 2 do
+        local raw = gps.workingSlotToPos(slot)
+        local cord = cordtoScan(raw[1], raw[2])
+        local rawScan = sensor.scan(cord[1], -1, cord[2])
+
+        if rawScan and rawScan.block then
+            local scanBlock = rawScan.block
+
+            if scanBlock.name ~= 'minecraft:farmland' and scanBlock.name ~= 'minecraft:water' then
+                farmGridError = false
+                farmFarmlandError = false
+                break
+            end
+
+            if scanBlock.name == 'minecraft:water' then
+                local rawScanWater = sensor.scan(cord[1], 0, cord[2])
+                if rawScanWater and rawScanWater.block then
+                    local rawScanWaterBlock = rawScanWater.block
+                    if rawScanWaterBlock and rawScanWaterBlock.name ~= 'minecraft:air' then
+                        farmWaterBlockSuccess = true
+                    end
+                end
+
+                farmWaterSucces = true
+            end
+        end
+    end
+
+    if not farmGridError then
+        if firstRun then
+            drawMessage("Error: Farm grid error detected!", 0xFF0000)
+        end
+        allPassed = false
+    elseif firstRun then
+        drawMessage("Success: Farm grid check passed.", 0x00FF00)
+    end
+
+    if not farmFarmlandError then
+        if firstRun then
+            drawMessage("Error: Farmland error detected!", 0xFF0000)
+        end
+        allPassed = false
+    elseif firstRun then
+        drawMessage("Success: Farmland check passed.", 0x00FF00)
+    end
+
+    if not farmWaterSucces then
+        if firstRun then
+            drawMessage("Warning: Water source not found!", 0xFFFF00)
+        end
+        allPassed = false
+    elseif firstRun then
+        drawMessage("Success: Water source check passed.", 0x00FF00)
+    end
+
+    if not farmWaterBlockSuccess then
+        if firstRun then
+            drawMessage("Error: The water source is not covered by the block!", 0xFFFF00)
+        end
+        allPassed = false
+    elseif firstRun then
+        drawMessage("Success: Water source block check passed.", 0x00FF00)
+    end
+
+    db.setSystemData('IWWorkingFarm', allPassed)
+    db.setSystemData('farmLand', farmFarmlandError)
+    db.setSystemData('farmWater', farmWaterSucces)
+    db.setSystemData('farmGrid', farmGridError)
+
+    return allPassed
 end
 
+local function checkStorage(firstRun)
+    local sensor = getSensor()
+    if not sensor then
+        db.setLogs('ERROR – OC Sensor not found')
+        return nil
+    end
+
+    local storageWaterSuccess = false
+    local storageWaterBlockSuccess = false
+    local storageGridError = true
+    local storageFarmlandError = true
+    local allPassed = true
+
+    if firstRun then
+        drawMessage("Analyze Storage Grid", 0xFFFFFF)
+    end
+
+    for slot = 1, 9 ^ 2 do
+        local raw = gps.storageSlotToPos(slot)
+        local cord = cordtoScan(raw[1], raw[2])
+        local rawScan = sensor.scan(cord[1], -1, cord[2])
+
+        if rawScan and rawScan.block then
+            local scanBlock = rawScan.block
+
+            if scanBlock.name ~= 'minecraft:farmland' and scanBlock.name ~= 'minecraft:water' then
+                storageGridError = false
+                storageFarmlandError = false
+                break
+            end
+
+            if scanBlock.name == 'minecraft:water' then
+                local rawScanWater = sensor.scan(cord[1], 0, cord[2])
+                if rawScanWater and rawScanWater.block then
+                    local rawScanWaterBlock = rawScanWater.block
+                    if rawScanWaterBlock and rawScanWaterBlock.name ~= 'minecraft:air' then
+                        storageWaterBlockSuccess = true
+                    end
+                end
+
+                storageWaterSuccess = true
+            end
+        end
+    end
+
+    if not storageGridError then
+        if firstRun then
+            drawMessage("Error: Storage grid error detected!", 0xFF0000)
+        end
+        allPassed = false
+    elseif firstRun then
+        drawMessage("Success: Storage grid check passed.", 0x00FF00)
+    end
+
+    if not storageFarmlandError then
+        if firstRun then
+            drawMessage("Error: Farmland error detected!", 0xFF0000)
+        end
+        allPassed = false
+    elseif firstRun then
+        drawMessage("Success: Farmland check passed.", 0x00FF00)
+    end
+
+    if not storageWaterSuccess then
+        if firstRun then
+            drawMessage("Warning: Water source not found!", 0xFFFF00)
+        end
+        allPassed = false
+    elseif firstRun then
+        drawMessage("Success: Water source check passed.", 0x00FF00)
+    end
+
+    if not storageWaterBlockSuccess then
+        if firstRun then
+            drawMessage("Error: The water source is not covered by the block!", 0xFFFF00)
+        end
+        allPassed = false
+    elseif firstRun then
+        drawMessage("Success: Water source block check passed.", 0x00FF00)
+    end
+
+    db.setSystemData('IWStorageFarm', allPassed)
+    db.setSystemData('storageLand', storageFarmlandError)
+    db.setSystemData('storageGrid', storageGridError)
+    db.setSystemData('storageWater', storageWaterSuccess)
+
+    return allPassed
+end
+
+local function checkDislocatorAndBlank(firstRun)
+    local sensor = getSensor()
+    if not sensor then
+        db.setLogs('ERROR – OC Sensor not found')
+        return nil
+    end
+
+    local cord, rawScan
+    local blankFarmError = true
+    local transvectorDislocatorError = true
+    local allPassed = true
+
+    if firstRun then
+        drawMessage("Analyze Blank Farmland", 0xFFFFFF)
+    end
+
+    cord = cordtoScan(1, 2)
+    rawScan = sensor.scan(cord[1], 0, cord[2])
+    if rawScan and rawScan.block then
+        local scanBlock = rawScan.block
+        if scanBlock.name ~= 'thaumictinkerer:transvector_dislocator' then
+            transvectorDislocatorError = false
+        end
+    else
+        transvectorDislocatorError = false
+    end
+
+    cord = cordtoScan(1, 1)
+    rawScan = sensor.scan(cord[1], -1, cord[2])
+    if rawScan and rawScan.block then
+        local scanBlock = rawScan.block
+
+        if scanBlock.name ~= 'minecraft:farmland' then
+            blankFarmError = false
+        end
+    end
+
+    if not blankFarmError then
+        if firstRun then
+            drawMessage("Error: Invalid or missing Blank Farmland.", 0xFF0000)
+        end
+        allPassed = false
+    elseif firstRun then
+        drawMessage("Success: Blank Farmland check passed.", 0x00FF00)
+    end
+
+    if not transvectorDislocatorError then
+        if firstRun then
+            drawMessage("Error: Transvector Dislocator error detected!", 0xFF0000)
+        end
+        allPassed = false
+    elseif firstRun then
+        drawMessage("Success: Transvector Dislocator check passed.", 0x00FF00)
+    end
+
+    db.setSystemData('IWDislocatorAndBlank', allPassed)
+    db.setSystemData('blankFarmland', blankFarmError)
+    db.setSystemData('transvectorDislocator', blankFarmError)
+
+    return allPassed
+end
+
+local function doSystemScan(firstRun)
+    db.setSystemData('systemReady', false)
+
+    if firstRun then
+        drawMessage("Scan system", 0xFFFFFF)
+    end
+
+    if not checkSensor(firstRun) then
+        return false
+    end
+
+    if not checkCharger(firstRun) then
+        return false
+    end
+
+    if not checkCropChest(firstRun) then
+        return false
+    end
+
+    if not checkTrashOrChest(firstRun) then
+        return false
+    end
+
+    if not checkRobot(firstRun) then
+        return false
+    end
+
+    if not checkFarm(firstRun) then
+        return false
+    end
+
+    if not checkDislocatorAndBlank(firstRun) then
+        return false
+    end
+
+    if not checkStorage(firstRun) then
+        return false
+    end
+
+    db.setSystemData('systemReady', true)
+    return true
+end
 
 return {
-    SendToLinkedCards = SendToLinkedCards,
     getRobotStatus = getRobotStatus,
-    getLastRobotStatus = getLastRobotStatus,
-    getEmptyCropSticks = getEmptyCropSticks,
-    setEmptyCropSticks = setEmptyCropSticks,
-    getLastComputerStatus = getLastComputerStatus,
-    setLastComputerStatus = setLastComputerStatus,
+    sendTunnelRequestNoReply = sendTunnelRequestNoReply,
     scanFarm = scanFarm,
-    createOrderList = createOrderList,
     isWeed = isWeed,
-    isComMax = isComMax,
+    isMaxStat = isMaxStat,
     scanStorage = scanStorage,
+    doTransplante = doTransplante,
     fetchScan = fetchScan,
-    getChargerSide = getChargerSide,
     cordtoScan = cordtoScan,
-    setRobotSide = setRobotSide,
     cleanUp = cleanUp,
     getEmptySlotStorage = getEmptySlotStorage,
-    printCenteredText = printCenteredText,
-    sendRobotConfig = sendRobotConfig
+    doSystemScan = doSystemScan,
+    scanTargetCrop = scanTargetCrop,
+    scanCropStickChest = scanCropStickChest,
+    scanTrashOrChest = scanTrashOrChest
 }
