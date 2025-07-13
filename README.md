@@ -55,7 +55,7 @@ Key setup details:
 ### Seeding the Farm
 
 - Manually place the starter crops in a **checkerboard** pattern.
-- One seed is enough — the system will propagate it.
+- One seed is enough — the system will multiply it by itself.
 - If you don't have ic2 seedlings, start with reeds.
 ![Ready farm](media/ready_farm.png?)
 
@@ -158,7 +158,7 @@ start
 
 ## 🚀 Running the System
 
-In terminal in computer, enter:
+Enter the following command in the computer's terminal:
 
 ```bash
 main
@@ -172,15 +172,16 @@ Automatically boosts target crop traits until **(Growth + Gain - Resistance ≥ 
 
 ### Mode: autoTier
 
-Breeds crops to reach higher tiers based on configuration or until storage is full.
+Crosses plants and automatically transfers newly bred crops to the storage area upon detection.
+This mode includes two sub-modes:
 
-- **Schema Mode:** Breeds according to a set pattern (ideal for reed start).
+- **Schema Mode:** Breeds according to a set pattern.
   - ![schema_crop](media/schema.png?)
 - **Manual Mode:** The robot does not edit parent seedlings unless they are weeded.
 
 ### Mode: autoSpread
 
-Duplicates your target crop across the storage farm.
+Duplicates the target crop and transfers to storage.
 
 ---
 
@@ -203,11 +204,11 @@ Duplicates your target crop across the storage farm.
    Contains four key actions for managing your farm manually:  
    - **Transplant** — Select a plant from one slot and move it to another. This is especially useful for changing the `targetCrop` or when operating in AutoTier Manual Mode.  
    - **CleanUp** — Initiate a cleanup process to remove leftover crop sticks and unwanted plants (all plant children). It’s recommended to run this after stopping the system to prevent weed overgrowth.  
-   - **Scan Farm** — Force a full scan of the farm to update all plant data immediately.  
+   - **Scan Farm** — Force a scan of the farm to update all plant data immediately.  
    - **Scan Storage** — Force a scan of the storage farm to update all plant data immediately.
 
 4. **Settings**  
-   Customize various operational modes and logging preferences here to tailor the system behavior to your needs.
+   Here you can configure different operating modes and logging parameters to adapt the system behavior to your needs.
 
 5. **Logs**  
    View detailed reports of the system’s actions and events. The log output depends on the selected logging settings and provides insights for troubleshooting and monitoring.
@@ -239,8 +240,8 @@ The system may automatically **terminate** itself under critical conditions to m
 ## 🛠 Troubleshooting
 
 **1. Transvector Dislocator teleports randomly**\
-💡 Cover all water blocks to avoid targeting issues.\
-💡 Make sure that the transvector dislocator is pointed at the blank farm
+💡 Cover all water blocks to avoid targeting issues.  
+💡 Make sure that the Transvector Dislocator is pointed at the blank farm.  
 
 **2. Robot gets displaced**\
 💡 Make sure dislocator faces **forward**, not **up**.
@@ -251,9 +252,15 @@ The system may automatically **terminate** itself under critical conditions to m
 **4. Crops dying, weeds spreading**\
 💡 Location may have poor humidity/air/soil — consider relocating.
 
-**5. Robot doesn’t respond**\
-💡 Mekanism energy cube or cables may not power the OC charger properly.
+**5. Computer can't communicate with the robot**  
+💡 Disassemble the robot and remove the **Linked Cards** from both the robot and the computer. Combine them in a **crafting table** to synchronize the connection, then reinsert and try again.
 
+**6. Robot doesn’t respond**\
+💡 Mekanism energy cube or cables may not power the OC charger properly.  
+
+**7. The robot and computer stopped unexpectedly and shut down**  
+💡 This is likely caused by the chunk being unloaded. Make sure the farm is inside a **chunk-loaded area**.  
+Install a **chunk loader** (e.g., from the IC2 mod or another mod that provides chunk loading).
 
 ## 🧰 Helpful Commands
 
