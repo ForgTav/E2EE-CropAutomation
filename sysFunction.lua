@@ -480,7 +480,11 @@ local function scanTargetCrop()
     local crop = fetchScan(rawScan)
     if crop and crop.isCrop then
         db.setSystemData('systemTargetCrop', crop.name)
+        db.setSystemData('IWTargetCrop', true)
+        return true
     end
+    db.setSystemData('IWTargetCrop', false)
+    return false;
 end
 
 local function scanSystemRobot(firstRun)
@@ -978,6 +982,10 @@ local function doSystemScan(firstRun)
     end
 
     if not checkFarm(firstRun) then
+        return false
+    end
+
+    if not scanTargetCrop() then
         return false
     end
 

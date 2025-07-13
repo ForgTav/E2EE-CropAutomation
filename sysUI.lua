@@ -163,7 +163,7 @@ local installationSteps = {
       'For this step, we will need the Electronics Assembler from Open Computer.',
       'Install the Computer Case Tier 3 in the Electronics Assembler first.',
       'Then add all other parts. Complexity should be 16 and press Assemble.',
-      'Rename Robot in an anvil.',
+      'Synchronize the Linked Cards by merging them in a Crafting Table.',
     },
     checkBtn = false,
     checkDB = 'IWRobotConnection',
@@ -174,7 +174,7 @@ local installationSteps = {
     id = 7,
     stepLabel = 'Step 6: OpenOS',
     stepDescription = {
-      'Put the Robot on top of the OC Charger.',
+      'Rename Robot in an anvil. Put the Robot on top of the OC Charger.',
       'The Robot must face away from the sensor. Theres a small chest on its back.',
       'Theres a slot in the inventory for a floppy disk.',
       'Power on and install OpenOS from floppy disk. install --> Y --> Y'
@@ -223,7 +223,19 @@ local installationSteps = {
   },
   {
     id = 11,
-    stepLabel = 'Step 10: Transvector Dislocator and Blank Farmland',
+    stepLabel = 'Step 10: Target crop',
+    stepDescription = {
+      'An IC2 starter plant is required for operation.',
+      'If none are available, plant reed on a crop stick.',
+    },
+    checkBtn = true,
+    checkDB = 'IWTargetCrop',
+    needMap = true,
+    needContent = false
+  },
+  {
+    id = 12,
+    stepLabel = 'Step 11: Transvector Dislocator and Blank Farmland',
     stepDescription = {
       'Transvector Dislocator goes above and faces the Blank Farmland.',
       'You can identify Facing side by the number of dots on its surface.',
@@ -234,8 +246,8 @@ local installationSteps = {
     needContent = true
   },
   {
-    id = 12,
-    stepLabel = 'Step 11: Storage farm',
+    id = 13,
+    stepLabel = 'Step 12: Storage farm',
     stepDescription = {
       'Now we need to build a storage farm. Take the hoe again and build a farm.',
       'There should be a trapdoor on top of the water source. Grid Storage Farm 9x9',
@@ -246,7 +258,7 @@ local installationSteps = {
     needContent = true
   },
   {
-    id = 13,
+    id = 14,
     stepLabel = 'Finally',
     stepDescription = {
       'You all set! 🚀',
@@ -599,7 +611,7 @@ local function drawIWFooter(step)
     activeNextBtn = true
   end
 
-  if nextIndex <= #installationSteps or step.id == 13 then
+  if nextIndex <= #installationSteps or step.id == 14 then
     local nextText = 'Next >'
     local x = screenWidth - #nextText - 1
     gpu.setForeground(uiColors.lightgray)
@@ -609,7 +621,7 @@ local function drawIWFooter(step)
         x2 = x + #nextText,
         y1 = y,
         y2 = y,
-        action = step.id == 13 and 'exitIWStep' or 'nextIWStep'
+        action = step.id == 14 and 'exitIWStep' or 'nextIWStep'
       })
       gpu.setForeground(uiColors.foreground)
     end
@@ -652,7 +664,7 @@ local function drawIWMap(step)
   end
 
   --Storage farm
-  if step.id >= 12 then
+  if step.id >= 13 then
     local cellW = 2
     local storageSize = 9
     local startX = center + math.floor((storageSize * cellW) / 2) - 5
@@ -674,8 +686,8 @@ local function drawIWMap(step)
   end
 
   --Dislocator and Blank Farmland
-  if step.id >= 11 then
-    if step.id == 11 then
+  if step.id >= 12 then
+    if step.id == 12 then
       gpu.setForeground(uiColors.red)
       gpu.set(center + 2, maxY - 5, 'TD')
       gpu.setForeground(uiColors.foreground)
@@ -691,6 +703,13 @@ local function drawIWMap(step)
       gpu.set(center + 2, maxY - 4, '[]')
       gpu.setForeground(uiColors.foreground)
     end
+  end
+
+  if step.id == 11 then
+    gpu.setForeground(uiColors.red)
+    gpu.set(center, maxY - 4, '[]')
+    gpu.setForeground(uiColors.foreground)
+    gpu.set(center + 2, maxY - 4, ' ← Plant Target Crop')
   end
 
   --Trash or Chest
@@ -820,17 +839,19 @@ local function drawIWContent(step)
     gpu.set(4 + #baseUrl, cursor, sysSetup);
     cursor = cursor + 2
 
-    gpu.set(math.ceil((4 + #baseUrl + #sysSetup) / 2), cursor, '↓');
+    local x = screenWidth - #baseUrl
+    gpu.set(x + math.floor(#sysSetup / 2), cursor, '↓')
+    --gpu.set(math.ceil(((4 + #baseUrl) / 2) + #sysSetup), cursor, '↓');
     cursor = cursor + 2
 
     gpu.setForeground(uiColors.lightgray)
     gpu.set(4, cursor, baseUrl);
     gpu.setForeground(uiColors.foreground)
     gpu.set(4 + #baseUrl, cursor, robotSetup);
-  elseif step.id == 10 or step.id == 12 then
+  elseif step.id == 10 or step.id == 13 then
     gpu.set(4, 8, '[] - Farmland');
     gpu.set(4, 9, 'WS - Water source');
-  elseif step.id == 11 then
+  elseif step.id == 12 then
     gpu.setForeground(uiColors.green)
     gpu.set(6, 8, 'Facing side');
     gpu.setForeground(uiColors.foreground)
@@ -1958,6 +1979,14 @@ local function handleMouseClick(_, _, x, y)
       if isPointInBounds(x, y, btn) and not btn.disabled then
         tabButtons[index].disabled = true
         if btn.action == 'scanIWSystem' then
+          local checkText = ' Checking '
+          local checkX = math.ceil((screenWidth - #checkText + 1) / 2)
+          local checkY = screenHeight - 1
+
+          gpu.setForeground(uiColors.lightgray)
+          gpu.set(checkX, checkY, checkText)
+          gpu.setForeground(uiColors.foreground)
+
           sys.doSystemScan()
           drawIWStep()
         elseif btn.action == 'nextIWStep' then
