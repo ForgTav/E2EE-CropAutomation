@@ -56,6 +56,7 @@ Key setup details:
 
 - Manually place the starter crops in a **checkerboard** pattern.
 - One seed is enough — the system will multiply it by itself.
+- The first farmland slot in front of the charger must have a crop planted. This acts as a reference point for the system to identify the target crop.
 - If you don't have ic2 seedlings, start with reeds.
 ![Ready farm](media/ready_farm.png?)
 
