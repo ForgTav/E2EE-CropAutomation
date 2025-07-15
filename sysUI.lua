@@ -92,14 +92,14 @@ local uiColors = {
 local installationSteps = {
   {
     id = 1,
-    stepLabel = 'Welcome, and thank you for using the E2EE Crop Automation System!',
+    stepLabel = "Welcome, and thank you for using the E2EE Crop Automation System!",
     stepDescription = {
-      'If you encounter any issues or bugs,',
-      'please report them in the E2EE Discord channel',
-      'Your feedback helps us improve and grow.',
-      'Happy farming!',
-      '',
-      'Press NEXT to begin the guided installation process.'
+      "If you encounter any issues or bugs,",
+      "please report them in the E2EE Discord channel",
+      "Your feedback helps us improve and grow.",
+      "Happy farming!",
+      "",
+      "Press NEXT to begin the guided installation process."
     },
     checkBtn = false,
     checkDB = nil,
@@ -108,166 +108,186 @@ local installationSteps = {
   },
   {
     id = 2,
-    stepLabel = 'Step 1: Install Open Sensor',
+    stepLabel = "Step 1: Install Open Sensor",
     stepDescription = {
-      'See the map below to guide placement.',
-      'After setup, connect the sensor to the computer via OC cable.',
-      'The cable must run underneath the blocks.',
-      'Press Check to verify the connection.'
+      "See the map below to guide placement. The blocks must be close together.",
+      "After setup, connect the sensor to the computer via cable from OpenComputers.",
+      "The cable must run underneath the blocks. Press Check button to verify",
+      "the step installation. If verification failed, you have made a mistake."
     },
     checkBtn = true,
-    checkDB = 'IWSensor',
+    checkDB = "IWSensor",
     needMap = true,
-    needContent = false
+    needContent = true
   },
   {
     id = 3,
-    stepLabel = 'Step 2: Charger',
+    stepLabel = "Step 2: Install Charger",
     stepDescription = {
-      'Positioning center and future Robot charger.',
-      'Requires RF energy and redstone activation (e.g. a lever).'
+      "It's positioning center and future Robot charger.",
+      "Requires RF energy and redstone activation (e.g. a lever).",
+      "Charger from OpenComputers."
     },
     checkBtn = true,
-    checkDB = 'IWCharger',
+    checkDB = "IWCharger",
     needMap = true,
-    needContent = false
+    needContent = true
   },
   {
     id = 4,
-    stepLabel = 'Step 3: Crop chest',
+    stepLabel = "Step 3: Install Crop chest",
     stepDescription = {
-      'You can use a chest or drawer to store crop sticks for the Robot.',
-      'Make sure to refill it regularly, or the system will stop.'
+      "You can use a chest or drawer to store crop sticks for the Robot.",
+      "Make sure to refill it regularly, or the system will stop."
     },
     checkBtn = true,
-    checkDB = 'IWCropChest',
+    checkDB = "IWCropChest",
     needMap = true,
-    needContent = false
+    needContent = true
   },
   {
     id = 5,
-    stepLabel = 'Step 4: Trash  or chest',
+    stepLabel = "Step 4: Install Trash or Chest",
     stepDescription = {
-      'If seeds are needed during Robot operation, place a chest.',
-      'Otherwise, use a trash bin.'
+      "If seeds are needed during Robot operation, place a chest.",
+      "Otherwise, use a trash bin."
     },
     checkBtn = true,
-    checkDB = 'IWTrashOrChest',
+    checkDB = "IWTrashOrChest",
     needMap = true,
-    needContent = false
+    needContent = true
   },
   {
     id = 6,
-    stepLabel = 'Step 5: Collect Robot details and assemble the Robot',
+    stepLabel = "Step 5: Collect Robot details and assemble the Robot",
     stepDescription = {
-      'For this step, we will need the Electronics Assembler from Open Computer.',
-      'Install the Computer Case Tier 3 in the Electronics Assembler first.',
-      'Then add all other parts. Complexity should be 16 and press Assemble.',
-      'Synchronize the Linked Cards by merging them in a Crafting Table.',
+      "For this step, we will need the Electronics Assembler from OpenComputers.",
+      "This machine is used to assemble a robot from its individual parts.",
+      "It's not used by the system and should be placed outside the farm.",
+      "When crafting the Linked card, you should have one card left for the robot.",
+      "Install the Computer Case Tier 3 in the Electronics Assembler first.",
+      "Then add all other parts. Complexity should be 16 and press Assemble."
     },
     checkBtn = false,
-    checkDB = 'IWRobotConnection',
+    checkDB = "IWRobotConnection",
     needMap = false,
     needContent = true
   },
   {
     id = 7,
-    stepLabel = 'Step 6: OpenOS',
+    stepLabel = "Step 6: Install OpenOS",
     stepDescription = {
-      'Rename Robot in an anvil. Put the Robot on top of the OC Charger.',
-      'The Robot must face away from the sensor. Theres a small chest on its back.',
-      'Theres a slot in the inventory for a floppy disk.',
-      'Power on and install OpenOS from floppy disk. install --> Y --> Y'
+      "Rename Robot in an anvil. Put the Robot on top of the OC Charger.",
+      "The robot must be positioned with its back facing the sensor. There is a",
+      "small chest on its back. You should still have the OpenOS floppy left from",
+      "setting up the computer. The robot has a slot in its inventory",
+      "for a floppy disk. Put a floppy disk, Power on and install OpenOS",
+      "from floppy disk. install --> Y --> Y",
+      "After setting up OpenOS, remove the floppy.",
     },
     checkBtn = false,
-    checkDB = 'IWRobotConnection',
+    checkDB = "IWRobotConnection",
     needMap = true,
     needContent = false
   },
   {
     id = 8,
-    stepLabel = 'Step 7: Install the script on the robot',
+    stepLabel = "Step 7: Install the script on the Robot",
     stepDescription = {
-      'Get the link at github.com/ForgTav/E2EE-CropAutomation, Discord,',
-      'or set it manually from the installation Computer.',
+      "Get the link from",
+      "https://github.com/ForgTav/E2EE-CropAutomation.",
+      "",
+      "Or",
+      "",
+      "Discord channel of Enigmatica 2: Expert - Extended",
+      "",
+      "Or",
+      "",
+      "Or enter it manually — the link must be without spaces.",
+      "",
+      "",
+      "wget https://raw.githubusercontent.com/ForgTav/",
+      "E2EE-CropAutomation/main/robotSetup.lua && robotSetup"
     },
     checkBtn = false,
-    checkDB = 'IWRobotConnection',
+    checkDB = "IWRobotConnection",
     needMap = false,
     needContent = true
   },
   {
     id = 9,
-    stepLabel = 'Step 8: Start the robot and give the tools',
+    stepLabel = "Step 8: Install the tools in the Robot and start the Robot",
     stepDescription = {
-      'Equip the Robot with a Transvector binder and Weeding Trowel.',
-      'Put axe or mattock in the wrench slot. (optional)',
-      'Type "start" and make sure no warnings appear on the screen.'
+      "Equip the Robot with a Transvector Binder and Weeding Trowel",
+      "In its inventory (not in the wrench slot).",
+      "Put axe or mattock in the wrench slot. (optional)",
+      "Type 'start' and make sure no warnings messages appear on the screen."
     },
     checkBtn = true,
-    checkDB = 'IWRobotTools',
+    checkDB = "IWRobotTools",
     needMap = false,
     needContent = false
   },
   {
     id = 10,
-    stepLabel = 'Step 9: Working farm',
+    stepLabel = "Step 9: Build the Working Farm",
     stepDescription = {
-      'Now we need to build a working farm. Grab a hoe and build a farm.',
-      'There should be a trapdoor on top of the water source. Grid Working Farm 6x6',
+      "Now we need to build a Working Farm. Grab a hoe and build a Working Farm.",
+      "There should be a trapdoor on top of the water source. Grid Working Farm 6x6",
     },
     checkBtn = true,
-    checkDB = 'IWWorkingFarm',
+    checkDB = "IWWorkingFarm",
     needMap = true,
     needContent = true
   },
   {
     id = 11,
-    stepLabel = 'Step 10: Target crop',
+    stepLabel = "Step 10: Plant Target crop",
     stepDescription = {
-      'An IC2 starter plant is required for operation.',
-      'If none are available, plant reed on a crop stick.',
+      "An IC2 starter plant is required for operation. If none are available,",
+      "sugarcane(from vanilla) in a Crop Stick instead. All plants must be placed",
+      "on Crop Sticks. Plant a crop in the slot highlighted in red.",
     },
     checkBtn = true,
-    checkDB = 'IWTargetCrop',
+    checkDB = "IWTargetCrop",
     needMap = true,
     needContent = false
   },
   {
     id = 12,
-    stepLabel = 'Step 11: Transvector Dislocator and Blank Farmland',
+    stepLabel = "Step 11: Install Transvector Dislocator and Blank Farmland",
     stepDescription = {
-      'Transvector Dislocator goes above and faces the Blank Farmland.',
-      'You can identify Facing side by the number of dots on its surface.',
+      "Transvector Dislocator goes above and faces the Blank Farmland.",
+      "You can identify Facing side by the number of dots on it's surface.",
     },
     checkBtn = true,
-    checkDB = 'IWDislocatorAndBlank',
+    checkDB = "IWDislocatorAndBlank",
     needMap = true,
     needContent = true
   },
   {
     id = 13,
-    stepLabel = 'Step 12: Storage farm',
+    stepLabel = "Step 12: Build the Storage Farm",
     stepDescription = {
-      'Now we need to build a storage farm. Take the hoe again and build a farm.',
-      'There should be a trapdoor on top of the water source. Grid Storage Farm 9x9',
+      "Now we need to build a Storage Farm. Grab a hoe and build a Storage Farm.",
+      "There should be a trapdoor on top of the water source. Grid Storage Farm 9x9",
     },
     checkBtn = true,
-    checkDB = 'IWStorageFarm',
+    checkDB = "IWStorageFarm",
     needMap = true,
     needContent = true
   },
   {
     id = 14,
-    stepLabel = 'Finally',
+    stepLabel = "Finally",
     stepDescription = {
-      'You all set! 🚀',
-      'Go to Settings to select the desired mode.',
-      'Start automation from the System tab.',
-      'The final scan will run after clicking Next. It could take a while.',
+      "You all set! 🚀",
+      "The System tab will open next, showing the latest scan result.",
+      "Before launching, make sure to adjust the settings as needed.",
+      "The final scan will run after clicking Next. It could take a while.",
     },
     checkBtn = false,
-    checkDB = '',
+    checkDB = "",
     needMap = false,
     needContent = false
   }
@@ -638,7 +658,7 @@ local function drawIWMap(step)
 
   --Working farm
   if step.id >= 10 then
-    local cellW = 2
+    local cellW = 3
     local workingFarmSize = config.workingFarmSize
     local startX = center - math.floor((workingFarmSize * cellW) / 2) - 4
     local startY = y + 1
@@ -665,7 +685,7 @@ local function drawIWMap(step)
 
   --Storage farm
   if step.id >= 13 then
-    local cellW = 2
+    local cellW = 3
     local storageSize = 9
     local startX = center + math.floor((storageSize * cellW) / 2) - 5
     local startY = y + 1
@@ -689,27 +709,26 @@ local function drawIWMap(step)
   if step.id >= 12 then
     if step.id == 12 then
       gpu.setForeground(uiColors.red)
-      gpu.set(center + 2, maxY - 5, 'TD')
+      gpu.set(center + 5, maxY - 5, 'TD')
       gpu.setForeground(uiColors.foreground)
-      gpu.set(center + 4, maxY - 5, ' ← Transvector Dislocator')
+      --gpu.set(center + 4, maxY - 5, ' ← Transvector Dislocator')
 
       gpu.setForeground(uiColors.red)
-      gpu.set(center + 2, maxY - 4, '[]')
+      gpu.set(center + 5, maxY - 4, '[]')
       gpu.setForeground(uiColors.foreground)
-      gpu.set(center + 4, maxY - 4, ' ← Blank Farmland')
+      --gpu.set(center + 4, maxY - 4, ' ← Blank Farmland')
     else
       gpu.setForeground(uiColors.lightgray)
-      gpu.set(center + 2, maxY - 5, 'TD')
-      gpu.set(center + 2, maxY - 4, '[]')
+      gpu.set(center + 5, maxY - 5, 'TD')
+      gpu.set(center + 5, maxY - 4, '[]')
       gpu.setForeground(uiColors.foreground)
     end
   end
 
   if step.id == 11 then
     gpu.setForeground(uiColors.red)
-    gpu.set(center, maxY - 4, '[]')
+    gpu.set(center + 2, maxY - 4, '[] ')
     gpu.setForeground(uiColors.foreground)
-    gpu.set(center + 2, maxY - 4, ' ← Plant Target Crop')
   end
 
   --Trash or Chest
@@ -717,158 +736,206 @@ local function drawIWMap(step)
     gpu.setForeground(uiColors.red)
     gpu.set(center - 4, maxY - 3, 'TC')
     gpu.setForeground(uiColors.foreground)
-    gpu.set(center - 18, maxY - 3, 'Trash/Chest → ')
-  elseif step.id >= 6 then
-    if step.id >= 10 then
-      gpu.setForeground(uiColors.lightgray)
-    end
+  elseif step.id >= 10 then
+    gpu.setForeground(uiColors.lightgray)
     gpu.set(center - 4, maxY - 3, 'TC')
     gpu.setForeground(uiColors.foreground)
+  elseif step.id >= 6 then
+    gpu.set(center - 4, maxY - 3, 'TC')
   end
 
   --Crop chest
   if step.id == 4 then
     gpu.setForeground(uiColors.red)
-    gpu.set(center - 2, maxY - 3, 'CH')
+    gpu.set(center - 1, maxY - 3, 'CH')
     gpu.setForeground(uiColors.foreground)
-    gpu.set(center - 15, maxY - 3, 'Crop chest → ')
+  elseif step.id >= 10 then
+    gpu.setForeground(uiColors.lightgray)
+    gpu.set(center - 1, maxY - 3, 'CH')
+    gpu.setForeground(uiColors.foreground)
   elseif step.id >= 5 then
-    if step.id >= 10 then
-      gpu.setForeground(uiColors.lightgray)
-    end
-    gpu.set(center - 2, maxY - 3, 'CR')
-    gpu.setForeground(uiColors.foreground)
+    gpu.set(center - 1, maxY - 3, 'CH')
   end
 
   --OC CHARGER
   if step.id == 3 or step.id == 7 then
     gpu.setForeground(uiColors.red)
-    gpu.set(center, maxY - 3, 'CG')
+    gpu.set(center + 2, maxY - 3, 'CG')
     gpu.setForeground(uiColors.foreground)
-    gpu.set(center + 2, maxY - 3, ' ← OC Charger')
+  elseif step.id >= 10 then
+    gpu.setForeground(uiColors.lightgray)
+    gpu.set(center + 2, maxY - 3, 'CG')
+    gpu.setForeground(uiColors.foreground)
   elseif step.id >= 4 then
-    if step.id >= 10 then
-      gpu.setForeground(uiColors.lightgray)
-    end
-    gpu.set(center, maxY - 3, 'CG')
-    gpu.setForeground(uiColors.foreground)
+    gpu.set(center + 2, maxY - 3, 'CG')
   end
 
   --OPEN SENSOR
   if step.id == 2 then
     gpu.setForeground(uiColors.red)
-    gpu.set(center, maxY - 2, 'OS')
+    gpu.set(center + 2, maxY - 2, 'OS')
     gpu.setForeground(uiColors.foreground)
-    gpu.set(center + 2, maxY - 2, ' ← Open sensor')
+  elseif step.id >= 10 then
+    gpu.setForeground(uiColors.lightgray)
+    gpu.set(center + 2, maxY - 2, 'OS')
+    gpu.setForeground(uiColors.foreground)
   else
-    if step.id >= 10 then
-      gpu.setForeground(uiColors.lightgray)
-    end
-    gpu.set(center, maxY - 2, 'OS')
-    gpu.setForeground(uiColors.foreground)
+    gpu.set(center + 2, maxY - 2, 'OS')
   end
-
 
   --COMPUTER CASE
   if step.id >= 10 then
     gpu.setForeground(uiColors.lightgray)
-  end
-  gpu.set(center, maxY, 'CC')
-  gpu.setForeground(uiColors.foreground)
-  if step.id == 2 then
-    gpu.set(center + 2, maxY, ' ← Computer case')
+    gpu.set(center - 4, maxY - 2, 'CC')
+    gpu.setForeground(uiColors.foreground)
+  else
+    gpu.set(center - 4, maxY - 2, 'CC')
   end
 
   --COMPUTER SCREEN
   if step.id >= 10 then
     gpu.setForeground(uiColors.lightgray)
-  end
-  gpu.set(center, maxY - 1, 'CS')
-  gpu.setForeground(uiColors.foreground)
-  if step.id == 2 then
-    gpu.set(center + 2, maxY - 1, ' ← Computer screen')
+    gpu.set(center - 1, maxY - 2, 'SC')
+    gpu.setForeground(uiColors.foreground)
+  else
+    gpu.set(center - 1, maxY - 2, 'SC')
   end
 
   --PLAYER MARK
   gpu.setForeground(uiColors.yellow)
-  gpu.set(center - 4, maxY - 1, 'XX')
+  gpu.set(center - 1, maxY, '⇑⇑')
   gpu.setForeground(uiColors.foreground)
-  if step.id == 2 then
-    gpu.set(center - 20, maxY - 1, 'You are here → ')
-  end
 end
 
 local function drawIWContent(step)
   if not step.needContent then return end
-  if step.id == 6 then
-    local cursor = 9
-    local robotDelails = {
-      'Computer Case Tier 3',
-      'Accelerated Processing Unit (APU) Tier 2',
-      'Memory Tier 2',
-      'Hard Disk Drive Tier 1',
-      'EEPROM (Lua BIOS)',
-      'Linked card',
-      'Internet Card',
-      'Redstone Card Tier 1',
-      'Inventory Upgrade',
-      'Inventory Controller Upgrade',
-      'Keyboard',
-      'Screen Tier 1',
-      'Disk Drive (Block)',
+
+
+  if step.id == 2 then
+    local legend = {
+      'CC - Computer Case',
+      'SC - Screen',
+      'OS - Open sensor',
+      '⇑⇑ - You are looking at screen'
     }
 
-    gpu.set(4, cursor, 'Also the list of parts needed for the Robot:');
-    cursor = cursor + 1
-
-    for index, value in ipairs(robotDelails) do
+    local cursor = 17
+    for index, value in ipairs(legend) do
       gpu.set(4, cursor, value);
       cursor = cursor + 1
     end
-  elseif step.id == 8 then
-    local cursor = 8
+  elseif step.id == 3 then
+    local legend = {
+      'CG - Charger',
+    }
 
-    local baseUrl = 'wget .../ForgTav/E2EE-CropAutomation/main/'
-    local sysSetup = 'sysSetup.lua && sysSetup'
-    local robotSetup = 'robotSetup.lua && robotSetup'
+    local cursor = 17
+    for index, value in ipairs(legend) do
+      gpu.set(4, cursor, value);
+      cursor = cursor + 1
+    end
+  elseif step.id == 4 then
+    local legend = {
+      'CH - Crop chest',
+    }
+
+    local cursor = 17
+    for index, value in ipairs(legend) do
+      gpu.set(4, cursor, value);
+      cursor = cursor + 1
+    end
+  elseif step.id == 5 then
+    local legend = {
+      'TC - Trash/Chest',
+    }
+
+    local cursor = 17
+    for index, value in ipairs(legend) do
+      gpu.set(4, cursor, value);
+      cursor = cursor + 1
+    end
+  elseif step.id == 6 then
+    local cursorCol1 = 13
+    local cursorCol2 = 13
+    local robotDelailsCol1 = {
+      '1. Memory Tier 2',
+      '2. Hard Disk Drive Tier 1',
+      '3. EEPROM (Lua BIOS)',
+      '4. Linked card',
+      '5. Internet Card',
+      '6. Accelerated Processing Unit (APU) Tier 2',
+    }
+
+    local robotDelailsCol2 = {
+      '7. Redstone Card Tier 1',
+      '8. Inventory Upgrade',
+      '9. Inventory Controller Upgrade',
+      '10. Keyboard',
+      '11. Screen Tier 1',
+      '12. Disk drive (as block)',
+    }
 
 
-    gpu.setForeground(uiColors.lightgray)
-    gpu.set(4, cursor, baseUrl);
-    gpu.setForeground(uiColors.foreground)
-    gpu.set(4 + #baseUrl, cursor, sysSetup);
-    cursor = cursor + 2
+    gpu.set(2, 11, 'Also the list of parts needed for the Robot:');
 
-    local x = screenWidth - #baseUrl
-    gpu.set(x + math.floor(#sysSetup / 2), cursor, '↓')
-    --gpu.set(math.ceil(((4 + #baseUrl) / 2) + #sysSetup), cursor, '↓');
-    cursor = cursor + 2
+    for index, value in ipairs(robotDelailsCol1) do
+      gpu.set(2, cursorCol1, value);
+      cursorCol1 = cursorCol1 + 1
+    end
 
-    gpu.setForeground(uiColors.lightgray)
-    gpu.set(4, cursor, baseUrl);
-    gpu.setForeground(uiColors.foreground)
-    gpu.set(4 + #baseUrl, cursor, robotSetup);
+    for index, value in ipairs(robotDelailsCol2) do
+      gpu.set(48, cursorCol2, value);
+      cursorCol2 = cursorCol2 + 1
+    end
+
+    gpu.set(2, 20, 'P.S. If you used a Linked Card from Creative or a different one, sync it with');
+    gpu.set(2, 21, 'the computer Linked Card by merging it in the crafting table.');
   elseif step.id == 10 or step.id == 13 then
-    gpu.set(4, 8, '[] - Farmland');
-    gpu.set(4, 9, 'WS - Water source');
+    local legend = {
+      '[] - Farmland',
+      'WS - Water source'
+    }
+
+    local cursor = 17
+    for index, value in ipairs(legend) do
+      gpu.set(4, cursor, value);
+      cursor = cursor + 1
+    end
   elseif step.id == 12 then
+    local legend = {
+      'TD - Transvector Dislocator',
+      '[] - Blank farm'
+    }
+
+    local cursor = 15
+    for index, value in ipairs(legend) do
+      gpu.set(4, cursor, value);
+      cursor = cursor + 1
+    end
+
     gpu.setForeground(uiColors.green)
-    gpu.set(6, 8, 'Facing side');
+    gpu.set(60, 7, 'Facing side');
     gpu.setForeground(uiColors.foreground)
-    gpu.set(6, 9, '┌─ ▪  ▪ ─┐');
-    gpu.set(6, 10, '▪ ┌────┐ ▪');
-    gpu.set(6, 11, '  │    │  ');
-    gpu.set(6, 12, '▪ └────┘ ▪');
-    gpu.set(6, 13, '└─ ▪  ▪ ─┘');
+    gpu.set(60, 8, '┌─ ▪  ▪ ─┐');
+    gpu.set(60, 9, '▪ ┌────┐ ▪');
+    gpu.set(60, 10, '  │    │  ');
+    gpu.set(60, 11, '▪ └────┘ ▪');
+    gpu.set(60, 12, '└─ ▪  ▪ ─┘');
 
     gpu.setForeground(uiColors.red)
-    gpu.set(6, 15, 'Wrong side');
+    gpu.set(60, 14, 'Wrong side');
     gpu.setForeground(uiColors.foreground)
-    gpu.set(6, 16, ' ──    ── ');
-    gpu.set(6, 17, '│ ┌────┐ │');
-    gpu.set(6, 18, '  │    │  ');
-    gpu.set(6, 19, '│ └────┘ │');
-    gpu.set(6, 20, ' ──    ── ');
+    gpu.set(60, 15, ' ──    ── ');
+    gpu.set(60, 16, '│ ┌────┐ │');
+    gpu.set(60, 17, '  │    │  ');
+    gpu.set(60, 18, '│ └────┘ │');
+    gpu.set(60, 19, ' ──    ── ');
+
+    gpu.setForeground(uiColors.yellow)
+    gpu.set(2, 19, '⚠ WARNING');
+    gpu.setForeground(uiColors.foreground)
+    gpu.set(2, 20, 'Incorrect placement of the Transvector Dislocator may cause world crashes.');
+    gpu.set(2, 21, 'Make sure to position it carefully and exactly as instructed.');
   end
 end
 
