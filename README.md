@@ -1,8 +1,19 @@
 # 🌱 E2EE Crop Automation for OpenComputers + IC²
 
-Automate your IC² crop breeding with ease using this fully integrated OpenComputers (OC) system. These scripts handle everything: **tiering up**, **stat maximization**, and **crop spreading** — all with minimal setup. No prior experience with OpenComputers is necessary — this guide walks you through everything step-by-step.
+Automate your IC² crop breeding with ease using this fully integrated OpenComputers (OC) system. These scripts handle: **tiering up**, **stat maximization**, and **crop spreading** — all with minimal setup. No prior experience with OpenComputers is necessary — this guide walks you through everything step-by-step.
 
 ---
+
+## ⚠️ Manual-only Crops
+
+Some plants **cannot be automated** using this script due to their unique environmental requirements or mechanics.
+
+### Example: Redwheat
+- Requires **light level between 5 and 10**
+- This condition cannot be reliably maintained or managed by the robot
+- As a result, Redwheat must be grown and bred **manually**
+
+If a plant has similar constraints, it is recommended to handle it outside the automated system.
 
 ## ⚙️ Required Components
 
