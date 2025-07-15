@@ -99,6 +99,8 @@ local function initDataBase()
 
   setSystemData("currentLogsLevel", 3)
 
+  setSystemData('selectedMenuItem', 'IW')
+
   setSystemData("IWStep", 1)
 end
 

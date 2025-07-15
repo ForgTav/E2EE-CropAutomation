@@ -197,13 +197,13 @@ local installationSteps = {
       "Get the link from",
       "https://github.com/ForgTav/E2EE-CropAutomation.",
       "",
-      "Or",
+      "",
       "",
       "Discord channel of Enigmatica 2: Expert - Extended",
       "",
-      "Or",
       "",
-      "Or enter it manually — the link must be without spaces.",
+      "",
+      "Enter it manually — the link must be without spaces.",
       "",
       "",
       "wget https://raw.githubusercontent.com/ForgTav/",
@@ -598,6 +598,23 @@ local function drawIWFooter(step)
     })
   end
 
+  if step.id == 1 and db.getSystemData('systemReady') then
+    local skipText = 'Skip'
+    local checkX = math.ceil((screenWidth - #skipText + 1) / 2)
+    local checkY = screenHeight - 1
+
+    gpu.set(checkX, checkY, skipText)
+    gpu.setForeground(uiColors.foreground)
+
+    registeterButton({
+      x1 = checkX,
+      x2 = checkX + #skipText,
+      y1 = checkY,
+      y2 = checkY,
+      action = 'skipIWSystem'
+    })
+  end
+
   if step.checkBtn and step.checkDB then
     local currentStatus = db.getSystemData(step.checkDB) or false
     local checkText = '⯈ Check'
@@ -896,10 +913,19 @@ local function drawIWContent(step)
       'WS - Water source'
     }
 
-    local cursor = 17
+    local cursor = 15
     for index, value in ipairs(legend) do
       gpu.set(4, cursor, value);
       cursor = cursor + 1
+    end
+
+    if step.id == 10 then
+      gpu.setForeground(uiColors.yellow)
+      gpu.set(2, 18, '⚠ WARNING');
+      gpu.setForeground(uiColors.foreground)
+      gpu.set(2, 19, 'If a farmland block is accidentally converted to dirt (e.g., by mobs),');
+      gpu.set(2, 20, "the system won't detect it and may crash the game.");
+      gpu.set(2, 21, "Make sure to protect the farm area from both passive and hostile mobs.");
     end
   elseif step.id == 12 then
     local legend = {
@@ -932,10 +958,10 @@ local function drawIWContent(step)
     gpu.set(60, 19, ' ──    ── ');
 
     gpu.setForeground(uiColors.yellow)
-    gpu.set(2, 19, '⚠ WARNING');
+    gpu.set(2, 20, '⚠ WARNING');
     gpu.setForeground(uiColors.foreground)
-    gpu.set(2, 20, 'Incorrect placement of the Transvector Dislocator may cause world crashes.');
-    gpu.set(2, 21, 'Make sure to position it carefully and exactly as instructed.');
+    gpu.set(2, 21, 'Incorrect placement of the Transvector Dislocator may cause world crashes.');
+    gpu.set(2, 22, 'Make sure to position it carefully and exactly as instructed.');
   end
 end
 
@@ -1815,8 +1841,10 @@ local function prevIWStep()
   end
 end
 
-local function exitIWStep()
-  sys.doSystemScan()
+local function exitIWStep(force)
+  if not force then
+    sys.doSystemScan()
+  end
   db.setSystemData('selectedMenuItem', 'system')
   fillScreen()
   renderContent()
@@ -2067,6 +2095,8 @@ local function handleMouseClick(_, _, x, y)
           prevIWStep()
         elseif btn.action == 'exitIWStep' then
           exitIWStep()
+        elseif btn.action == 'skipIWSystem' and db.getSystemData('systemReady') then
+          exitIWStep(true)
         end
         break
       end
@@ -2125,14 +2155,9 @@ local function initUI()
   gpu.setResolution(80, 25)
   gpu.setDepth(4)
 
-  if not sys.doSystemScan(true) then
-    db.setSystemData('selectedMenuItem', 'IW')
-    drawIWStep()
-  else
-    db.setSystemData('selectedMenuItem', 'system')
-    fillScreen()
-    renderContent()
-  end
+  sys.doSystemScan(true)
+
+  drawIWStep()
 
   event.listen("touch", handleMouseClick)
 

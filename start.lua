@@ -113,9 +113,15 @@ local function transporter(msgType, msgData)
             data = results
         })
     elseif msgType == "getStatus" then
+        local chargedStatus = actions.fullyCharged() or false
+        if not chargedStatus then
+            print('Robot – Now charging. System is on standby.')
+        end
+
         sendMessage({
             type = "getStatus",
-            robotStatus = robotStatus
+            robotStatus = robotStatus,
+            charged = chargedStatus
         })
     elseif msgType == 'order' then
         robotStatus = false

@@ -70,7 +70,17 @@ end
 
 local function getRobotStatus()
     local response = sendTunnelRequest({ type = "getStatus" }, "getStatus", 3)
-    return response and response.robotStatus or false
+
+    if not response then
+        return false
+    end
+
+    if not response.charged then
+        db.setLogs('Robot – Entered charging state. Awaiting full charge.')
+        return false
+    end
+
+    return response.robotStatus or false
 end
 
 local function cordtoScan(x, y)

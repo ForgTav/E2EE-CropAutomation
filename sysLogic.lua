@@ -391,22 +391,23 @@ local function sysExit()
     end
     os.sleep(0.1)
     sys.sendTunnelRequestNoReply({ type = 'cleanUp', data = order })
-  end
-  ui.UIloading(false)
+    ui.UIloading(false)
 
-  while not sys.getRobotStatus() do
-    os.sleep(1)
+    while not sys.getRobotStatus() do
+      os.sleep(1)
+    end
+    os.sleep(0.1)
+
+    ui.UIloading(true)
+
+    sys.scanFarm()
+    sys.scanStorage()
+  else
+    db.setLogs(string.format('CleanUp - No cleanup required. Empty order issued.'))
   end
 
-  ui.UIloading(true)
   db.setSystemData("systemEnabled", false)
   db.setSystemData("flagNeedCleanUp", false)
-
-
-  sys.scanFarm()
-  sys.scanStorage()
-  os.sleep(0.1)
-
   db.setSystemData('systemCreateOrder', false)
   ui.UIloading(false)
 end
