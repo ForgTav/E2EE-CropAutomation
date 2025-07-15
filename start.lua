@@ -218,6 +218,8 @@ local function checkComponents()
         os.exit()
     end
 
+    print("Robot has been initialized. All systems are functioning correctly.")
+
     initRobot()
 end
 
