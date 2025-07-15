@@ -417,7 +417,7 @@ local function drawSlotControl(value, x, y, transplateFor, slotFarm)
   cursor = cursor + 2
 
   -- value
-  local valStr = string.format("%2d", value)
+  local valStr = string.format("%02d", value)
   gpu.set(cursor, y, valStr)
   cursor = cursor + #valStr + 1
 
@@ -2054,7 +2054,12 @@ local function handleMouseClick(_, _, x, y)
           gpu.set(checkX, checkY, checkText)
           gpu.setForeground(uiColors.foreground)
 
-          sys.doSystemScan()
+          local currentStep = db.getSystemData('IWStep') or 1
+          local step = installationSteps[currentStep]
+          if not step.checkBtn or not step.checkDB then
+            return
+          end
+          sys.doIWSystemScan(step.checkDB)
           drawIWStep()
         elseif btn.action == 'nextIWStep' then
           nextIWStep()

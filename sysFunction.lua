@@ -493,12 +493,12 @@ local function scanSystemRobot(firstRun)
     local connectionData = {}
     local allPassed = true
 
-    local linkedCardError = true
-    local redstoneCardError = true
-    local inventoryUpgradeError = true
-    local inventoryControllerError = true
-    local weedingTrowelError = true
-    local transvectorBinderError = true
+    local linkedCardError = false
+    local redstoneCardError = false
+    local inventoryUpgradeError = false
+    local inventoryControllerError = false
+    local weedingTrowelError = false
+    local transvectorBinderError = false
 
     if firstRun then
         drawMessage("Scanning robot", 0xFFFFFF)
@@ -518,21 +518,13 @@ local function scanSystemRobot(firstRun)
         os.sleep(0.5)
     end
 
-    if not connectionSuccess then
-        linkedCardError = false
-        redstoneCardError = false
-        inventoryUpgradeError = false
-        inventoryControllerError = false
-        weedingTrowelError = false
-        transvectorBinderError = false
-        allPassed = false
-    else
-        linkedCardError = connectionData.linkedCard
-        redstoneCardError = connectionData.redstoneCard
-        inventoryUpgradeError = connectionData.inventoryUpgrade
-        inventoryControllerError = connectionData.inventoryController
-        weedingTrowelError = connectionData.weedingTrowel
-        transvectorBinderError = connectionData.transvectorBinder
+    if connectionSuccess then
+        linkedCardError = connectionData.linkedCard or false
+        redstoneCardError = connectionData.redstoneCard or false
+        inventoryUpgradeError = connectionData.inventoryUpgrade or false
+        inventoryControllerError = connectionData.inventoryController or false
+        weedingTrowelError = connectionData.weedingTrowel or false
+        transvectorBinderError = connectionData.transvectorBinder or false
     end
 
     if not linkedCardError then
@@ -598,6 +590,8 @@ local function scanSystemRobot(firstRun)
     db.setSystemData('inventoryController', inventoryControllerError)
     db.setSystemData('weedingTrowel', weedingTrowelError)
     db.setSystemData('transvectorBinder', transvectorBinderError)
+
+    return allPassed
 end
 
 local function checkSensor(firstRun)
@@ -1001,6 +995,33 @@ local function doSystemScan(firstRun)
     return true
 end
 
+local function doIWSystemScan(target)
+    if not target then return end
+
+    if target == 'IWSensor' then
+        return checkSensor()
+    elseif target == 'IWCharger' then
+        return checkCharger()
+    elseif target == 'IWCropChest' then
+        return checkCropChest()
+    elseif target == 'IWTrashOrChest' then
+        return checkTrashOrChest()
+    elseif target == 'IWRobotConnection' then
+        return checkRobot()
+    elseif target == 'IWRobotTools' then
+        return scanSystemRobot()
+    elseif target == 'IWWorkingFarm' then
+        return checkFarm()
+    elseif target == 'IWTargetCrop' then
+        return scanTargetCrop()
+    elseif target == 'IWDislocatorAndBlank' then
+        return checkDislocatorAndBlank()
+    elseif target == 'IWStorageFarm' then
+        return checkStorage()
+    end
+    return false
+end
+
 return {
     getRobotStatus = getRobotStatus,
     sendTunnelRequestNoReply = sendTunnelRequestNoReply,
@@ -1014,6 +1035,7 @@ return {
     cleanUp = cleanUp,
     getEmptySlotStorage = getEmptySlotStorage,
     doSystemScan = doSystemScan,
+    doIWSystemScan = doIWSystemScan,
     scanTargetCrop = scanTargetCrop,
     scanCropStickChest = scanCropStickChest,
     scanTrashOrChest = scanTrashOrChest

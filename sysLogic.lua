@@ -357,7 +357,7 @@ local function checkCondition()
   local countCropSticks = db.getSystemData('cropSticksCount')
   if countCropSticks and countCropSticks <= 64 then
     db.setSystemData('flagNeedCleanUp', true)
-    db.setLogs(string.format('Exit - Crop sticks %s', countCropSticks))
+    db.setLogs(string.format('Exit - Only %d Crop Sticks available (min. 64 required)', countCropSticks))
     return true
   end
 
@@ -366,7 +366,7 @@ local function checkCondition()
   local storageEmptySlots = db.getSystemData('systemStorageEmptySlots')
   if storageEmptySlots == 0 then
     db.setSystemData('flagNeedCleanUp', true)
-    db.setLogs(string.format('Exit - Storage farm is full'))
+    db.setLogs(string.format('Exit - Storage farm has no available space'))
     return true
   end
 
