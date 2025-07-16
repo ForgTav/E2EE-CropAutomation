@@ -112,8 +112,9 @@ local installationSteps = {
     stepDescription = {
       "See the map below to guide placement. The blocks must be close together.",
       "After setup, connect the sensor to the computer via cable from OpenComputers.",
-      "The cable must run underneath the blocks. Press Check button to verify",
-      "the step installation. If verification failed, you have made a mistake."
+      "The cable must run underneath the blocks. You can connect a cable",
+      "directly to the screen. Press Check button to verify the step installation.",
+      "If verification failed, you have made a mistake."
     },
     checkBtn = true,
     checkDB = "IWSensor",
@@ -194,6 +195,7 @@ local installationSteps = {
     id = 8,
     stepLabel = "Step 7: Install the script on the Robot",
     stepDescription = {
+      "",
       "Get the link from",
       "https://github.com/ForgTav/E2EE-CropAutomation.",
       "",
@@ -232,7 +234,7 @@ local installationSteps = {
     id = 10,
     stepLabel = "Step 9: Build the Working Farm",
     stepDescription = {
-      "Now we need to build a Working Farm. Grab a hoe and build a Working Farm.",
+      "Grab a hoe and build a Working Farm.",
       "There should be a trapdoor on top of the water source. Grid Working Farm 6x6",
     },
     checkBtn = true,
@@ -245,7 +247,7 @@ local installationSteps = {
     stepLabel = "Step 10: Plant Target crop",
     stepDescription = {
       "An IC2 starter plant is required for operation. If none are available,",
-      "sugarcane(from vanilla) in a Crop Stick instead. All plants must be placed",
+      "sugar cane(from vanilla) in a Crop Stick instead. All plants must be placed",
       "on Crop Sticks. Plant a crop in the slot highlighted in red.",
     },
     checkBtn = true,
@@ -269,7 +271,7 @@ local installationSteps = {
     id = 13,
     stepLabel = "Step 12: Build the Storage Farm",
     stepDescription = {
-      "Now we need to build a Storage Farm. Grab a hoe and build a Storage Farm.",
+      "Grab a hoe and build a Storage Farm.",
       "There should be a trapdoor on top of the water source. Grid Storage Farm 9x9",
     },
     checkBtn = true,
@@ -919,14 +921,14 @@ local function drawIWContent(step)
       cursor = cursor + 1
     end
 
-    if step.id == 10 then
-      gpu.setForeground(uiColors.yellow)
-      gpu.set(2, 18, '⚠ WARNING');
-      gpu.setForeground(uiColors.foreground)
-      gpu.set(2, 19, 'If a farmland block is accidentally converted to dirt (e.g., by mobs),');
-      gpu.set(2, 20, "the system won't detect it and may crash the game.");
-      gpu.set(2, 21, "Make sure to protect the farm area from both passive and hostile mobs.");
-    end
+    --if step.id == 10 then
+    gpu.setForeground(uiColors.yellow)
+    gpu.set(2, 18, '⚠ WARNING');
+    gpu.setForeground(uiColors.foreground)
+    gpu.set(2, 19, 'If a farmland block is accidentally converted to dirt (e.g., by mobs),');
+    gpu.set(2, 20, "the system won't detect it and may crash the game.");
+    gpu.set(2, 21, "Make sure to protect the farm area from both passive and hostile mobs.");
+    --end
   elseif step.id == 12 then
     local legend = {
       'TD - Transvector Dislocator',
@@ -1843,7 +1845,17 @@ end
 
 local function exitIWStep(force)
   if not force then
-    sys.doSystemScan()
+    local nextText = 'Wait  '
+    local x = screenWidth - #nextText - 1
+    local y = screenHeight - 1
+    gpu.setForeground(uiColors.lightgray)
+    gpu.set(x, y, nextText)
+    gpu.setForeground(uiColors.foreground)
+
+    if not sys.doSystemScan() then
+      drawIWStep()
+      return
+    end
   end
   db.setSystemData('selectedMenuItem', 'system')
   fillScreen()
