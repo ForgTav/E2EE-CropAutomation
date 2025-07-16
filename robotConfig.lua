@@ -1,21 +1,12 @@
 local config = {
-    -- NOTE: EACH CONFIG SHOULD END WITH A COMMA
-
     -- Side Length of Working Farm
-    workingFarmSize = nil,
+    workingFarmSize = 6,
     -- Side Length of Storage Farm
-    storageFarmSize = nil,
-    
-    storageOffset = nil,
-
+    storageFarmSize = 9,
     -- Pickup any and all drops (don't change)
     keepDrops = true,
-
     -- Minimum Charge Level
     needChargeLevel = 0.2,
-
-    -- =========== DO NOT CHANGE ===========
-
     -- The coordinate for charger
     chargerPos = { 0, 0 },
     -- The coordinate for the container contains crop sticks
@@ -27,8 +18,8 @@ local config = {
     -- The coordinate for the transvector dislocator
     dislocatorPos = { 1, 2 },
 
-    -- The slot for spade
-    spadeSlot = 0,
+    -- The slot for trowel
+    trowelSlot = 0,
     -- The slot for the transvector binder
     binderSlot = -1,
     -- The slot for crop sticks

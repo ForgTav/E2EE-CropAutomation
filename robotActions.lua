@@ -44,26 +44,40 @@ local function restockStick()
 
     robot.select(selectedSlot)
 
-    if robot.count(robot.inventorySize() + config.stickSlot) < 3 * 3 then
+    if robot.count(robot.inventorySize() + config.stickSlot) < 32 then
         emptyCropSticks = true;
         return false;
     end
 end
 
-
-
 local function dumpInventory()
     local selectedSlot = robot.select()
     gps.go(config.storagePos)
 
-    for i = 1, (robot.inventorySize() + config.storageStopSlot) do
+    local chestSize = inventory_controller.getInventorySize(sides.down) or 0
+    local invSize = robot.inventorySize() + config.storageStopSlot
+    local chestFull = false
+
+    for i = 1, invSize do
         os.sleep(0)
         if robot.count(i) > 0 then
             robot.select(i)
-            for e = 1, inventory_controller.getInventorySize(sides.down) do
-                if inventory_controller.getStackInSlot(sides.down, e) == nil then
-                    inventory_controller.dropIntoSlot(sides.down, e)
-                    break
+            if chestFull then
+                robot.dropUp()
+            else
+                local placed = false
+                for slot = 1, chestSize do
+                    if inventory_controller.getStackInSlot(sides.down, slot) == nil then
+                        if inventory_controller.dropIntoSlot(sides.down, slot) then
+                            placed = true
+                            break
+                        end
+                    end
+                end
+
+                if not placed then
+                    robot.dropUp()
+                    chestFull = true
                 end
             end
         end
@@ -71,6 +85,7 @@ local function dumpInventory()
 
     robot.select(selectedSlot)
 end
+
 
 
 
@@ -115,7 +130,7 @@ local function deweed()
         gps.resume()
     end
 
-    robot.select(robot.inventorySize() + config.spadeSlot)
+    robot.select(robot.inventorySize() + config.trowelSlot)
     inventory_controller.equip()
     robot.useDown()
 
@@ -153,11 +168,82 @@ local function removePlant(needCropStick)
     robot.select(selectedSlot)
 end
 
+local function clearSlot()
+    robot.swingDown()
+end
+
 
 local function pulseDown()
     redstone.setOutput(sides.down, 15)
     os.sleep(0.1)
     redstone.setOutput(sides.down, 0)
+end
+
+
+local function manualTransplant(order)
+    local fromSlot, toSlot = order.fromSlot, order.toSlot
+    local fromFarm, toFarm = order.fromFarm, order.toFarm
+    local toSlotName = order.toSlotName or nil
+    local destroyTo = order.destroyTo
+    if destroyTo == nil then
+        destroyTo = true
+    end
+
+    if not fromSlot or not toSlot or not fromFarm or not toFarm or not toSlotName then
+        return
+    end
+
+    local fromPos = (fromFarm == 'working' and gps.workingSlotToPos(fromSlot)) or
+        (fromFarm == 'storage' and gps.storageSlotToPos(fromSlot))
+    local toPos = (toFarm == 'working' and gps.workingSlotToPos(toSlot)) or
+        (toFarm == 'storage' and gps.storageSlotToPos(toSlot))
+
+    if not (fromPos and toPos) then
+        return
+    end
+
+    local selectedSlot = robot.select()
+    robot.select(robot.inventorySize() + config.binderSlot)
+    inventory_controller.equip()
+
+    gps.go(fromPos)
+    robot.useDown(sides.down, true)
+
+    gps.go(config.dislocatorPos)
+    pulseDown()
+    robot.useDown(sides.down, true)
+
+    gps.go(toPos)
+    if toSlotName == 'air' then
+        placeCropStick()
+    end
+    robot.useDown(sides.down, true)
+
+    gps.go(config.dislocatorPos)
+    pulseDown()
+    robot.useDown(sides.down, true)
+
+
+    -- TODO DESTROY FROM CROP
+    if not destroyTo then
+        gps.go(fromPos)
+        placeCropStick()
+        robot.useDown(sides.down, true)
+
+        gps.go(config.dislocatorPos)
+        pulseDown()
+        robot.useDown(sides.down, true)
+    end
+
+    -- Destroy original crop
+    inventory_controller.equip()
+    gps.go(config.relayFarmlandPos)
+    robot.swingDown()
+    if config.KeepDrops then
+        robot.suckDown()
+    end
+
+    robot.select(selectedSlot)
 end
 
 local function transplant(order)
@@ -187,6 +273,7 @@ local function transplant(order)
     robot.useDown(sides.down, true)
     gps.go(dest)
 
+    --print(order.slotName)
     if order.slotName == 'air' then
         placeCropStick()
     end
@@ -254,19 +341,26 @@ local function setEmptyCropSticksFlag(flag)
     emptyCropSticks = flag;
 end
 
+--local function checkBase()
+--
+--end
+
 
 
 return {
     needCharge = needCharge,
     charge = charge,
+    fullyCharged = fullyCharged,
     restockStick = restockStick,
     dumpInventory = dumpInventory,
     restockAll = restockAll,
+    clearSlot = clearSlot,
     placeCropStick = placeCropStick,
     deweed = deweed,
     removePlant = removePlant,
     pulseDown = pulseDown,
     transplant = transplant,
+    manualTransplant = manualTransplant,
     initWork = initWork,
     getEmptyCropSticksFlag = getEmptyCropSticksFlag,
     setEmptyCropSticksFlag = setEmptyCropSticksFlag

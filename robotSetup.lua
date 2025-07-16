@@ -3,9 +3,9 @@ local args = { ... }
 local branch
 local repo
 local scripts = {
-    'robotGPS.lua',
-    'robotConfig.lua',
     'robotActions.lua',
+    'robotConfig.lua',
+    'robotGPS.lua',
     'start.lua',
     'uninstall.lua'
 }
