@@ -112,7 +112,7 @@ local installationSteps = {
     stepDescription = {
       "See the map below to guide placement. The blocks must be close together.",
       "After setup, connect the sensor to the computer via cable from OpenComputers.",
-      "The cable must run underneath the blocks. You can connect a cable",
+      "The cable must run underneath the blocks. You can connect the cable",
       "directly to the screen. Press Check button to verify the step installation.",
       "If verification failed, you have made a mistake."
     },
