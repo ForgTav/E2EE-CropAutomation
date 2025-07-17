@@ -1032,6 +1032,23 @@ local function doIWSystemScan(target)
     return false
 end
 
+local function beforeStartSystem()
+    scanCropStickChest()
+    local countCropSticks = db.getSystemData('cropSticksCount')
+    if countCropSticks and countCropSticks <= 64 then
+        db.setLogs(string.format('Exit - Only %d Crop Sticks available (min. 64 required)', countCropSticks))
+        return false
+    end
+
+    local storageEmptySlots = db.getSystemData('systemStorageEmptySlots')
+    if storageEmptySlots == 0 then
+        db.setLogs(string.format('Exit - Storage farm has no available space'))
+        return false
+    end
+
+    return true
+end
+
 return {
     getRobotStatus = getRobotStatus,
     sendTunnelRequestNoReply = sendTunnelRequestNoReply,
@@ -1048,5 +1065,6 @@ return {
     doIWSystemScan = doIWSystemScan,
     scanTargetCrop = scanTargetCrop,
     scanCropStickChest = scanCropStickChest,
-    scanTrashOrChest = scanTrashOrChest
+    scanTrashOrChest = scanTrashOrChest,
+    beforeStartSystem = beforeStartSystem
 }

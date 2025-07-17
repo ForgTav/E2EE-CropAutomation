@@ -309,6 +309,25 @@ local function limitedOrderList(list)
   return result
 end
 
+local function firstLook()
+  local orderList = {}
+
+  for slot, _ in pairs(db.getFarm()) do
+    local crop = db.getFarmSlot(slot)
+    if crop.isCrop and crop.fromScan and sys.isWeed(crop) then
+      table.insert(orderList, {
+        action = 'deweed',
+        slot = slot,
+        priority = priorities.deweed,
+        logLevel = 3,
+        log = string.format("Order - Weed remove on slot: %d", slot)
+      })
+    end
+  end
+
+  return orderList
+end
+
 local function createOrderList()
   local orderList = {}
   local currentMode = db.getSystemData('currentMode')
@@ -436,17 +455,29 @@ local function executeCycle(cycle)
     return
   end
 
-  if cycle == 1 then
-    sys.scanStorage()
-  end
+  local weedOrder = firstLook()
 
-  local order = createOrderList()
-  if next(order) ~= nil then
-    sys.sendTunnelRequestNoReply({ type = 'order', data = order })
+  if weedOrder and #weedOrder > 0 then
+    sys.sendTunnelRequestNoReply({ type = 'order', data = weedOrder })
+    for _, task in ipairs(weedOrder) do
+      local message = task.log or string.format("Order: %s on slot %d", task.action, task.slot)
+      db.setLogs(message)
+    end
     os.sleep(1.0)
+    if cycle == 1 then
+      sys.scanStorage()
+    end
+  else
+    if cycle == 1 then
+      sys.scanStorage()
+    end
+
+    local order = createOrderList()
+    if next(order) ~= nil then
+      sys.sendTunnelRequestNoReply({ type = 'order', data = order })
+      os.sleep(1.0)
+    end
   end
-
-
 
   ui.UIloading(false)
   db.setSystemData('systemCreateOrder', false)
