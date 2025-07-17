@@ -1878,6 +1878,14 @@ local function handleBodyMouseClick(btn)
   elseif btn.action == 'startSystem' then
     local systemReady = db.getSystemData('systemReady')
     local flagNeedCleanUp = db.getSystemData('flagNeedCleanUp')
+
+
+    if not sys.beforeStartSystem() then
+      drawLogs()
+      return
+    end
+
+
     if systemReady and not flagNeedCleanUp then
       db.setSystemData('systemEnabled', true)
       sys.scanTargetCrop()

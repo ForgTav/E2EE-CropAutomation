@@ -2,7 +2,7 @@ local config = {
     workingFarmSize = 6,
     storageFarmSize = 9,
 
-    maxOrderList = 5,
+    maxOrderList = 4,
 
     maxGrowth = 23,
     maxGain = 31,
