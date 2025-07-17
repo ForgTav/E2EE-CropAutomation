@@ -459,6 +459,10 @@ local function executeCycle(cycle)
 
   if weedOrder and #weedOrder > 0 then
     sys.sendTunnelRequestNoReply({ type = 'order', data = weedOrder })
+    for _, task in ipairs(weedOrder) do
+      local message = task.log or string.format("Order: %s on slot %d", task.action, task.slot)
+      db.setLogs(message)
+    end
     os.sleep(1.0)
     if cycle == 1 then
       sys.scanStorage()
