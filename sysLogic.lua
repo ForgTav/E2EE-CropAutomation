@@ -11,6 +11,20 @@ local priorities = {
   removeCrop = 10
 }
 
+local function isInLogicalGrid(slot, logicalGridSize, realGridSize)
+  local col = math.floor((slot - 1) / realGridSize) + 1
+  local indexInCol = (slot - 1) % realGridSize
+  local row
+
+  if col % 2 == 1 then
+    row = indexInCol + 1
+  else
+    row = realGridSize - indexInCol
+  end
+
+  return row <= logicalGridSize and col <= logicalGridSize
+end
+
 local function transplantToParent(slot, toSlot, crop, toCrop, logStr)
   db.updateFarm(slot, { isCrop = true, name = "air", fromScan = false })
   crop.fromScan = false
@@ -57,11 +71,10 @@ local function transplantToStorage(slot, crop, logStr)
   }
 end
 
-local function getParentSlots()
+local function getParentSlots(logicalGridSize, realGridSize)
   local slots = {}
-  local workingFarmSize = config.workingFarmSize
-  for slot = 1, workingFarmSize ^ 2, 1 do
-    if slot % 2 > 0 then
+  for slot = 1, realGridSize ^ 2, 1 do
+    if slot % 2 > 0 and isInLogicalGrid(slot, logicalGridSize, realGridSize) then
       table.insert(slots, slot)
     end
   end
@@ -82,8 +95,16 @@ local function isSuitableParent(crop, currentMode, targetCrop)
   end
 end
 
-local function handleChild(slot, crop, currentMode, currentSubMode)
+local function handleChild(args)
   local order = {}
+  local slot = args.slot
+  local crop = args.crop
+  local currentMode = args.currentMode
+  local currentSubMode = args.currentSubMode
+  local targetCrop = args.targetCrop
+  local parentSlots = args.parentSlots
+  local availableParentSlot, availableParent
+
 
   if crop.name == "air" then
     return { { action = "placeCropStick", slot = slot, priority = priorities.placeCropStick, count = 2, logLevel = 3, log = string.format("Order - Place crop stick on slot: %d", slot) } }
@@ -107,17 +128,12 @@ local function handleChild(slot, crop, currentMode, currentSubMode)
     return order
   end
 
-  local targetCrop = db.getSystemData("systemTargetCrop")
-  local parentSlots = getParentSlots()
-  local availableParentSlot, availableParent
-
   if (currentMode == 1 and currentSubMode ~= 2) or currentMode == 2 or currentMode == 3 then
     for _, parentSlot in ipairs(parentSlots) do
       local parentCrop = db.getFarmSlot(parentSlot)
-      if parentCrop.fromScan and isSuitableParent(parentCrop, currentMode, targetCrop) then
+      if parentCrop and parentCrop.fromScan and isSuitableParent(parentCrop, currentMode, targetCrop) then
         availableParentSlot = parentSlot
         availableParent = parentCrop
-        break
       end
     end
   end
@@ -268,8 +284,11 @@ local function handleChild(slot, crop, currentMode, currentSubMode)
   return order
 end
 
-local function handleParent(slot, crop, currentMode, currentSubMode)
+local function handleParent(args)
   local order = {}
+
+  local crop = args.crop
+  local slot = args.slot
 
   if crop.name == 'air' or crop.name == "emptyCrop" then
     return order
@@ -301,6 +320,46 @@ local function handleParent(slot, crop, currentMode, currentSubMode)
   return order
 end
 
+local function handleNotLogical(args)
+  local order = {}
+  local slot = args.slot
+  local crop = args.crop
+
+
+
+  if crop.name == "air" then
+    return {}
+  elseif crop.name == "emptyCrop" then
+    table.insert(order, {
+      action = 'removePlant',
+      slot = slot,
+      needCropStick = false,
+      priority = priorities.removePlant,
+      logLevel = 3,
+      log = string.format("Order - Remove plant on slot: %d", slot)
+    })
+  elseif slot % 2 == 0 then
+    table.insert(order, {
+      action = 'removePlant',
+      slot = slot,
+      needCropStick = false,
+      priority = priorities.removePlant,
+      logLevel = 3,
+      log = string.format("Order - Remove plant on slot: %d", slot)
+    })
+  elseif slot % 2 == 1 and (sys.isWeed(crop) or sys.isMaxStat(crop)) then
+    table.insert(order, {
+      action = 'removePlant',
+      slot = slot,
+      needCropStick = false,
+      priority = priorities.removePlant,
+      logLevel = 3,
+      log = string.format("Order - Remove plant on slot: %d", slot)
+    })
+  end
+  return order
+end
+
 local function limitedOrderList(list)
   local result = {}
   for i = 1, config.maxOrderList do
@@ -309,42 +368,48 @@ local function limitedOrderList(list)
   return result
 end
 
-local function firstLook()
-  local orderList = {}
-
-  for slot, _ in pairs(db.getFarm()) do
-    local crop = db.getFarmSlot(slot)
-    if crop.isCrop and crop.fromScan and sys.isWeed(crop) then
-      table.insert(orderList, {
-        action = 'deweed',
-        slot = slot,
-        priority = priorities.deweed,
-        logLevel = 3,
-        log = string.format("Order - Weed remove on slot: %d", slot)
-      })
-    end
-  end
-
-  return orderList
-end
-
 local function createOrderList()
   local orderList = {}
   local currentMode = db.getSystemData('currentMode')
   local currentSubMode = db.getSystemData('currentSubMode') or nil
   local currentLevel = db.getSystemData('currentLogsLevel')
+  local realGridSize = config.workingFarmSize or 6
+  local logicalGridSize = config.modesGrid[currentMode] or realGridSize
+  local targetCrop = db.getSystemData("systemTargetCrop")
+  local parentSlots = getParentSlots(logicalGridSize, realGridSize)
 
   for slot, _ in pairs(db.getFarm()) do
-    local crop = db.getFarmSlot(slot)
-    if crop.isCrop and crop.fromScan then
-      local tasks = {}
-      if slot % 2 == 0 then
-        tasks = handleChild(slot, crop, currentMode, currentSubMode)
-      else
-        tasks = handleParent(slot, crop, currentMode, currentSubMode)
-      end
-      for _, task in pairs(tasks) do
-        table.insert(orderList, task)
+    local crop = db.getFarmSlot(slot) or {}
+
+    if crop and crop.isCrop then
+      if not isInLogicalGrid(slot, logicalGridSize, realGridSize) then
+        local tasks = handleNotLogical({
+          crop = crop,
+          slot = slot,
+        })
+        for _, task in pairs(tasks) do
+          table.insert(orderList, task)
+        end
+      elseif crop.fromScan then
+        local tasks = {}
+        local args = {
+          slot = slot,
+          crop = crop,
+          currentMode = currentMode,
+          currentSubMode = currentSubMode,
+          targetCrop = targetCrop,
+          parentSlots = parentSlots
+        }
+
+        if slot % 2 == 0 then
+          tasks = handleChild(args)
+        else
+          tasks = handleParent(args)
+        end
+
+        for _, task in pairs(tasks) do
+          table.insert(orderList, task)
+        end
       end
     end
   end
@@ -455,28 +520,14 @@ local function executeCycle(cycle)
     return
   end
 
-  local weedOrder = firstLook()
-
-  if weedOrder and #weedOrder > 0 then
-    sys.sendTunnelRequestNoReply({ type = 'order', data = weedOrder })
-    for _, task in ipairs(weedOrder) do
-      local message = task.log or string.format("Order: %s on slot %d", task.action, task.slot)
-      db.setLogs(message)
-    end
+  local order = createOrderList()
+  if next(order) ~= nil then
+    sys.sendTunnelRequestNoReply({ type = 'order', data = order })
     os.sleep(1.0)
-    if cycle == 1 then
-      sys.scanStorage()
-    end
-  else
-    if cycle == 1 then
-      sys.scanStorage()
-    end
+  end
 
-    local order = createOrderList()
-    if next(order) ~= nil then
-      sys.sendTunnelRequestNoReply({ type = 'order', data = order })
-      os.sleep(1.0)
-    end
+  if cycle == 1 then
+    sys.scanStorage()
   end
 
   ui.UIloading(false)
