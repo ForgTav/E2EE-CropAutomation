@@ -58,11 +58,30 @@ local function dumpInventory()
     local invSize = robot.inventorySize() + config.storageStopSlot
     local chestFull = false
 
+    local cropStickSlot = robot.inventorySize() + config.stickSlot
+    local currentSticksCount = robot.count(cropStickSlot)
+    local needSticks = 64 - currentSticksCount
+
     for i = 1, invSize do
         os.sleep(0)
-        if robot.count(i) > 0 then
+        if robot.count(i) > 0 and i ~= cropStickSlot then
             robot.select(i)
-            if chestFull then
+            local item = inventory_controller.getStackInInternalSlot(i)
+
+            if item and item.name == "ic2:crop_stick" and needSticks > 0 then
+                local countBefore = robot.count(cropStickSlot)
+                local toTransfer = math.min(needSticks, robot.count(i))
+
+                robot.transferTo(cropStickSlot, toTransfer)
+
+                local countAfter = robot.count(cropStickSlot)
+                local actuallyTransferred = countAfter - countBefore
+                needSticks = needSticks - actuallyTransferred
+
+                if robot.count(i) > 0 then
+                    robot.dropUp()
+                end
+            elseif chestFull then
                 robot.dropUp()
             else
                 local placed = false
