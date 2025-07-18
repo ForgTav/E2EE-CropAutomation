@@ -70,6 +70,13 @@ local config = {
         ["diareed"] = { 17, 19, 31 },
         ["oil_berries"] = { 15, 23 },
         ["withereed"] = { 33, 29, 27 }
+    },
+
+    modesGrid = {
+        [1] = 6, -- AutoTier
+        [2] = 5, -- AutoStat
+        [3] = 5  -- AutoSpread
     }
+
 }
 return config

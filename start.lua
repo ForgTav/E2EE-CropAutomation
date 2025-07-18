@@ -132,8 +132,12 @@ local function transporter(msgType, msgData)
             elseif order.action == 'transplantParent' or order.action == 'transplant' then
                 actions.transplant(order)
             elseif order.action == 'removePlant' then
+                local needCropStick = true
+                if order.needCropStick ~= nil then
+                    needCropStick = order.needCropStick
+                end
                 gps.go(gps.workingSlotToPos(order.slot))
-                actions.removePlant(true)
+                actions.removePlant(needCropStick)
             elseif order.action == 'placeCropStick' then
                 gps.go(gps.workingSlotToPos(order.slot))
                 actions.placeCropStick(order.count)
