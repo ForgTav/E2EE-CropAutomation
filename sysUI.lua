@@ -1502,7 +1502,7 @@ local function drawLogs(refresh)
   local logsY = 2
   local logs = db.getLogs()
   --local logsOffset = db.getSystemData('logsOffset') or 0
-  local maxLineLen = screenWidth - logsX - 7
+  local maxLineLen = screenWidth - logsX - 4
 
   local visibleLines = screenHeight - logsY - 2
   db.setSystemData("visibleLines", visibleLines)
@@ -1534,6 +1534,11 @@ local function drawLogs(refresh)
     local entry = logs[logIndex]
     if entry then
       local rawLog = string.format("[%s] %s", entry.date, entry.log)
+      local logColor = uiColors.white
+      if entry.color then
+        logColor = uiColors[entry.color] or uiColors.white
+      end
+      gpu.setForeground(logColor)
 
       local segments = {}
       for part in rawLog:gmatch("([^;]+)") do
@@ -1546,13 +1551,13 @@ local function drawLogs(refresh)
       end
 
       for i = 1, #segments do
-        local prefix = i > 1 and '  ' or ''
-        gpu.set(logsX, y, prefix .. segments[i])
+        gpu.set(logsX, y, segments[i]) -- Без отступа
         y = y + 1
         if y > screenHeight - 2 then return end
       end
     end
   end
+  gpu.setForeground(uiColors.foreground)
 end
 
 local function logsUp()
@@ -1794,6 +1799,14 @@ local function drawActions()
   cursor = cursor + 1
   gpu.set(systemX, cursor, 'Manually rescan the storage farm')
   cursor = cursor + 3
+
+  if flagNeedCleanUp or currentInAction then
+    gpu.setForeground(uiColors.lightgray)
+  end
+  drawClickedText(systemX, cursor, 'Scan Cropstick chest', nil, 'doScanCropStickChest')
+  cursor = cursor + 1
+  gpu.set(systemX, cursor, 'Rescan the Cropstick chest manually')
+  cursor = cursor + 3
 end
 
 local function renderContent(refresh)
@@ -1903,7 +1916,7 @@ local function handleBodyMouseClick(btn)
 
     if systemReady and not systemEnabled and not flagNeedCleanUp and not currentInTransplant then
       db.setSystemData('flagNeedCleanUp', true)
-      db.setLogs('Actions - Do system cleanUp')
+      db.setLogs('Actions - Do system cleanUp', 'green')
       drawActions()
     end
   elseif btn.action == 'doScanStorage' or btn.action == 'doScanWorking' then
@@ -1922,13 +1935,30 @@ local function handleBodyMouseClick(btn)
 
     if btn.action == 'doScanWorking' then
       sys.scanFarm()
-      db.setLogs('Actions - Do scan farm "Working"')
+      db.setLogs('Actions - Do scan farm "Working"', 'green')
     elseif btn.action == 'doScanStorage' then
       sys.scanStorage()
-      db.setLogs('Actions - Do scan farm "Storage"')
+      db.setLogs('Actions - Do scan farm "Storage"', 'green')
     end
 
     db.setSystemData('currentInAction', false)
+    drawActions()
+  elseif btn.action == 'doScanCropStickChest' then
+    local systemReady = db.getSystemData('systemReady')
+    local systemEnabled = db.getSystemData('systemEnabled')
+    local flagNeedCleanUp = db.getSystemData('flagNeedCleanUp')
+    local currentInAction = db.getSystemData('currentInAction') or false
+    local currentInTransplant = db.getSystemData('currentInTransplant') or false
+
+    if not systemReady or flagNeedCleanUp or currentInAction or currentInTransplant then
+      return
+    end
+
+    db.setSystemData('currentInAction', true)
+    sys.scanCropStickChest()
+    db.setSystemData('currentInAction', false)
+
+    db.setLogs('Actions - Do scan Cropstick chest', 'green')
     drawActions()
   elseif btn.action == 'openTransplant' then
     local systemReady = db.getSystemData('systemReady')

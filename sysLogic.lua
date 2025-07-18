@@ -44,10 +44,13 @@ end
 local function transplantToStorage(slot, crop, logStr)
   local emptySlot = sys.getEmptySlotStorage()
   if not emptySlot then
-    db.setSystemData('flagNeedCleanUp', true)
-    db.setLogs(string.format('Exit - Storage farm is full'))
     return nil
   end
+
+  if not logStr then
+    logStr = ''
+  end
+
   db.updateFarm(slot, { isCrop = true, name = "air", fromScan = false })
   crop.fromScan = false
   db.updateStorage(emptySlot, crop)
@@ -60,14 +63,15 @@ local function transplantToStorage(slot, crop, logStr)
     slotName = "air",
     priority = priorities.transplant,
     logLevel = 1,
-    log = logStr
+    log = logStr,
+    color = 'green'
   }, {
     action = "placeCropStick",
     slot = slot,
     priority = priorities.placeCropStick,
     count = 2,
     logLevel = 3,
-    log = string.format("Order: Place crop stick on slot %d", slot)
+    log = string.format("Order - Place crop stick on slot %d", slot)
   }
 end
 
@@ -216,7 +220,7 @@ local function handleChild(args)
         local transplant, placeStick = transplantToStorage(slot, crop,
           string.format('AutoStat - Target stats; Growth - %d; Gain - %d; Resistance - %d;', crop.gr, crop.ga, crop.re)
         )
-        if transplant then
+        if transplant and placeStick then
           table.insert(order, transplant)
           table.insert(order, placeStick)
         end
@@ -230,7 +234,7 @@ local function handleChild(args)
               table.insert(order,
                 transplantToParent(slot, pSlot, crop, pCrop,
                   string.format(
-                    'AutoStat - Replacing weaker parent; Strong slot %d; Growth - %d; Gain - %d; Resistance - %d; ↓; Weaker slot: %d; Growth - %d; Gain - %d; Resistance - %d',
+                    'AutoStat - Replacing weaker parent; Strong slot %d: Growth - %d, Gain - %d, Resistance - %d; ↓; Weaker slot: %d, Growth - %d, Gain - %d, Resistance - %d',
                     slot, crop.gr, crop.ga, crop.re, pSlot, pCrop.gr, pCrop.ga, pCrop.re)
                 ))
               return order
@@ -245,7 +249,7 @@ local function handleChild(args)
       slot = slot,
       priority = priorities.removePlant,
       logLevel = 3,
-      log = string.format("Order - Remove plant, nothing to do: %s; on slot: %d", crop.name, slot)
+      log = string.format("Order - Remove plant, nothing to do: %s on slot: %d", crop.name, slot)
     })
     return order
   end
@@ -311,7 +315,7 @@ local function handleParent(args)
       slot = slot,
       priority = priorities.removePlant,
       logLevel = 3,
-      log = string.format("Order - Too high stats on slot: %d; Name - %s; Growth - %d; Gain - %d; Resistance - %d;",
+      log = string.format("Order - Too high stats on slot: %d, Name - %s; Growth - %d, Gain - %d, Resistance - %d",
         slot, crop.name, crop.gr, crop.ga, crop.re)
     })
     return order
@@ -428,12 +432,42 @@ local function createOrderList()
   for _, task in ipairs(orderList) do
     local logLevel = task.logLevel or 1
     if logLevel <= currentLevel then
-      local message = task.log or string.format("Order: %s on slot %d", task.action, task.slot)
-      db.setLogs(message)
+      local message = task.log or string.format("Order - %s on slot %d", task.action, task.slot)
+      local color = task.color or nil
+      db.setLogs(message, color)
     end
   end
 
   return orderList
+end
+
+local function executeCycle(cycle)
+  db.setSystemData('systemCreateOrder', true)
+  ui.UIloading(true)
+
+  if not sys.scanFarm() then
+    db.setSystemData('systemCreateOrder', false)
+    ui.UIloading(false)
+    return
+  end
+
+  if cycle == 0 then
+    sys.scanStorage()
+  end
+
+  local order = createOrderList()
+  if next(order) ~= nil then
+    sys.sendTunnelRequestNoReply({ type = 'order', data = order })
+    os.sleep(1.0)
+  end
+
+  if cycle == 1 then
+    sys.scanStorage()
+  end
+
+  ui.UIloading(false)
+  db.setSystemData('systemCreateOrder', false)
+  os.sleep(5)
 end
 
 local function checkCondition()
@@ -441,7 +475,7 @@ local function checkCondition()
   local countCropSticks = db.getSystemData('cropSticksCount')
   if countCropSticks and countCropSticks <= 64 then
     db.setSystemData('flagNeedCleanUp', true)
-    db.setLogs(string.format('Exit - Only %d Crop Sticks available (min. 64 required)', countCropSticks))
+    db.setLogs(string.format('Exit - Only %d Crop Sticks available (min. 64 required)', countCropSticks), 'red')
     return true
   end
 
@@ -450,7 +484,7 @@ local function checkCondition()
   local storageEmptySlots = db.getSystemData('systemStorageEmptySlots')
   if storageEmptySlots == 0 then
     db.setSystemData('flagNeedCleanUp', true)
-    db.setLogs(string.format('Exit - Storage farm has no available space'))
+    db.setLogs(string.format('Exit - Storage farm has no available space'), 'red')
     return true
   end
 
@@ -475,14 +509,11 @@ local function sysExit()
     end
     os.sleep(0.1)
     sys.sendTunnelRequestNoReply({ type = 'cleanUp', data = order })
-    ui.UIloading(false)
 
     while not sys.getRobotStatus() do
       os.sleep(1)
     end
     os.sleep(0.1)
-
-    ui.UIloading(true)
 
     sys.scanFarm()
     sys.scanStorage()
@@ -510,31 +541,6 @@ local function waitUntilSystemEnabledOrForced()
   end
 end
 
-local function executeCycle(cycle)
-  db.setSystemData('systemCreateOrder', true)
-  ui.UIloading(true)
-
-  if not sys.scanFarm() then
-    db.setSystemData('systemCreateOrder', false)
-    ui.UIloading(false)
-    return
-  end
-
-  local order = createOrderList()
-  if next(order) ~= nil then
-    sys.sendTunnelRequestNoReply({ type = 'order', data = order })
-    os.sleep(1.0)
-  end
-
-  if cycle == 1 then
-    sys.scanStorage()
-  end
-
-  ui.UIloading(false)
-  db.setSystemData('systemCreateOrder', false)
-  os.sleep(5)
-end
-
 local function initLogic()
   local cycle = 0
 
@@ -548,8 +554,8 @@ local function initLogic()
     if shouldExit() then
       sysExit()
     elseif db.getSystemData("systemEnabled") then
-      cycle = (cycle % 3) + 1
       executeCycle(cycle)
+      cycle = (cycle % 3) + 1
     end
   end
 end

@@ -76,7 +76,7 @@ local function getRobotStatus()
     end
 
     if not response.charged then
-        db.setLogs('Robot – Entered charging state. Awaiting full charge.')
+        db.setLogs('Robot – Entered charging state. Awaiting full charge.', 'yellow')
         return false
     end
 
@@ -153,7 +153,7 @@ local function scanStorage()
 
     local sensor = getSensor()
     if not sensor then
-        db.setLogs('ERROR – OC Sensor not found')
+        db.setLogs('ERROR – OC Sensor not found', 'red')
         return nil
     end
 
@@ -182,7 +182,7 @@ local function scanFarm()
 
     local sensor = getSensor()
     if not sensor then
-        db.setLogs('ERROR – OC Sensor not found')
+        db.setLogs('ERROR – OC Sensor not found', 'red')
         return nil
     end
     local workingFarmSize = config.workingFarmSize
@@ -204,7 +204,7 @@ local function scanFarm()
     end
 
     if not foundedCrop then
-        db.setLogs('Order - Looks like there’s nothing planted in the working farm.')
+        db.setLogs('Order - Looks like there’s nothing planted in the working farm.', 'yellow')
         db.setSystemData('systemEnabled', false)
 
         return false;
@@ -216,7 +216,7 @@ end
 local function cleanUp()
     local sensor = getSensor()
     if not sensor then
-        db.setLogs('ERROR – OC Sensor not found')
+        db.setLogs('ERROR – OC Sensor not found', 'red')
         return nil
     end
     local order = {}
@@ -268,7 +268,7 @@ end
 local function forceScan(farm, slot)
     local sensor = getSensor()
     if not sensor then
-        db.setLogs('ERROR – OC Sensor not found')
+        db.setLogs('ERROR – OC Sensor not found', 'red')
         return false
     end
 
@@ -303,6 +303,7 @@ local function doTransplante()
     local transplateToSlot = db.getSystemData('transplateToSlot')
 
     if not transplateFromFarm or not transplateToFarm or not transplateFromSlot or not transplateToSlot then
+        db.setLogs('Actions - Missing transplant parameters', 'red')
         return false
     end
 
@@ -311,10 +312,10 @@ local function doTransplante()
     end
 
     if not forceScan(transplateFromFarm, transplateFromSlot) then
-        db.setLogs('Actions - Unable to scan crop in "From" slot')
+        db.setLogs('Actions - Unable to scan crop in "From" slot', 'yellow')
         return false
     elseif not forceScan(transplateToFarm, transplateToSlot) then
-        db.setLogs('Actions - Unable to scan crop in "To" slot')
+        db.setLogs('Actions - Unable to scan crop in "To" slot', 'yellow')
         return false
     end
 
@@ -330,23 +331,23 @@ local function doTransplante()
 
 
     if not fromCrop then
-        db.setLogs('Actions - No crop found in "From" slot')
+        db.setLogs('Actions - No crop found in "From" slot', 'yellow')
         return false
     end
 
     if not fromCrop.isCrop then
-        db.setLogs('Actions - "From" is not a valid crop')
+        db.setLogs('Actions - "From" is not a valid crop', 'yellow')
         return false
     end
 
     if fromCrop.name == "air" then
-        db.setLogs('Actions - "From" crop is air')
+        db.setLogs('Actions - "From" crop is air', 'yellow')
         return false
     elseif fromCrop.name == "emptyCrop" then
-        db.setLogs('Actions - "From" crop is an empty crop')
+        db.setLogs('Actions - "From" crop is an empty crop', 'yellow')
         return false
     elseif isWeed(fromCrop) then
-        db.setLogs('Actions - "From" crop is a weed')
+        db.setLogs('Actions - "From" crop is a weed', 'red')
         return false
     end
 
@@ -359,12 +360,12 @@ local function doTransplante()
     end
 
     if not toCrop then
-        db.setLogs('Actions - No crop found in "To" slot')
+        db.setLogs('Actions - No crop found in "To" slot', 'yellow')
         return false
     end
 
     if not toCrop.isCrop then
-        db.setLogs('Actions - "To" is not a valid crop')
+        db.setLogs('Actions - "To" is not a valid crop', 'yellow')
         return false
     end
 
@@ -380,7 +381,7 @@ local function doTransplante()
     end
 
     if transplateFromFarm == transplateToFarm and transplateFromSlot == transplateToSlot then
-        db.setLogs('Actions - Same crop in both From and To – lets hope its intentional')
+        db.setLogs('Actions - Same crop in both From and To – lets hope its intentional', 'yellow')
         toSlotName = 'air'
         destroyTo = true
     end
@@ -394,7 +395,7 @@ local function doTransplante()
         destroyTo = destroyTo
     }
     db.setLogs(string.format('Manual transplant from %s[%d] to %s[%d]', fromFarm, transplateFromSlot, toFarm,
-        transplateToSlot))
+        transplateToSlot), 'green')
 
     while not getRobotStatus() do
         os.sleep(1)
@@ -410,10 +411,10 @@ local function doTransplante()
     os.sleep(0.1)
 
     if not forceScan(transplateFromFarm, transplateFromSlot) then
-        db.setLogs('Actions - Unable to scan crop in "From" slot')
+        db.setLogs('Actions - Unable to scan crop in "From" slot', 'yellow')
         return false
     elseif not forceScan(transplateToFarm, transplateToSlot) then
-        db.setLogs('Actions - Unable to scan crop in "To" slot')
+        db.setLogs('Actions - Unable to scan crop in "To" slot', 'yellow')
         return false
     end
 
@@ -423,7 +424,7 @@ end
 local function scanCropStickChest()
     local sensor = getSensor()
     if not sensor then
-        db.setLogs('ERROR – OC Sensor not found')
+        db.setLogs('ERROR – OC Sensor not found', 'red')
         return nil
     end
 
@@ -444,7 +445,7 @@ end
 local function scanTrashOrChest()
     local sensor = getSensor()
     if not sensor then
-        db.setLogs('ERROR – OC Sensor not found')
+        db.setLogs('ERROR – OC Sensor not found', 'red')
         return nil
     end
 
@@ -479,7 +480,7 @@ end
 local function scanTargetCrop()
     local sensor = getSensor()
     if not sensor then
-        db.setLogs('ERROR – OC Sensor not found')
+        db.setLogs('ERROR – OC Sensor not found', 'red')
         return nil
     end
 
@@ -641,7 +642,7 @@ end
 local function checkCropChest(firstRun)
     local sensor = getSensor()
     if not sensor then
-        db.setLogs('ERROR – OC Sensor not found')
+        db.setLogs('ERROR – OC Sensor not found', 'red')
         return false
     end
     local cord = cordtoScan(-1, 0)
@@ -667,7 +668,7 @@ end
 local function checkTrashOrChest(firstRun)
     local sensor = getSensor()
     if not sensor then
-        db.setLogs('ERROR – OC Sensor not found')
+        db.setLogs('ERROR – OC Sensor not found', 'red')
         return false
     end
 
@@ -721,7 +722,7 @@ end
 local function checkFarm(firstRun)
     local sensor = getSensor()
     if not sensor then
-        db.setLogs('ERROR – OC Sensor not found')
+        db.setLogs('ERROR – OC Sensor not found', 'red')
         return nil
     end
 
@@ -810,7 +811,7 @@ end
 local function checkStorage(firstRun)
     local sensor = getSensor()
     if not sensor then
-        db.setLogs('ERROR – OC Sensor not found')
+        db.setLogs('ERROR – OC Sensor not found', 'red')
         return nil
     end
 
@@ -899,7 +900,7 @@ end
 local function checkDislocatorAndBlank(firstRun)
     local sensor = getSensor()
     if not sensor then
-        db.setLogs('ERROR – OC Sensor not found')
+        db.setLogs('ERROR – OC Sensor not found', 'red')
         return nil
     end
 
@@ -1036,13 +1037,19 @@ local function beforeStartSystem()
     scanCropStickChest()
     local countCropSticks = db.getSystemData('cropSticksCount')
     if countCropSticks and countCropSticks <= 64 then
-        db.setLogs(string.format('Exit - Only %d Crop Sticks available (min. 64 required)', countCropSticks))
+        db.setLogs(
+        string.format(
+        'Exit - Only %d Crop Sticks available (min. 64 required); If you\'ve added more cropsticks, manually rescan the Cropstick Chest from the Actions menu.',
+            countCropSticks), 'red')
         return false
     end
 
     local storageEmptySlots = db.getSystemData('systemStorageEmptySlots')
     if storageEmptySlots == 0 then
-        db.setLogs(string.format('Exit - Storage farm has no available space'))
+        db.setLogs(
+        string.format(
+        'Exit – Storage farm has no available space; If you have cleared the storage farm, run "scan storage" from the Actions menu.'),
+            'red')
         return false
     end
 

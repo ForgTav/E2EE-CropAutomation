@@ -15,10 +15,15 @@ local function getCountLogs()
   return #logs
 end
 
-local function setLogs(str)
+local function setLogs(str, color)
+  if not color then
+    color = 'white'
+  end
+
   local log = {
     date = os.date("%H:%M"),
-    log = str
+    log = str,
+    color = color
   }
 
   table.insert(logs, log)
