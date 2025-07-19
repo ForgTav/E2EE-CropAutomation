@@ -177,6 +177,17 @@ main
 ```
 The installation will be checked for correctness and the interface will open, otherwise it will open a step-by-step installation guide
 
+### 🔄 Grid Handling
+Each automation mode uses its own logical grid size for optimal performance:
+
+- AutoTier → works on a 6×6 grid
+
+- AutoStat → works on a 5×5 grid
+
+- AutoSpread → works on a 5×5 grid
+
+You do not need to manually change or reconfigure your actual farm layout —
+the system automatically adapts to the proper working area depending on the selected mode.
 
 ### Mode: autoStat
 
