@@ -136,10 +136,14 @@ local function fetchScan(rawScan)
     end
 end
 
-local function isMaxStat(crop)
-    return crop.gr > config.maxGrowth or
-        crop.ga > config.maxGain or
-        crop.re > config.maxResistance or
+local function isMaxStat(crop, currentMode)
+    local maxGrowth = config.maxGrowth or 21
+    local maxGain = config.maxGain or 31
+    local maxResistance = config.maxResistance or 2
+
+    return crop.gr > maxGrowth or
+        crop.ga > maxGain or
+        crop.re > maxResistance or
         (crop.name == 'venomilia' and crop.gr > 7)
 end
 
@@ -1038,17 +1042,17 @@ local function beforeStartSystem()
     local countCropSticks = db.getSystemData('cropSticksCount')
     if countCropSticks and countCropSticks <= 64 then
         db.setLogs(
-        string.format(
-        'Exit - Only %d Crop Sticks available (min. 64 required); If you\'ve added more cropsticks, manually rescan the Cropstick Chest from the Actions menu.',
-            countCropSticks), 'red')
+            string.format(
+                'Exit - Only %d Crop Sticks available (min. 64 required); If you\'ve added more cropsticks, manually rescan the Cropstick Chest from the Actions menu.',
+                countCropSticks), 'red')
         return false
     end
 
     local storageEmptySlots = db.getSystemData('systemStorageEmptySlots')
     if storageEmptySlots == 0 then
         db.setLogs(
-        string.format(
-        'Exit – Storage farm has no available space; If you have cleared the storage farm, run "scan storage" from the Actions menu.'),
+            string.format(
+                'Exit – Storage farm has no available space; If you have cleared the storage farm, run "scan storage" from the Actions menu.'),
             'red')
         return false
     end
