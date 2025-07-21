@@ -4,7 +4,8 @@ local ui = require('sysUI')
 local config = require('sysConfig')
 local priorities = {
   deweed = 1,
-  transplantParent = 2,
+  forceRemovePlant = 2,
+  transplantParent = 3,
   transplant = 4,
   removePlant = 8,
   placeCropStick = 9,
@@ -120,13 +121,14 @@ local function handleChild(args)
     end
   elseif sys.isWeed(crop) then
     return { { action = "deweed", slot = slot, priority = priorities.deweed, logLevel = 3, log = string.format("Order - Weed remove on slot: %d", slot) } }
-  elseif sys.isMaxStat(crop) then
+  elseif currentMode ~= 2 and sys.isMaxStat(crop) then
     table.insert(order, {
       action = 'removePlant',
       slot = slot,
-      priority = priorities.removePlant,
+      priority = priorities.forceRemovePlant,
+      needCropStick = false,
       logLevel = 3,
-      log = string.format("Order - Too high stats on slot: %d; Name - %s; Growth - %d; Gain - %d; Resistance - %d;",
+      log = string.format("Order - Too high stats on slot: %d, Name - %s; Growth - %d, Gain - %d, Resistance - %d",
         slot, crop.name, crop.gr, crop.ga, crop.re)
     })
     return order
@@ -189,34 +191,14 @@ local function handleChild(args)
 
   -- === AutoStat ===
   if currentMode == 2 then
-    local stat = crop.gr + crop.ga - crop.re
-    local systemGrowth = db.getSystemData("systemGrowth") or 21
-    local systemGain = db.getSystemData("systemGain") or 31
-    local systemResistance = db.getSystemData("systemResistance") or 0
-    local statsSettings = systemGrowth + systemGain - systemResistance
-
-    if stat > statsSettings then
-      table.insert(order, {
-        action = "removePlant",
-        slot = slot,
-        priority = priorities.removePlant,
-        logLevel = 3,
-        log = string.format(
-          "AutoStat - remove plant, too high stats by settings on slot: %d; Name - %s; Growth - %d; Gain - %d; Resistance - %d;",
-          slot, crop.name, crop.gr, crop.ga, crop.re)
-      })
-      return order
-    end
-
     if crop.name == targetCrop then
-      if availableParentSlot then
-        table.insert(order,
-          transplantToParent(slot, availableParentSlot, crop, availableParent,
-            string.format('AutoStat - Available parent slot: %d; Transplant crop: %s, from slot: %d',
-              availableParentSlot, crop.name, slot)
-          ))
-        return order
-      elseif crop.gr == systemGrowth and crop.ga == systemGain and crop.re == systemResistance then
+      local stat = crop.gr + crop.ga - crop.re
+      local systemGrowth = db.getSystemData("systemGrowth") or 21
+      local systemGain = db.getSystemData("systemGain") or 31
+      local systemResistance = db.getSystemData("systemResistance") or 0
+      local statsSettings = systemGrowth + systemGain - systemResistance
+
+      if crop.gr == systemGrowth and crop.ga == systemGain and crop.re == systemResistance then
         local transplant, placeStick = transplantToStorage(slot, crop,
           string.format('AutoStat - Target stats; Growth - %d; Gain - %d; Resistance - %d;', crop.gr, crop.ga, crop.re)
         )
@@ -224,6 +206,34 @@ local function handleChild(args)
           table.insert(order, transplant)
           table.insert(order, placeStick)
         end
+        return order
+      elseif sys.isMaxStat(crop) then
+        table.insert(order, {
+          action = 'removePlant',
+          slot = slot,
+          priority = priorities.forceRemovePlant,
+          needCropStick = false,
+          logLevel = 3,
+          log = string.format("Order - Too high stats on slot: %d, Name - %s; Growth - %d, Gain - %d, Resistance - %d",
+            slot, crop.name, crop.gr, crop.ga, crop.re)
+        })
+      elseif stat > statsSettings then
+        table.insert(order, {
+          action = "removePlant",
+          slot = slot,
+          priority = priorities.removePlant,
+          logLevel = 3,
+          log = string.format(
+            "AutoStat - remove plant, too high stats by settings on slot: %d, Name - %s; Growth - %d, Gain - %d, Resistance - %d",
+            slot, crop.name, crop.gr, crop.ga, crop.re)
+        })
+        return order
+      elseif availableParentSlot then
+        table.insert(order,
+          transplantToParent(slot, availableParentSlot, crop, availableParent,
+            string.format('AutoStat - Available parent slot: %d; Transplant crop: %s, from slot: %d',
+              availableParentSlot, crop.name, slot)
+          ))
         return order
       else
         for _, pSlot in ipairs(parentSlots) do
@@ -313,7 +323,8 @@ local function handleParent(args)
     table.insert(order, {
       action = 'removePlant',
       slot = slot,
-      priority = priorities.removePlant,
+      priority = priorities.forceRemovePlant,
+      needCropStick = false,
       logLevel = 3,
       log = string.format("Order - Too high stats on slot: %d, Name - %s; Growth - %d, Gain - %d, Resistance - %d",
         slot, crop.name, crop.gr, crop.ga, crop.re)
@@ -328,8 +339,6 @@ local function handleNotLogical(args)
   local order = {}
   local slot = args.slot
   local crop = args.crop
-
-
 
   if crop.name == "air" then
     return {}
@@ -355,8 +364,8 @@ local function handleNotLogical(args)
     table.insert(order, {
       action = 'removePlant',
       slot = slot,
+      priority = priorities.forceRemovePlant,
       needCropStick = false,
-      priority = priorities.removePlant,
       logLevel = 3,
       log = string.format("Order - Remove plant on slot: %d", slot)
     })

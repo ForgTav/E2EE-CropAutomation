@@ -4,7 +4,7 @@ local config = {
 
     maxOrderList = 4,
 
-    maxGrowth = 23,
+    maxGrowth = 21,
     maxGain = 31,
     maxResistance = 2,
 

@@ -9,7 +9,6 @@ local inventory_controller = component.inventory_controller
 local redstone = component.redstone
 local emptyCropSticks = false;
 
-
 local function needCharge()
     return computer.energy() / computer.maxEnergy() < config.needChargeLevel
 end
@@ -18,7 +17,6 @@ end
 local function fullyCharged()
     return computer.energy() / computer.maxEnergy() > 0.99
 end
-
 
 local function fullInventory()
     for i = 1, robot.inventorySize() do
@@ -105,10 +103,6 @@ local function dumpInventory()
     robot.select(selectedSlot)
 end
 
-
-
-
-
 local function placeCropStick(count)
     local selectedSlot = robot.select()
 
@@ -138,7 +132,6 @@ local function placeCropStick(count)
     inventory_controller.equip()
     robot.select(selectedSlot)
 end
-
 
 local function deweed()
     local selectedSlot = robot.select()
@@ -292,7 +285,6 @@ local function transplant(order)
     robot.useDown(sides.down, true)
     gps.go(dest)
 
-    --print(order.slotName)
     if order.slotName == 'air' then
         placeCropStick()
     end
@@ -312,7 +304,6 @@ local function transplant(order)
         robot.suckDown()
     end
 
-    --gps.resume()
     robot.select(selectedSlot)
 end
 
@@ -359,12 +350,6 @@ end
 local function setEmptyCropSticksFlag(flag)
     emptyCropSticks = flag;
 end
-
---local function checkBase()
---
---end
-
-
 
 return {
     needCharge = needCharge,
