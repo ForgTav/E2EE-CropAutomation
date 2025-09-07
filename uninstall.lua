@@ -4,7 +4,6 @@ local scripts = {
     'robotConfig.lua',
     'robotGPS.lua',
     'start.lua',
-    'uninstall.lua',
     'main.lua',
     'sysConfig.lua',
     'sysDB.lua',
