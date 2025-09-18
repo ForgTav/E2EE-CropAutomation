@@ -29,6 +29,11 @@ end
 local function transplantToParent(slot, toSlot, crop, toCrop, logStr)
   db.updateFarm(slot, { isCrop = true, name = "air", fromScan = false })
   crop.fromScan = false
+  local oldCrop = db.getFarmSlot(toSlot)
+  if oldCrop and oldCrop.warningCounter then
+    crop.warningCounter = oldCrop.warningCounter
+  end
+
   db.updateFarm(toSlot, crop)
   return {
     action = "transplantParent",
@@ -375,9 +380,19 @@ end
 
 local function limitedOrderList(list)
   local result = {}
-  for i = 1, config.maxOrderList do
-    table.insert(result, list[i])
-  end
+  local count = 0
+    for i = 1, #list do
+        local order = list[i]
+        if order.action == "deweed" then
+          table.insert(result, order)
+          count = count + 1
+        elseif count < config.maxOrderList then
+          table.insert(result, order)
+          count = count + 1
+        else
+          break
+        end
+    end
   return result
 end
 
