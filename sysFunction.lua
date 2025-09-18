@@ -225,7 +225,7 @@ local function scanFarm()
                             crop.isCrop = false
                             crop.name = "block"
                             crop.fromScan = true
-                            crop.warningCounter = warningCounter
+                            crop.warningCounter = 11
                         else
                             crop.warningCounter = 0
                         end

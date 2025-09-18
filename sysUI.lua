@@ -1136,13 +1136,13 @@ local function drawFarmSlotInfo(cell)
       gpu.set(col1X, frameInfoY + 1, "Farm: " .. cell.type)
       gpu.set(col1X, frameInfoY + 2, "Slot: " .. tostring(cell.slot))
       if crop.warningCounter > 3 then
-        gpu.set(col2X, frameInfoY + 1, "Warnign counter: " .. tostring(crop.warningCounter))
+        --gpu.set(col2X, frameInfoY + 1, "Warning counter: " .. tostring(crop.warningCounter))
         gpu.set(col1X, frameInfoY + 3, "Farmland may have turned into dirt.")
       end
     elseif crop.name == 'weed' or crop.name == 'Grass' then
-      gpu.setForeground(uiColors.yellow)
       gpu.set(col1X, frameInfoY, "Name: " .. crop.name)
       gpu.set(col1X, frameInfoY + 1, "Slot: " .. tostring(cell.slot))
+      gpu.setForeground(uiColors.yellow)
       gpu.set(col1X, frameInfoY + 2, "Weed detected")
       gpu.setForeground(uiColors.foreground)
     else
