@@ -13,7 +13,6 @@ local function needCharge()
     return computer.energy() / computer.maxEnergy() < config.needChargeLevel
 end
 
-
 local function fullyCharged()
     return computer.energy() / computer.maxEnergy() > 0.99
 end
@@ -125,12 +124,17 @@ local function placeCropStick(count)
     robot.select(robot.inventorySize() + config.stickSlot)
     inventory_controller.equip()
 
+    local placementResult = true
+
     for _ = 1, count do
-        robot.useDown()
+        if not robot.useDown() and placementResult then
+            placementResult = false
+        end
     end
 
     inventory_controller.equip()
     robot.select(selectedSlot)
+    return placementResult
 end
 
 local function deweed()
@@ -155,6 +159,7 @@ local function deweed()
 end
 
 local function removePlant(needCropStick)
+    local selectedSlot = robot.select()
     if needCropStick == nil then
         needCropStick = false
     end
@@ -165,18 +170,15 @@ local function removePlant(needCropStick)
         gps.resume()
     end
 
-    local selectedSlot = robot.select()
-
-
     robot.swingDown()
     if config.KeepDrops then
         robot.suckDown()
     end
+    
     if needCropStick then
         placeCropStick(2)
     end
 
-    --inventory_controller.equip()
     robot.select(selectedSlot)
 end
 
@@ -184,13 +186,11 @@ local function clearSlot()
     robot.swingDown()
 end
 
-
 local function pulseDown()
     redstone.setOutput(sides.down, 15)
     os.sleep(0.1)
     redstone.setOutput(sides.down, 0)
 end
-
 
 local function manualTransplant(order)
     local fromSlot, toSlot = order.fromSlot, order.toSlot
@@ -226,20 +226,42 @@ local function manualTransplant(order)
     robot.useDown(sides.down, true)
 
     gps.go(toPos)
-    if toSlotName == 'air' then
-        placeCropStick()
+    if toSlotName == 'air' and not placeCropStick() then
+
+        gps.go(fromPos)
+        if not placeCropStick() then
+            gps.go(config.relayFarmlandPos)
+            robot.swingDown()
+            inventory_controller.equip()
+            robot.select(selectedSlot)
+            return
+        end
+        robot.useDown(sides.down, true)
+        gps.go(config.dislocatorPos)
+        pulseDown()
+        robot.useDown(sides.down, true)
+        gps.go(config.relayFarmlandPos)
+        robot.swingDown()
+
+        inventory_controller.equip()
+        robot.select(selectedSlot)
+        return
     end
+
     robot.useDown(sides.down, true)
 
     gps.go(config.dislocatorPos)
     pulseDown()
     robot.useDown(sides.down, true)
 
-
-    -- TODO DESTROY FROM CROP
     if not destroyTo then
         gps.go(fromPos)
-        placeCropStick()
+        if not placeCropStick() then
+            inventory_controller.equip()
+            robot.select(selectedSlot)
+            return
+        end
+
         robot.useDown(sides.down, true)
 
         gps.go(config.dislocatorPos)
@@ -247,7 +269,6 @@ local function manualTransplant(order)
         robot.useDown(sides.down, true)
     end
 
-    -- Destroy original crop
     inventory_controller.equip()
     gps.go(config.relayFarmlandPos)
     robot.swingDown()
@@ -285,8 +306,16 @@ local function transplant(order)
     robot.useDown(sides.down, true)
     gps.go(dest)
 
-    if order.slotName == 'air' then
-        placeCropStick()
+    if order.slotName == 'air' and not placeCropStick() then
+        inventory_controller.equip()
+        robot.select(selectedSlot)
+        gps.go(config.relayFarmlandPos)
+        robot.swingDown()
+        if config.KeepDrops then
+            robot.suckDown()
+        end
+
+        return
     end
 
     robot.useDown(sides.down, true)
@@ -320,7 +349,6 @@ local function primeBinder()
     robot.select(robot.inventorySize() + config.binderSlot)
     inventory_controller.equip()
 
-    -- Use binder at start to reset it, if already primed
     robot.useDown(sides.down, true)
 
     gps.go(config.dislocatorPos)
@@ -329,7 +357,6 @@ local function primeBinder()
     inventory_controller.equip()
     robot.select(selectedSlot)
 end
-
 
 local function restockAll()
     dumpInventory()

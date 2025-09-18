@@ -1135,8 +1135,16 @@ local function drawFarmSlotInfo(cell)
       gpu.set(col1X, frameInfoY, "Name: air")
       gpu.set(col1X, frameInfoY + 1, "Farm: " .. cell.type)
       gpu.set(col1X, frameInfoY + 2, "Slot: " .. tostring(cell.slot))
+      if crop.warningCounter > 3 then
+        gpu.set(col2X, frameInfoY + 1, "Warnign counter: " .. tostring(crop.warningCounter))
+        gpu.set(col1X, frameInfoY + 3, "Farmland may have turned into dirt.")
+      end
     elseif crop.name == 'weed' or crop.name == 'Grass' then
-      gpu.set(col1X, frameInfoY, "Weed detected: " .. crop.name)
+      gpu.setForeground(uiColors.yellow)
+      gpu.set(col1X, frameInfoY, "Name: " .. crop.name)
+      gpu.set(col1X, frameInfoY + 1, "Slot: " .. tostring(cell.slot))
+      gpu.set(col1X, frameInfoY + 2, "Weed detected")
+      gpu.setForeground(uiColors.foreground)
     else
       gpu.set(col1X, frameInfoY, "Name: " .. crop.name)
       gpu.set(col1X, frameInfoY + 1, "Farm: " .. cell.type)
@@ -1155,6 +1163,12 @@ local function drawFarmSlotInfo(cell)
     gpu.set(col1X, frameInfoY, "Name: " .. (crop.name or "Unknown"))
     gpu.set(col1X, frameInfoY + 1, "Farm: " .. cell.type)
     gpu.set(col1X, frameInfoY + 2, "Slot: " .. tostring(cell.slot))
+
+    if crop.warningCounter > 10 then
+      gpu.setForeground(uiColors.red)
+      gpu.set(col1X, frameInfoY + 3, "Dirt detected on the farm.")
+      gpu.setForeground(uiColors.foreground)
+    end
   end
 end
 
@@ -1892,12 +1906,10 @@ local function handleBodyMouseClick(btn)
     local systemReady = db.getSystemData('systemReady')
     local flagNeedCleanUp = db.getSystemData('flagNeedCleanUp')
 
-
     if not sys.beforeStartSystem() then
       drawLogs()
       return
     end
-
 
     if systemReady and not flagNeedCleanUp then
       db.setSystemData('systemEnabled', true)
@@ -1934,6 +1946,7 @@ local function handleBodyMouseClick(btn)
     os.sleep(0.5)
 
     if btn.action == 'doScanWorking' then
+      db.deleteFarm()
       sys.scanFarm()
       db.setLogs('Actions - Do scan farm "Working"', 'green')
     elseif btn.action == 'doScanStorage' then

@@ -107,14 +107,15 @@ local function fetchScan(rawScan)
     local blockLabel = block.label or ""
 
     if blockName == "minecraft:air" or blockName == "GalacticraftCore:tile.brightAir" then
-        return { isCrop = true, name = "air", fromScan = true }
+        return { isCrop = true, name = "air", fromScan = true, warningCounter = 0 }
     elseif blockName == "ic2:te" then
         if blockLabel == "Crop" then
             return {
                 isCrop = true,
                 name = "emptyCrop",
                 crossingbase = crop.crossingBase or 0,
-                fromScan = true
+                fromScan = true, 
+                warningCounter = 0
             }
         else
             local cropId = crop.cropId or "unknown"
@@ -128,11 +129,12 @@ local function fetchScan(rawScan)
                 weedex = crop.storageWeedEX or 0,
                 water = crop.storageWater or 0,
                 nutrients = crop.storageNutrients or 0,
-                fromScan = true
+                fromScan = true, 
+                warningCounter = 0
             }
         end
     else
-        return { isCrop = false, name = "block", fromScan = true }
+        return { isCrop = false, name = "block", fromScan = true, warningCounter = 0 }
     end
 end
 
@@ -169,9 +171,12 @@ local function scanStorage()
         local cord = cordtoScan(raw[1], raw[2])
         local rawScan = sensor.scan(cord[1], 0, cord[2])
         local crop = fetchScan(rawScan)
+        local oldCrop = db.getStorageSlot(slot) or nil
+
         if crop then
             db.updateStorage(slot, crop)
         end
+    
         if crop.name == 'air' then
             emptyCounter = emptyCounter + 1
         end
@@ -181,7 +186,7 @@ local function scanStorage()
 end
 
 local function scanFarm()
-    db.deleteFarm()
+    --db.deleteFarm()
     os.sleep(0.1)
 
     local sensor = getSensor()
@@ -198,11 +203,38 @@ local function scanFarm()
         local cord = cordtoScan(raw[1], raw[2])
         local rawScan = sensor.scan(cord[1], 0, cord[2])
         local crop = fetchScan(rawScan)
+        local oldCrop = db.getFarmSlot(slot) or nil
 
         if crop then
             if not foundedCrop and crop.isCrop and crop.name ~= "air" and crop.name ~= "emptyCrop" and not isWeed(crop) then
                 foundedCrop = true
             end
+            
+            if crop.name == "air" then
+                local warningIncremental = 1
+                if oldCrop and not oldCrop.fromScan then
+                    warningIncremental = 5
+                end
+                local warningCounter = ((oldCrop and oldCrop.warningCounter) or 0) + warningIncremental
+                if warningCounter > 10 then
+                    --Force scan farmland
+                    local rawScan = sensor.scan(cord[1], -1, cord[2])
+                    if rawScan and rawScan.block then
+                        local scanBlock = rawScan.block
+                        if scanBlock.name ~= 'minecraft:farmland' then
+                            crop.isCrop = false
+                            crop.name = "block"
+                            crop.fromScan = true
+                            crop.warningCounter = warningCounter
+                        else
+                            crop.warningCounter = 0
+                        end
+                    end
+                else
+                    crop.warningCounter = warningCounter
+                end
+            end
+
             db.updateFarm(slot, crop)
         end
     end
