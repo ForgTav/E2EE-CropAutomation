@@ -174,7 +174,7 @@ local function removePlant(needCropStick)
     if config.KeepDrops then
         robot.suckDown()
     end
-    
+
     if needCropStick then
         placeCropStick(2)
     end

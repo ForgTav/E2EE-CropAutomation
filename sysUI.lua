@@ -308,7 +308,7 @@ local function drawLogo()
   gpu.setForeground(uiColors.foreground)
 end
 
-local function registeterButton(btn)
+local function recordButton(btn)
   table.insert(tabButtons, btn)
 end
 
@@ -326,7 +326,7 @@ local function drawButton(x, y, width, btnColor, label, action)
   gpu.setBackground(uiColors.background)
   gpu.setForeground(uiColors.foreground)
   if action ~= nil and action then
-    registeterButton({
+    recordButton({
       x1 = x,
       x2 = x + width - 1,
       y1 = y,
@@ -346,7 +346,7 @@ local function drawClickedText(x, y, label, value, action)
   gpu.setBackground(uiColors.background)
   gpu.setForeground(uiColors.foreground)
 
-  registeterButton({
+  recordButton({
     x1 = x,
     x2 = x + #labelLine,
     y1 = y,
@@ -361,7 +361,7 @@ local function drawStatControl(label, value, x, y)
 
   gpu.set(cursor, y, "<<")
 
-  registeterButton({
+  recordButton({
     x1 = cursor,
     x2 = cursor + 1,
     y1 = y,
@@ -378,7 +378,7 @@ local function drawStatControl(label, value, x, y)
 
   gpu.set(cursor, y, ">>")
 
-  registeterButton({
+  recordButton({
     x1 = cursor,
     x2 = cursor + 1,
     y1 = y,
@@ -392,7 +392,7 @@ local function drawSlotControl(value, x, y, transplateFor, slotFarm)
   local cursor = x + 2
   -- <<
   gpu.set(cursor, y, "<<")
-  registeterButton({
+  recordButton({
     x1 = cursor,
     x2 = cursor + 1,
     y1 = y,
@@ -406,7 +406,7 @@ local function drawSlotControl(value, x, y, transplateFor, slotFarm)
 
   -- <
   gpu.set(cursor, y, "<")
-  registeterButton({
+  recordButton({
     x1 = cursor,
     x2 = cursor,
     y1 = y,
@@ -425,7 +425,7 @@ local function drawSlotControl(value, x, y, transplateFor, slotFarm)
 
   -- >
   gpu.set(cursor, y, ">")
-  registeterButton({
+  recordButton({
     x1 = cursor,
     x2 = cursor,
     y1 = y,
@@ -439,7 +439,7 @@ local function drawSlotControl(value, x, y, transplateFor, slotFarm)
 
   -- >>
   gpu.set(cursor, y, ">>")
-  registeterButton({
+  recordButton({
     x1 = cursor,
     x2 = cursor + 1,
     y1 = y,
@@ -591,7 +591,7 @@ local function drawIWFooter(step)
     local backText = '< Back'
     gpu.set(2, y, backText)
 
-    registeterButton({
+    recordButton({
       x1 = 2,
       x2 = 2 + #backText,
       y1 = y,
@@ -608,7 +608,7 @@ local function drawIWFooter(step)
     gpu.set(checkX, checkY, skipText)
     gpu.setForeground(uiColors.foreground)
 
-    registeterButton({
+    recordButton({
       x1 = checkX,
       x2 = checkX + #skipText,
       y1 = checkY,
@@ -639,7 +639,7 @@ local function drawIWFooter(step)
     gpu.setForeground(checkColor)
     gpu.set(checkX + #checkText, checkY, checkSign)
     gpu.setForeground(uiColors.foreground)
-    registeterButton({
+    recordButton({
       x1 = checkX,
       x2 = checkX + #checkText,
       y1 = checkY,
@@ -655,7 +655,7 @@ local function drawIWFooter(step)
     local x = screenWidth - #nextText - 1
     gpu.setForeground(uiColors.lightgray)
     if activeNextBtn then
-      registeterButton({
+      recordButton({
         x1 = x,
         x2 = x + #nextText,
         y1 = y,
@@ -1037,13 +1037,28 @@ local function drawFarmGrid()
   local workingX = innerX
   local storageX = innerX + workingGridW + spacingX
 
-  local titleWorking = "WORKING"
-  local titleStorage = "STORAGE"
+  local titleWorking = "⯈ WORKING"
+  local titleStorage = "⯈ STORAGE"
   local workingTitleX = workingX + math.floor((workingGridW - #titleWorking) / 2)
   local storageTitleX = storageX + math.floor((storageGridW - #titleStorage) / 2)
-
   gpu.set(workingTitleX, innerY, titleWorking)
   gpu.set(storageTitleX, innerY, titleStorage)
+
+  recordButton({
+    x1 = workingTitleX,
+    x2 = workingTitleX + #titleWorking,
+    y1 = innerY,
+    y2 = innerY,
+    action = 'openListWorking'
+  })
+
+  recordButton({
+    x1 = storageTitleX,
+    x2 = storageTitleX + #titleStorage,
+    y1 = innerY,
+    y2 = innerY,
+    action = 'openListStorage'
+  })
 
   for slot = 1, workingArea do
     local col = (slot - 1) // workingSize
@@ -1093,6 +1108,127 @@ local function drawFarmGrid()
   end
 end
 
+local function drawFarmList(refresh)
+  local currentInListStorage = db.getSystemData('currentInListStorage') or false
+  local currentInListWorking = db.getSystemData('currentInListWorking') or false
+  local currentListPage = db.getSystemData('currentListPage') or 1
+  local pageLimit = 19
+
+  local menuX = menuPX + 3
+  local cursorY = 2
+
+  local colWidths = { 6, 6, 15, 5, 7, 7, 15 }
+  local headers = { "Slot", "Tier", "Name", "Gain", "Growth", "Resist", "Info" }
+
+  if currentInListStorage and currentInListWorking then
+    currentInListStorage = false
+  end
+
+  local drawFarm = {}
+  if currentInListWorking then
+    drawFarm = db.getFarm()
+  elseif currentInListStorage then
+    drawFarm = db.getStorage()
+  end
+
+  local cursorX = menuX
+
+  if not refresh then
+    for i, header in ipairs(headers) do
+      gpu.set(cursorX, cursorY, header)
+      cursorX = cursorX + colWidths[i]
+    end
+    cursorY = cursorY + 1
+    gpu.set(menuX, cursorY, string.rep("-", 61))
+    cursorY = cursorY + 1
+  end
+
+  cursorY = 4
+
+  local function truncate(str, width)
+    if not str then return "-" end
+    if #str > width - 1 then
+      return str:sub(1, width - 2) .. "…"
+    end
+    return str
+  end
+
+  local slots = {}
+  for slot in pairs(drawFarm) do table.insert(slots, slot) end
+  table.sort(slots)
+
+  local startIndex = (currentListPage - 1) * pageLimit + 1
+  local endIndex = math.min(currentListPage * pageLimit, #slots)
+
+  for i = startIndex, endIndex do
+    local slot = slots[i]
+    local crop = drawFarm[slot]
+    local info = ""
+
+    if crop.name == "air" and crop.warningCounter and crop.warningCounter > 3 then
+      info = "Farmland may be dirt"
+    elseif crop.name == "weed" or crop.name == "Grass" then
+      info = "Weed detected"
+    end
+
+    local values = {
+      tostring(slot),
+      tostring(crop.tier or "-"),
+      crop.name or "Unknown",
+      tostring(crop.ga or "-"),
+      tostring(crop.gr or "-"),
+      tostring(crop.re or "-"),
+      info
+    }
+
+    cursorX = menuX
+    for j, value in ipairs(values) do
+      gpu.set(cursorX, cursorY, truncate(value, colWidths[j]))
+      cursorX = cursorX + colWidths[j]
+    end
+
+    cursorY = cursorY + 1
+  end
+
+  if not refresh then
+    local totalPages = math.max(1, math.ceil(#slots / pageLimit))
+    local backText = "< Back"
+    cursorY = screenHeight - 1
+
+    gpu.set(menuX, cursorY, backText)
+    recordButton({
+      x1 = menuX,
+      x2 = menuX + #backText - 1,
+      y1 = cursorY,
+      y2 = cursorY,
+      action = "closeList"
+    })
+
+    local pageText = string.format("Page %d/%d", currentListPage, totalPages)
+    local fullText = "< " .. pageText .. " >"
+    local fullX = menuX + 61 - #fullText
+
+
+    gpu.set(fullX, cursorY, fullText)
+
+    recordButton({
+      x1 = fullX,
+      x2 = fullX + 1,
+      y1 = cursorY,
+      y2 = cursorY,
+      action = "prevListPage"
+    })
+
+    recordButton({
+      x1 = fullX + #fullText - 1,
+      x2 = fullX + #fullText,
+      y1 = cursorY,
+      y2 = cursorY,
+      action = "nextListPage"
+    })
+  end
+end
+
 local function drawFarmSlotInfo(cell)
   if not cell or not cell.slot or not cell.type then return end
 
@@ -1136,13 +1272,13 @@ local function drawFarmSlotInfo(cell)
       gpu.set(col1X, frameInfoY + 1, "Farm: " .. cell.type)
       gpu.set(col1X, frameInfoY + 2, "Slot: " .. tostring(cell.slot))
       if crop.warningCounter > 3 then
-        gpu.set(col2X, frameInfoY + 1, "Warnign counter: " .. tostring(crop.warningCounter))
+        --gpu.set(col2X, frameInfoY + 1, "Warning counter: " .. tostring(crop.warningCounter))
         gpu.set(col1X, frameInfoY + 3, "Farmland may have turned into dirt.")
       end
     elseif crop.name == 'weed' or crop.name == 'Grass' then
-      gpu.setForeground(uiColors.yellow)
       gpu.set(col1X, frameInfoY, "Name: " .. crop.name)
       gpu.set(col1X, frameInfoY + 1, "Slot: " .. tostring(cell.slot))
+      gpu.setForeground(uiColors.yellow)
       gpu.set(col1X, frameInfoY + 2, "Weed detected")
       gpu.setForeground(uiColors.foreground)
     else
@@ -1225,7 +1361,15 @@ local function drawFarm(refresh)
   local additionalW = (screenWidth - menuPX - 4) - 27
   local additionalH = 5
 
+  local currentInListStorage = db.getSystemData('currentInListStorage') or false
+  local currentInListWorking = db.getSystemData('currentInListWorking') or false
+
   if refresh then
+    if currentInListStorage or currentInListWorking then
+      drawFarmList(refresh)
+      return
+    end
+
     drawFarmGrid()
 
     local selectedSlot = db.getSystemData('farmSelectedSlot')
@@ -1241,15 +1385,20 @@ local function drawFarm(refresh)
   gpu.setBackground(uiColors.background)
   gpu.setForeground(uiColors.foreground)
 
-  drawFrame(frameX, frameY, frameW, frameH, " Farm Slots ")
-  drawFrame(frameX, infoFrameY, frameW, infoFrameH, " Slot Overview ")
-  gpu.set(frameX + 1, infoFrameY + 1, "Click a slot to view details.")
+  if currentInListStorage or currentInListWorking then
+    drawFarmList(refresh)
+    return
+  else
+    drawFrame(frameX, frameY, frameW, frameH, " Farm Slots ")
+    drawFrame(frameX, infoFrameY, frameW, infoFrameH, " Slot Overview ")
+    gpu.set(frameX + 1, infoFrameY + 1, "Click a slot to view details.")
 
-  drawFrame(additionalX, additionalY, additionalW, additionalH, " Additional ")
+    drawFrame(additionalX, additionalY, additionalW, additionalH, " Additional ")
 
-  drawFarmGrid()
-  drawLegend(legendX, legendY)
-  drawAdditional(additionalX + 1, additionalY + 1)
+    drawFarmGrid()
+    drawLegend(legendX, legendY)
+    drawAdditional(additionalX + 1, additionalY + 1)
+  end
 end
 
 local function drawComponentStatus(label, key, x, y)
@@ -1526,14 +1675,14 @@ local function drawLogs(refresh)
   gpu.set(screenWidth - 3, 3, '⇧')
   gpu.set(screenWidth - 3, screenHeight - 2, '⇩')
 
-  registeterButton({
+  recordButton({
     x1 = screenWidth - 3,
     x2 = screenWidth - 3,
     y1 = 3,
     y2 = 3,
     action = 'logsUp'
   })
-  registeterButton({
+  recordButton({
     x1 = screenWidth - 3,
     x2 = screenWidth - 3,
     y1 = screenHeight - 2,
@@ -1565,7 +1714,7 @@ local function drawLogs(refresh)
       end
 
       for i = 1, #segments do
-        gpu.set(logsX, y, segments[i]) -- Без отступа
+        gpu.set(logsX, y, segments[i])
         y = y + 1
         if y > screenHeight - 2 then return end
       end
@@ -2121,6 +2270,46 @@ local function handleBodyMouseClick(btn)
     logsUp()
   elseif btn.action == 'logsDown' then
     logsDown()
+  elseif btn.action == 'openListWorking' then
+    db.setSystemData('currentListPage', 1)
+    db.setSystemData('currentInListWorking', true)
+    db.setSystemData('currentInListStorage', false)
+    drawFarm()
+  elseif btn.action == 'openListStorage' then
+    db.setSystemData('currentListPage', 1)
+    db.setSystemData('currentInListStorage', true)
+    db.setSystemData('currentInListWorking', false)
+    drawFarm()
+  elseif btn.action == 'closeList' then
+    db.setSystemData('currentListPage', 1)
+    db.setSystemData('currentInListStorage', false)
+    db.setSystemData('currentInListWorking', false)
+    drawFarm()
+  elseif btn.action == 'prevListPage' or btn.action == 'nextListPage' then
+    local currentListPage = db.getSystemData('currentListPage') or 1
+    local currentInListStorage = db.getSystemData('currentInListStorage') or false
+    local currentInListWorking = db.getSystemData('currentInListWorking') or false
+    local curentFarmPageLimit = 1
+
+    if currentInListWorking then
+      curentFarmPageLimit = config.workingFarmSize ^ 2
+    elseif currentInListStorage then
+      curentFarmPageLimit = config.storageFarmSize ^ 2
+    else
+      return
+    end
+
+    local pageLimit = 19
+    local totalPages = math.max(1, math.ceil(curentFarmPageLimit / pageLimit))
+
+    if btn.action == 'prevListPage' and currentListPage > 1 then
+      db.setSystemData('currentListPage', currentListPage - 1)
+    elseif btn.action == 'nextListPage' and currentListPage < totalPages then
+      db.setSystemData('currentListPage', currentListPage + 1)
+    else
+      return
+    end
+    drawFarm(true)
   end
 end
 
