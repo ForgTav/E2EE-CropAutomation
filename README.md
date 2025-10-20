@@ -68,7 +68,7 @@ Key setup details:
 - Manually place the starter crops in a **checkerboard** pattern.
 - One seed is enough — the system will multiply it by itself.
 - The first farmland slot in front of the charger must have a crop planted. This acts as a reference point for the system to identify the target crop.
-- If you don't have ic2 seedlings, start with reeds.
+- If you don't have IC² seedlings, start with reeds.
 ![Ready farm](media/ready_farm.png?)
 
 ### Soil Structure
@@ -177,6 +177,17 @@ main
 ```
 The installation will be checked for correctness and the interface will open, otherwise it will open a step-by-step installation guide
 
+### 🔄 Grid Handling
+Each automation mode uses its own logical grid size for optimal performance:
+
+- AutoTier → works on a 6×6 grid
+
+- AutoStat → works on a 5×5 grid
+
+- AutoSpread → works on a 5×5 grid
+
+You do not need to manually change or reconfigure your actual farm layout —
+the system automatically adapts to the proper working area depending on the selected mode.
 
 ### Mode: autoStat
 
@@ -218,6 +229,7 @@ Duplicates the target crop and transfers to storage.
    - **CleanUp** — Initiate a cleanup process to remove leftover crop sticks and unwanted plants (all plant children). It’s recommended to run this after stopping the system to prevent weed overgrowth.  
    - **Scan Farm** — Force a scan of the farm to update all plant data immediately.  
    - **Scan Storage** — Force a scan of the storage farm to update all plant data immediately.
+   - **Scan Cropsticks chest** — Scan the crop sticks chest to update the internal count.
 
 4. **Settings**  
    Here you can configure different operating modes and logging parameters to adapt the system behavior to your needs.
@@ -246,7 +258,10 @@ The system may automatically **terminate** itself under critical conditions to m
 
 > This mechanism protects your farm from becoming unstable due to missing resources or overflow.  
 > If force termination occurs frequently, check your crop stick supply and make sure unused storage slots are available.  
-> The logs will show the reason for the stop.  
+> The logs will show the reason for the stop.
+
+> 💡 **Note:** If the system doesn't allow you to start after a forced shutdown, open the **Actions** tab and run a scan of either the **storage** or the **cropsticks chest**.  
+> This will reset the error flag and allow the system to resume normal operation.
 ---
 
 ## 🛠 Troubleshooting
@@ -272,7 +287,7 @@ The system may automatically **terminate** itself under critical conditions to m
 
 **7. The robot and computer stopped unexpectedly and shut down**  
 💡 This is likely caused by the chunk being unloaded. Make sure the farm is inside a **chunk-loaded area**.  
-Install a **chunk loader** (e.g., from the IC2 mod or another mod that provides chunk loading).
+Install a **chunk loader** (e.g., from the IC² mod or another mod that provides chunk loading).
 
 ## 🧰 Helpful Commands
 
@@ -286,7 +301,6 @@ uninstall           # Remove automation system
 ---
 
 ## 🙏 Thanks
-
-Special thanks to **Margatroid** for testing and valuable feedback.\
+**Huge thanks to _Margatroid_, _Mase_, _aretta35_, and _m9maoka_ for their help with testing and for providing valuable feedback that helped improve the system.** \
 Project based on [GTNH-CropAutomation](https://github.com/DylanTaylor1/GTNH-CropAutomation) by [DylanTaylor1](https://github.com/DylanTaylor1).
 

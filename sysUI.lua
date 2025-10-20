@@ -1271,7 +1271,7 @@ local function drawFarmSlotInfo(cell)
       gpu.set(col1X, frameInfoY, "Name: air")
       gpu.set(col1X, frameInfoY + 1, "Farm: " .. cell.type)
       gpu.set(col1X, frameInfoY + 2, "Slot: " .. tostring(cell.slot))
-      if crop.warningCounter > 3 then
+      if crop.warningCounter and crop.warningCounter > 3 then
         --gpu.set(col2X, frameInfoY + 1, "Warning counter: " .. tostring(crop.warningCounter))
         gpu.set(col1X, frameInfoY + 3, "Farmland may have turned into dirt.")
       end
@@ -1300,7 +1300,7 @@ local function drawFarmSlotInfo(cell)
     gpu.set(col1X, frameInfoY + 1, "Farm: " .. cell.type)
     gpu.set(col1X, frameInfoY + 2, "Slot: " .. tostring(cell.slot))
 
-    if crop.warningCounter > 10 then
+    if crop.warningCounter and crop.warningCounter > 10 then
       gpu.setForeground(uiColors.red)
       gpu.set(col1X, frameInfoY + 3, "Dirt detected on the farm.")
       gpu.setForeground(uiColors.foreground)
