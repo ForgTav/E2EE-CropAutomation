@@ -1,5 +1,4 @@
 local shell = require('shell')
-local component = require('component')
 local args = { ... }
 local branch
 local repo
@@ -28,10 +27,4 @@ end
 -- INSTALL
 for i = 1, #scripts do
     shell.execute(string.format('wget -f %s%s/%s', repo, branch, scripts[i]))
-end
-
--- LABEL
-if component.isAvailable("filesystem") then
-    local fs = component.filesystem
-    fs.setLabel("E2EE-CA-BOT")
 end
