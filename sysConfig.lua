@@ -1,4 +1,6 @@
 local config = {
+    modemPort = 1579,
+
     workingFarmSize = 6,
     storageFarmSize = 9,
 

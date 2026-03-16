@@ -1041,6 +1041,7 @@ local function drawFarmGrid()
   local titleStorage = "⯈ STORAGE"
   local workingTitleX = workingX + math.floor((workingGridW - #titleWorking) / 2)
   local storageTitleX = storageX + math.floor((storageGridW - #titleStorage) / 2)
+
   gpu.set(workingTitleX, innerY, titleWorking)
   gpu.set(storageTitleX, innerY, titleStorage)
 
@@ -1117,8 +1118,8 @@ local function drawFarmList(refresh)
   local menuX = menuPX + 3
   local cursorY = 2
 
-  local colWidths = { 6, 6, 15, 5, 7, 7, 15 }
-  local headers = { "Slot", "Tier", "Name", "Gain", "Growth", "Resist", "Info" }
+  local colWidths = { 6, 6, 28, 7, 7, 7 }
+  local headers = { "Slot", "Tier", "Name", "Gain", "Growth", "Resist" }
 
   if currentInListStorage and currentInListWorking then
     currentInListStorage = false
@@ -1163,13 +1164,6 @@ local function drawFarmList(refresh)
   for i = startIndex, endIndex do
     local slot = slots[i]
     local crop = drawFarm[slot]
-    local info = ""
-
-    if crop.name == "air" and crop.warningCounter and crop.warningCounter > 3 then
-      info = "Farmland may be dirt"
-    elseif crop.name == "weed" or crop.name == "Grass" then
-      info = "Weed detected"
-    end
 
     local values = {
       tostring(slot),
@@ -1177,8 +1171,7 @@ local function drawFarmList(refresh)
       crop.name or "Unknown",
       tostring(crop.ga or "-"),
       tostring(crop.gr or "-"),
-      tostring(crop.re or "-"),
-      info
+      tostring(crop.re or "-")
     }
 
     cursorX = menuX
@@ -1207,7 +1200,6 @@ local function drawFarmList(refresh)
     local pageText = string.format("Page %d/%d", currentListPage, totalPages)
     local fullText = "< " .. pageText .. " >"
     local fullX = menuX + 61 - #fullText
-
 
     gpu.set(fullX, cursorY, fullText)
 
@@ -1664,7 +1656,6 @@ local function drawLogs(refresh)
   local logsX = menuPX + 4
   local logsY = 2
   local logs = db.getLogs()
-  --local logsOffset = db.getSystemData('logsOffset') or 0
   local maxLineLen = screenWidth - logsX - 4
 
   local visibleLines = screenHeight - logsY - 2
@@ -2309,7 +2300,7 @@ local function handleBodyMouseClick(btn)
     else
       return
     end
-    drawFarm(true)
+    drawFarm()
   end
 end
 

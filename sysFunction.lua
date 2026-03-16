@@ -13,9 +13,15 @@ local function getSensor()
     return nil
 end
 
-local function getTunnel()
-    if component.isAvailable("tunnel") then
-        return component.tunnel
+local function getModem()
+    if component.isAvailable("modem") then
+        local modem = component.modem
+
+        if not modem.isOpen(config.modemPort) then
+            modem.open(config.modemPort)
+        end
+
+        return modem
     end
     return nil
 end
@@ -40,17 +46,17 @@ local function getChargerSide()
     return nil
 end
 
-local function sendTunnelRequest(request, expectedType, timeout)
+local function sendModemRequest(request, expectedType, timeout)
     timeout = timeout or 3
-    local tunnel = getTunnel()
-    if not tunnel then return nil end
-    tunnel.send(serialization.serialize(request))
+    local modem = getModem()
+    if not modem then return nil end
+    modem.broadcast(config.modemPort, serialization.serialize(request))
 
     local startTime = computer.uptime()
     repeat
         local remaining = timeout - (computer.uptime() - startTime)
         if remaining <= 0 then break end
-        local _, _, _, _, _, message = event.pull(remaining, "modem_message")
+        local _, _, from, port, _, message = event.pull(remaining, "modem_message")
         if message then
             local decoded = serialization.unserialize(message)
             if decoded and decoded.type == expectedType then
@@ -62,14 +68,15 @@ local function sendTunnelRequest(request, expectedType, timeout)
     return nil
 end
 
-local function sendTunnelRequestNoReply(request)
-    local tunnel = getTunnel()
-    if not tunnel then return nil end
-    tunnel.send(serialization.serialize(request))
+local function sendModemRequestNoReply(request)
+    local modem = getModem()
+    if not modem then return nil end
+
+    modem.broadcast(config.modemPort, serialization.serialize(request))
 end
 
 local function getRobotStatus()
-    local response = sendTunnelRequest({ type = "getStatus" }, "getStatus", 3)
+    local response = sendModemRequest({ type = "getStatus" }, "getStatus", 3)
 
     if not response then
         return false
@@ -114,7 +121,7 @@ local function fetchScan(rawScan)
                 isCrop = true,
                 name = "emptyCrop",
                 crossingbase = crop.crossingBase or 0,
-                fromScan = true, 
+                fromScan = true,
                 warningCounter = 0
             }
         else
@@ -129,7 +136,7 @@ local function fetchScan(rawScan)
                 weedex = crop.storageWeedEX or 0,
                 water = crop.storageWater or 0,
                 nutrients = crop.storageNutrients or 0,
-                fromScan = true, 
+                fromScan = true,
                 warningCounter = 0
             }
         end
@@ -176,7 +183,7 @@ local function scanStorage()
         if crop then
             db.updateStorage(slot, crop)
         end
-    
+
         if crop.name == 'air' then
             emptyCounter = emptyCounter + 1
         end
@@ -209,7 +216,7 @@ local function scanFarm()
             if not foundedCrop and crop.isCrop and crop.name ~= "air" and crop.name ~= "emptyCrop" and not isWeed(crop) then
                 foundedCrop = true
             end
-            
+
             if crop.name == "air" then
                 local warningIncremental = 1
                 if oldCrop and not oldCrop.fromScan then
@@ -438,7 +445,7 @@ local function doTransplante()
     end
     os.sleep(0.1)
 
-    sendTunnelRequestNoReply({ type = 'manualTransplant', data = order })
+    sendModemRequestNoReply({ type = 'manualTransplant', data = order })
     os.sleep(1)
 
     while not getRobotStatus() do
@@ -555,7 +562,7 @@ local function scanSystemRobot(firstRun)
         local robotStatus = getRobotStatus()
         if robotStatus then
             os.sleep(0.1)
-            local robotData = sendTunnelRequest({ type = 'scanSystemRobot' }, 'scanSystemRobot', 3)
+            local robotData = sendModemRequest({ type = 'scanSystemRobot' }, 'scanSystemRobot', 3)
             if robotData and robotData.data then
                 connectionSuccess = true
                 connectionData = robotData.data
@@ -1094,7 +1101,7 @@ end
 
 return {
     getRobotStatus = getRobotStatus,
-    sendTunnelRequestNoReply = sendTunnelRequestNoReply,
+    sendModemRequestNoReply = sendModemRequestNoReply,
     scanFarm = scanFarm,
     isWeed = isWeed,
     isMaxStat = isMaxStat,

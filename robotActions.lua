@@ -227,7 +227,6 @@ local function manualTransplant(order)
 
     gps.go(toPos)
     if toSlotName == 'air' and not placeCropStick() then
-
         gps.go(fromPos)
         if not placeCropStick() then
             gps.go(config.relayFarmlandPos)
