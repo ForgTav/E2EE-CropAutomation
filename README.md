@@ -19,8 +19,8 @@ If a plant has similar constraints, it is recommended to handle it outside the a
 
 | Component                    | Qty | Tier   | Mode                               |
 | ---------------------------- | --- | ------ | ---------------------------------- |
-| OC Charger                   | 1   | —      | OpenComputers                      |
-| OC Sensor                    | 1   | —      | OpenComputers Sensors              |
+| Charger                      | 1   | —      | OpenComputers                      |
+| Sensor                       | 1   | —      | OpenComputers Sensors              |
 | Power Converter              | 1   | —      | OpenComputers                      |
 | Computer Case                | 2   | Tier 2 | OpenComputers                      |
 | Screen                       | 1   | Tier 1 | OpenComputers                      |
@@ -39,20 +39,6 @@ If a plant has similar constraints, it is recommended to handle it outside the a
 | Transvector Binder           | 1   | —      | Thaumic Tinkerer                   |
 | Transvector Dislocator       | 1   | —      | Thaumic Tinkerer                   |
 | Weeding Trowel               | 1   | —      | Industrial Craft 2                 |
-
-## ⚙️ Assembly station components
-| Component                    | Qty | Tier   | Mode                               |
-| ---------------------------- | --- | ------ | ---------------------------------- |
-| OC Electronics Assembler     | 1   | —      | OpenComputers                      |
-| Computer Case                | 1   | Tier 2 | OpenComputers                      |
-| Screen                       | 1   | Tier 1 | OpenComputers                      |
-| Disk Drive (Block)           | 1   | —      | OpenComputers                      |
-| Keyboard                     | 1   | —      | OpenComputers                      |
-| Central Processing Unit      | 1   | Tier 1 | OpenComputers                      |
-| Memory                       | 2   | Tier 1 | OpenComputers                      |
-| Internet Card                | 1   | —      | OpenComputers                      |
-| EEPROM (Lua BIOS)            | 1   | —      | OpenComputers                      |
-| OpenOS Floppy Disk           | 1   | —      | OpenComputers                      |
 ---
 
 ## 🌾 Setting Up the Farm
@@ -92,27 +78,52 @@ Key setup details:
 ---
 
 ## 🖥️ Setting Up the Assembly station
-### ⚙️ Assembly station components
+> Skip this step if you already have a computer with internet access. This will be referred to as the **Assembly Station**.
 
-| Component                    | Qty | Tier   | Mode                               |
-| ---------------------------- | --- | ------ | ---------------------------------- |
-| Electronics Assembler        | 1   | —      | OpenComputers                      |
-| Computer Case                | 1   | Tier 2 | OpenComputers                      |
-| Screen                       | 1   | Tier 1 | OpenComputers                      |
-| Disk Drive (Block)           | 1   | —      | OpenComputers                      |
-| Keyboard                     | 1   | —      | OpenComputers                      |
-| Central Processing Unit      | 1   | Tier 1 | OpenComputers                      |
-| Memory                       | 2   | Tier 1 | OpenComputers                      |
-| Internet Card                | 1   | —      | OpenComputers                      |
-| EEPROM (Lua BIOS)            | 1   | —      | OpenComputers                      |
-| OpenOS Floppy Disk           | 1   | —      | OpenComputers                      |
+<details>
+  <summary>🖥️ Assembly Station Setup</summary>
+  
+  ### ⚙️ Assembly station components
+  | Component                    | Qty | Tier   | Mode                               |
+  | ---------------------------- | --- | ------ | ---------------------------------- |
+  | Electronics Assembler        | 1   | —      | OpenComputers                      |
+  | Computer Case                | 1   | Tier 2 | OpenComputers                      |
+  | Screen                       | 1   | Tier 1 | OpenComputers                      |
+  | Disk Drive (Block)           | 1   | —      | OpenComputers                      |
+  | Keyboard                     | 1   | —      | OpenComputers                      |
+  | Central Processing Unit      | 1   | Tier 1 | OpenComputers                      |
+  | Memory                       | 2   | Tier 1 | OpenComputers                      |
+  | Internet Card                | 1   | —      | OpenComputers                      |
+  | EEPROM (Lua BIOS)            | 1   | —      | OpenComputers                      |
+  | OpenOS Floppy Disk           | 1   | —      | OpenComputers                      |
+  
+  1. Place the computer Case, Screen, Keyboard, Disk Drive and Electronics Assembler.
+  2. Install all components.
+     - ![Assembly Station Components](media/Assembly_station_components.png?)
+  4. Insert OpenOS floppy in Disk Drive
 
-1. Place the computer Case, Screen, Keyboard, Disk Drive and Electronics Assembler.
-2. Install all components.
-   - ![Assembly Station Components](media/Assembly_station_components.png?)
-3. Insert OpenOS floppy in Disk Drive
+     ![Building assembly station](media/building_assembly_station.png?)
+</details>
 
-![Building assembly station](media/building_assembly_station.png?)
+<details id="assembly-station-setup">
+  <summary>💽 Installing Hard Disk & Software</summary>
+  
+  1. Insert Hard Disk Drive in Assembly station
+     - ![Assembly station hard drive](media/Assembly_station_hard_drive.png?)
+  2. Power On the Assembly station, right click on screen and follow the prompt:
+     ```text
+     install → Y → Y
+     ```
+  3. After reboot, run the setup command for your device:
+     * **For Robot:**
+       ```text
+       wget https://raw.githubusercontent.com/ForgTav/E2EE-CropAutomation/main/robotSetup.lua && robotSetup
+       ```
+     * **For Computer:**
+       ```text
+       wget https://raw.githubusercontent.com/ForgTav/E2EE-CropAutomation/main/sysSetup.lua && sysSetup
+       ```
+</details>
 
 ---
 
@@ -136,36 +147,25 @@ Key setup details:
 | Transvector Dislocator       | 1   | —      | Thaumic Tinkerer                   |
 | Weeding Trowel               | 1   | —      | Industrial Craft 2                 |
 
-1. Insert Hard Disk Drive in Assembly station
-   - ![Assembly station hard drive](media/Assembly_station_hard_drive.png?)
-2. Power On the Assembly station, right click on screen and follow the prompt:
-   ```text
-   install → Y → Y
-   ```
-3. After reboot insert command
-   ```text
-   wget https://raw.githubusercontent.com/ForgTav/E2EE-CropAutomation/main/robotSetup.lua && robotSetup
-   ```
-4. Power Off the Assembly station, take the hard drive from the assembly station, and let's start assembling the robot in Electronics Assembler.
-5. Insert computer case into the Electronics Assembler and required components.
+1. Insert computer case into the Electronics Assembler and required components.
    - ![Robot Components](media/Robot_Components.png?)
-   > 💡 **Note:** Hard drive disk we were preparing at the assembly station.
-6. Click assemble and wait (\~3 minutes).
-7. Rename the robot using an anvil.
-8. Place it on the OC Charger and activate the charger with redstone.
-   > 💡 **Note:** The robot should face the **rightmost column** of the working farm.
+     > **Note:** [Hard Disk Drive](#assembly-station-setup) we were preparing at the assembly station.
+2. Click assemble and wait (\~3 minutes).
+3. Rename the robot using an anvil.
+4. Place it on the OC Charger and activate the charger with redstone.
+   > **Note:** The robot should face the **rightmost column** of the working farm.
    - ![Building robot position](media/building_robot_position.png?)
-9. Equip:
+5. Equip:
    - Slot #16: Weeding Trowel
    - Slot #15: Transvector Binder
    - Slot #14: Crop sticks (optional; will auto-refill)
    - (Optional) Tool slot: Axe or Mattock
    - ![Robot Inventory](media/Robot_Inventory.png?)
-10. Power On and in terminal, enter:
+6. Power On and in terminal, enter:
     ```text
     start
     ```
-11. The terminal will show an error if a part is missing.
+7. The terminal will show an error if a part is missing.
 ---
 
 ## 🖥️ Setting Up the Computer
@@ -184,22 +184,12 @@ Key setup details:
 | Hard Disk Drive              | 1   | Tier 1 | OpenComputers                      |
 | EEPROM (Lua BIOS)            | 1   | —      | OpenComputers                      |
 
-1. Insert Hard Disk Drive in Assembly station
-   - ![Assembly station hard drive](media/Assembly_station_hard_drive.png?)
-2. Power On the Assembly station, right click on screen and follow the prompt:
-   ```text
-   install → Y → Y
-   ```
-3. After reboot insert command
-   ```text
-   wget https://raw.githubusercontent.com/ForgTav/E2EE-CropAutomation/main/sysSetup.lua && sysSetup
-   ```
-4. Power Off the Assembly station, take the hard drive from the assembly station, and let's start assembling the computer.
-5. Place the Computer Case, Screen, and Keyboard.
+1. Place the Computer Case, Screen, and Keyboard.
    - ![Building computer](media/building_computer.png?)
-6. Install all components.
+2. Install all components.
    -  ![Computer Components](media/Computer_Components.png?)
-7. Connect the Sensor, Charger, Computer case and Power Converter using a cable.
+   > **Note:** [Hard Disk Drive](#assembly-station-setup) we were preparing at the assembly station.
+3. Connect the Sensor, Charger, Computer case and Power Converter using a cable.
    -  ![Building computer 2](media/building_computer_2.png?)
 
 ---
