@@ -49,7 +49,7 @@ If a plant has similar constraints, it is recommended to handle it outside the a
 | Disk Drive (Block)           | 1   | —      | OpenComputers                      |
 | Keyboard                     | 1   | —      | OpenComputers                      |
 | Central Processing Unit      | 1   | Tier 1 | OpenComputers                      |
-| Memory                       | 1   | Tier 1 | OpenComputers                      |
+| Memory                       | 2   | Tier 1 | OpenComputers                      |
 | Internet Card                | 1   | —      | OpenComputers                      |
 | EEPROM (Lua BIOS)            | 1   | —      | OpenComputers                      |
 | OpenOS Floppy Disk           | 1   | —      | OpenComputers                      |
@@ -102,7 +102,7 @@ Key setup details:
 | Disk Drive (Block)           | 1   | —      | OpenComputers                      |
 | Keyboard                     | 1   | —      | OpenComputers                      |
 | Central Processing Unit      | 1   | Tier 1 | OpenComputers                      |
-| Memory                       | 1   | Tier 1 | OpenComputers                      |
+| Memory                       | 2   | Tier 1 | OpenComputers                      |
 | Internet Card                | 1   | —      | OpenComputers                      |
 | EEPROM (Lua BIOS)            | 1   | —      | OpenComputers                      |
 | OpenOS Floppy Disk           | 1   | —      | OpenComputers                      |
