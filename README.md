@@ -63,12 +63,12 @@ Choose a location with high **humidity** and **air quality** (e.g., Jungle or Sw
 ![Farm Top](media/prepare_farm.png?)
 Key setup details:
 
-- The robot should face the **rightmost column** of the working farm.
 - Next to the charger:
   - A **chest or drawer** for crop sticks
   - A **trash can** or optional recycling chest
 - Place the **transvector dislocator** to face the **blank farmland** (used as a teleport buffer between working and storage farm).
    - ![Face side](media/transvector_dislocator_face.png?)
+   > 💡 **Note:** You can identify Facing side by the number of dots on it's surface.
 
 ### Water Placement Guidelines
 
@@ -124,7 +124,6 @@ Key setup details:
 | Computer Case                | 1   | Tier 2 | OpenComputers                      |
 | Screen                       | 1   | Tier 1 | OpenComputers                      |
 | Keyboard                     | 1   | —      | OpenComputers                      |
-| Disk Drive (Block)           | 1   | —      | OpenComputers                      |
 | Accelerated Processing Unit  | 1   | Tier 2 | OpenComputers                      |
 | Memory                       | 1   | Tier 2 | OpenComputers                      |
 | Hard Disk Drive              | 1   | Tier 1 | OpenComputers                      |
@@ -154,6 +153,8 @@ Key setup details:
 6. Click assemble and wait (\~3 minutes).
 7. Rename the robot using an anvil.
 8. Place it on the OC Charger and activate the charger with redstone.
+   > 💡 **Note:** The robot should face the **rightmost column** of the working farm.
+   - ![Building robot position](media/building_robot_position.png?)
 9. Equip:
    - Slot #16: Weeding Trowel
    - Slot #15: Transvector Binder
@@ -161,11 +162,10 @@ Key setup details:
    - (Optional) Tool slot: Axe or Mattock
    - ![Robot Inventory](media/Robot_Inventory.png?)
 10. Power On and in terminal, enter:
-```text
-start
-```
+    ```text
+    start
+    ```
 11. The terminal will show an error if a part is missing.
-
 ---
 
 ## 🖥️ Setting Up the Computer
@@ -173,8 +173,6 @@ start
 
 | Component                    | Qty | Tier   | Mode                               |
 | ---------------------------- | --- | ------ | ---------------------------------- |
-| OC Charger                   | 1   | —      | OpenComputers                      |
-| OC Sensor                    | 1   | —      | OpenComputers                      |
 | Power Converter              | 1   | —      | OpenComputers                      |
 | Computer Case                | 1   | Tier 2 | OpenComputers                      |
 | Screen                       | 1   | Tier 2 | OpenComputers                      |
@@ -185,7 +183,6 @@ start
 | Network Card                 | 1   | —      | OpenComputers                      |
 | Hard Disk Drive              | 1   | Tier 1 | OpenComputers                      |
 | EEPROM (Lua BIOS)            | 1   | —      | OpenComputers                      |
-
 
 1. Insert Hard Disk Drive in Assembly station
    - ![Assembly station hard drive](media/Assembly_station_hard_drive.png?)
@@ -204,8 +201,6 @@ start
    -  ![Computer Components](media/Computer_Components.png?)
 7. Connect the Sensor, Charger, Computer case and Power Converter using a cable.
    -  ![Building computer 2](media/building_computer_2.png?)
-
-![Building computer 3](media/building_computer_3.png?)
 
 ---
 
@@ -240,7 +235,7 @@ Crosses plants and automatically transfers newly bred crops to the storage area 
 This mode includes two sub-modes:
 
 - **Schema Mode:** Breeds according to a set pattern.
-  - ![schema_crop](media/schema.png?)
+  ![schema_crop](media/schema.png?)
 - **Manual Mode:** The robot does not edit parent seedlings unless they are weeded.
 
 ### Mode: autoSpread
@@ -282,7 +277,7 @@ Duplicates the target crop and transfers to storage.
 
 - When the system prepares a new order for the robot, the phrase "Loading.." appears in the bottom left corner. During this time, the user interface becomes unresponsive.
 
-![Schema_Beta](media/ui_loading.png?)
+![UI loading](media/ui_loading.png?)
 ---
 
 ## 💥 Force Termination
