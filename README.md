@@ -77,11 +77,12 @@ Key setup details:
 ![Farm bottom](media/Farm_Bottom.png?)
 ---
 
-## 🖥️ Setting Up the Assembly station
-> Skip this step if you already have a computer with internet access. This will be referred to as the **Assembly Station**.
+## 🏗️ Setting Up the Assembly station
 
 <details>
-  <summary>🖥️ Assembly Station Setup</summary>
+  <summary>🏗️ Assembly Station Setup</summary>
+  
+  > Skip this step if you already have a computer with internet access. This will be referred to as the **Assembly Station**.
   
   ### ⚙️ Assembly station components
   | Component                    | Qty | Tier   | Mode                               |
@@ -106,7 +107,7 @@ Key setup details:
 </details>
 
 <details id="assembly-station-setup">
-  <summary>💽 Installing Hard Disk & Software</summary>
+  <summary>💽 Prepare Hard Disk Drive & Software</summary>
   
   1. Insert Hard Disk Drive in Assembly station
      - ![Assembly station hard drive](media/Assembly_station_hard_drive.png?)
@@ -115,14 +116,20 @@ Key setup details:
      install → Y → Y
      ```
   3. After reboot, run the setup command for your device:
-     * **For Robot:**
+     <details id="assembly-station-robot">
+       <summary>🤖 For Robot</summary>
+       
        ```text
        wget https://raw.githubusercontent.com/ForgTav/E2EE-CropAutomation/main/robotSetup.lua && robotSetup
        ```
-     * **For Computer:**
+     </details>
+     <details id="assembly-station-computer">
+       <summary>💻 For Computer</summary>
+       
        ```text
        wget https://raw.githubusercontent.com/ForgTav/E2EE-CropAutomation/main/sysSetup.lua && sysSetup
        ```
+     </details>
 </details>
 
 ---
@@ -147,25 +154,26 @@ Key setup details:
 | Transvector Dislocator       | 1   | —      | Thaumic Tinkerer                   |
 | Weeding Trowel               | 1   | —      | Industrial Craft 2                 |
 
-1. Insert computer case into the Electronics Assembler and required components.
+1. 💽 Prepare [Hard Disk Drive](#assembly-station-setup) for Robot
+2. Insert computer case into the Electronics Assembler and required components.
    - ![Robot Components](media/Robot_Components.png?)
-     > **Note:** [Hard Disk Drive](#assembly-station-setup) we were preparing at the assembly station.
-2. Click assemble and wait (\~3 minutes).
-3. Rename the robot using an anvil.
-4. Place it on the OC Charger and activate the charger with redstone.
+     > **Note:** [Hard Disk Drive](#assembly-station-robot) we were preparing at the assembly station.
+3. Click assemble and wait (\~3 minutes).
+4. Rename the robot using an anvil.
+5. Place it on the OC Charger and activate the charger with redstone.
    > **Note:** The robot should face the **rightmost column** of the working farm.
    - ![Building robot position](media/building_robot_position.png?)
-5. Equip:
+6. Equip:
    - Slot #16: Weeding Trowel
    - Slot #15: Transvector Binder
    - Slot #14: Crop sticks (optional; will auto-refill)
    - (Optional) Tool slot: Axe or Mattock
    - ![Robot Inventory](media/Robot_Inventory.png?)
-6. Power On and in terminal, enter:
+7. Power On and in terminal, enter:
     ```text
     start
     ```
-7. The terminal will show an error if a part is missing.
+8. The terminal will show an error if a part is missing.
 ---
 
 ## 🖥️ Setting Up the Computer
@@ -184,12 +192,13 @@ Key setup details:
 | Hard Disk Drive              | 1   | Tier 1 | OpenComputers                      |
 | EEPROM (Lua BIOS)            | 1   | —      | OpenComputers                      |
 
-1. Place the Computer Case, Screen, and Keyboard.
+1. 💽 Prepare [Hard Disk Drive](#assembly-station-setup) for Computer
+2. Place the Computer Case, Screen, and Keyboard.
    - ![Building computer](media/building_computer.png?)
-2. Install all components.
+3. Install all components.
    -  ![Computer Components](media/Computer_Components.png?)
-   > **Note:** [Hard Disk Drive](#assembly-station-setup) we were preparing at the assembly station.
-3. Connect the Sensor, Charger, Computer case and Power Converter using a cable.
+   > **Note:** [Hard Disk Drive](#assembly-station-computer) we were preparing at the assembly station.
+4. Connect the Sensor, Charger, Computer case and Power Converter using a cable.
    -  ![Building computer 2](media/building_computer_2.png?)
 
 ---
