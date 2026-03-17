@@ -481,7 +481,7 @@ local function executeCycle(cycle)
 
   local order = createOrderList()
   if next(order) ~= nil then
-    sys.sendTunnelRequestNoReply({ type = 'order', data = order })
+    sys.sendModemRequestNoReply({ type = 'order', data = order })
     os.sleep(1.0)
   end
 
@@ -532,7 +532,7 @@ local function sysExit()
       os.sleep(1)
     end
     os.sleep(0.1)
-    sys.sendTunnelRequestNoReply({ type = 'cleanUp', data = order })
+    sys.sendModemRequestNoReply({ type = 'cleanUp', data = order })
 
     while not sys.getRobotStatus() do
       os.sleep(1)

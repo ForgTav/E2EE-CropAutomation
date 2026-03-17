@@ -174,7 +174,7 @@ local function removePlant(needCropStick)
     if config.KeepDrops then
         robot.suckDown()
     end
-    
+
     if needCropStick then
         placeCropStick(2)
     end
@@ -227,7 +227,6 @@ local function manualTransplant(order)
 
     gps.go(toPos)
     if toSlotName == 'air' and not placeCropStick() then
-
         gps.go(fromPos)
         if not placeCropStick() then
             gps.go(config.relayFarmlandPos)

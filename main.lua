@@ -21,11 +21,11 @@ local function checkGPU()
     return false
 end
 
-local function checkLinkedCard()
-    if component.isAvailable("tunnel") then
+local function checkNetworkCard()
+    if component.isAvailable("modem") then
         return true
     end
-    print("Requires a Linked Card to communicate with robot.")
+    print("Requires a Network Card to communicate with robot.")
     return false
 end
 
@@ -68,7 +68,7 @@ local function checkComponents()
         os.exit()
     end
 
-    if not checkLinkedCard() then
+    if not checkNetworkCard() then
         os.exit()
     end
 

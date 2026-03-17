@@ -110,11 +110,13 @@ local installationSteps = {
     id = 2,
     stepLabel = "Step 1: Install Open Sensor",
     stepDescription = {
-      "See the map below to guide placement. The blocks must be close together.",
-      "After setup, connect the sensor to the computer via cable from OpenComputers.",
-      "The cable must run underneath the blocks. You can connect the cable",
-      "directly to the screen. Press Check button to verify the step installation.",
-      "If verification failed, you have made a mistake."
+      "Use the map below to place the blocks close together.",
+      "Connect the sensor to the computer or monitor for the network connection",
+      "using an OpenComputers cable.",
+      "The cable should run underneath the blocks.",
+      "The network will be expanded in the following steps.",
+      "Press the Check button to verify this step.",
+      "If the verification fails, review the current step again."
     },
     checkBtn = true,
     checkDB = "IWSensor",
@@ -123,11 +125,11 @@ local installationSteps = {
   },
   {
     id = 3,
-    stepLabel = "Step 2: Install Charger",
+    stepLabel = "Step 2: Install the OpenComputers Charger",
     stepDescription = {
       "It's positioning center and future Robot charger.",
-      "Requires RF energy and redstone activation (e.g. a lever).",
-      "Charger from OpenComputers."
+      "Requires redstone activation (e.g. a lever).",
+      "After installation, connect it to the current network using a cable.",
     },
     checkBtn = true,
     checkDB = "IWCharger",
@@ -160,56 +162,56 @@ local installationSteps = {
   },
   {
     id = 6,
-    stepLabel = "Step 5: Collect Robot details and assemble the Robot",
+    stepLabel = "Step 5: Network and RF Power",
     stepDescription = {
-      "For this step, we will need the Electronics Assembler from OpenComputers.",
-      "This machine is used to assemble a robot from its individual parts.",
-      "It's not used by the system and should be placed outside the farm.",
-      "When crafting the Linked card, you should have one card left for the robot.",
-      "Install the Computer Case Tier 3 in the Electronics Assembler first.",
-      "Then add all other parts. Complexity should be 16 and press Assemble."
+      "Check the cable connection",
+      "Charger → Sensor → Screen or Computer Case",
+      "the cable should run underneath the blocks.",
+      "",
+      "Place the Power Converter from OpenComputers below the cable.",
+      "Connect it to an RF energy source."
     },
-    checkBtn = false,
-    checkDB = "IWRobotConnection",
-    needMap = false,
-    needContent = true
-  },
-  {
-    id = 7,
-    stepLabel = "Step 6: Install OpenOS",
-    stepDescription = {
-      "Rename Robot in an anvil. Put the Robot on top of the OC Charger.",
-      "The robot must be positioned with its back facing the sensor. There is a",
-      "small chest on its back. You should still have the OpenOS floppy left from",
-      "setting up the computer. The robot has a slot in its inventory",
-      "for a floppy disk. Put a floppy disk, Power on and install OpenOS",
-      "from floppy disk. install --> Y --> Y",
-      "After setting up OpenOS, remove the floppy.",
-    },
-    checkBtn = false,
-    checkDB = "IWRobotConnection",
+    checkBtn = true,
+    checkDB = "IWStorageFarm",
     needMap = true,
     needContent = false
   },
   {
-    id = 8,
-    stepLabel = "Step 7: Install the script on the Robot",
+    id = 7,
+    stepLabel = "Step 6: Prepare Hard Disk Drive for robot",
     stepDescription = {
       "",
-      "Get the link from",
-      "https://github.com/ForgTav/E2EE-CropAutomation.",
+      "For this step, you will need a computer with Internet card.",
+      "Install OpenOS on the HDD and download the robot script.",
       "",
+      "You can get the script in one of three ways:",
       "",
+      "1. Use the GitHub link:",
+      "https://github.com/ForgTav/E2EE-CropAutomation",
       "",
-      "Discord channel of Enigmatica 2: Expert - Extended",
+      "2. Find it on the Enigmatica 2: Expert - Extended Discord channel",
       "",
-      "",
-      "",
-      "Enter it manually — the link must be without spaces.",
-      "",
+      "3. Or enter the link manually and run this command:",
       "",
       "wget https://raw.githubusercontent.com/ForgTav/",
       "E2EE-CropAutomation/main/robotSetup.lua && robotSetup"
+    },
+    checkBtn = false,
+    checkDB = "IWRobotConnection",
+    needMap = false,
+    needContent = false
+  },
+  {
+    id = 8,
+    stepLabel = "Step 7: Collect Robot details and assemble the Robot",
+    stepDescription = {
+      "For this step, you will need the Electronics Assembler from OpenComputers.",
+      "This machine is used to assemble a robot from individual parts and",
+      "should be placed outside the farm.",
+      "",
+      "Install the Computer Case Tier 2 in the Electronics Assembler first.",
+      "Then add all other parts. Complexity should be 10 and press Assemble.",
+      "Use the Hard Disk Drive you prepared in Step 5.",
     },
     checkBtn = false,
     checkDB = "IWRobotConnection",
@@ -218,16 +220,17 @@ local installationSteps = {
   },
   {
     id = 9,
-    stepLabel = "Step 8: Install the tools in the Robot and start the Robot",
+    stepLabel = "Step 8: Place the robot, set up the tools, and start it.",
     stepDescription = {
-      "Equip the Robot with a Transvector Binder and Weeding Trowel",
+      "Place Robot on the charger.",
+      "Equip Robot with a Transvector Binder and Weeding Trowel",
       "In its inventory (not in the wrench slot).",
       "Put axe or mattock in the wrench slot. (optional)",
       "Type 'start' and make sure no warnings messages appear on the screen."
     },
     checkBtn = true,
     checkDB = "IWRobotTools",
-    needMap = false,
+    needMap = true,
     needContent = false
   },
   {
@@ -308,7 +311,7 @@ local function drawLogo()
   gpu.setForeground(uiColors.foreground)
 end
 
-local function registeterButton(btn)
+local function recordButton(btn)
   table.insert(tabButtons, btn)
 end
 
@@ -326,7 +329,7 @@ local function drawButton(x, y, width, btnColor, label, action)
   gpu.setBackground(uiColors.background)
   gpu.setForeground(uiColors.foreground)
   if action ~= nil and action then
-    registeterButton({
+    recordButton({
       x1 = x,
       x2 = x + width - 1,
       y1 = y,
@@ -346,7 +349,7 @@ local function drawClickedText(x, y, label, value, action)
   gpu.setBackground(uiColors.background)
   gpu.setForeground(uiColors.foreground)
 
-  registeterButton({
+  recordButton({
     x1 = x,
     x2 = x + #labelLine,
     y1 = y,
@@ -361,7 +364,7 @@ local function drawStatControl(label, value, x, y)
 
   gpu.set(cursor, y, "<<")
 
-  registeterButton({
+  recordButton({
     x1 = cursor,
     x2 = cursor + 1,
     y1 = y,
@@ -378,7 +381,7 @@ local function drawStatControl(label, value, x, y)
 
   gpu.set(cursor, y, ">>")
 
-  registeterButton({
+  recordButton({
     x1 = cursor,
     x2 = cursor + 1,
     y1 = y,
@@ -392,7 +395,7 @@ local function drawSlotControl(value, x, y, transplateFor, slotFarm)
   local cursor = x + 2
   -- <<
   gpu.set(cursor, y, "<<")
-  registeterButton({
+  recordButton({
     x1 = cursor,
     x2 = cursor + 1,
     y1 = y,
@@ -406,7 +409,7 @@ local function drawSlotControl(value, x, y, transplateFor, slotFarm)
 
   -- <
   gpu.set(cursor, y, "<")
-  registeterButton({
+  recordButton({
     x1 = cursor,
     x2 = cursor,
     y1 = y,
@@ -425,7 +428,7 @@ local function drawSlotControl(value, x, y, transplateFor, slotFarm)
 
   -- >
   gpu.set(cursor, y, ">")
-  registeterButton({
+  recordButton({
     x1 = cursor,
     x2 = cursor,
     y1 = y,
@@ -439,7 +442,7 @@ local function drawSlotControl(value, x, y, transplateFor, slotFarm)
 
   -- >>
   gpu.set(cursor, y, ">>")
-  registeterButton({
+  recordButton({
     x1 = cursor,
     x2 = cursor + 1,
     y1 = y,
@@ -591,7 +594,7 @@ local function drawIWFooter(step)
     local backText = '< Back'
     gpu.set(2, y, backText)
 
-    registeterButton({
+    recordButton({
       x1 = 2,
       x2 = 2 + #backText,
       y1 = y,
@@ -608,7 +611,7 @@ local function drawIWFooter(step)
     gpu.set(checkX, checkY, skipText)
     gpu.setForeground(uiColors.foreground)
 
-    registeterButton({
+    recordButton({
       x1 = checkX,
       x2 = checkX + #skipText,
       y1 = checkY,
@@ -639,7 +642,7 @@ local function drawIWFooter(step)
     gpu.setForeground(checkColor)
     gpu.set(checkX + #checkText, checkY, checkSign)
     gpu.setForeground(uiColors.foreground)
-    registeterButton({
+    recordButton({
       x1 = checkX,
       x2 = checkX + #checkText,
       y1 = checkY,
@@ -655,7 +658,7 @@ local function drawIWFooter(step)
     local x = screenWidth - #nextText - 1
     gpu.setForeground(uiColors.lightgray)
     if activeNextBtn then
-      registeterButton({
+      recordButton({
         x1 = x,
         x2 = x + #nextText,
         y1 = y,
@@ -755,11 +758,11 @@ local function drawIWMap(step)
     gpu.setForeground(uiColors.red)
     gpu.set(center - 4, maxY - 3, 'TC')
     gpu.setForeground(uiColors.foreground)
-  elseif step.id >= 10 then
+  elseif step.id > 6 then
     gpu.setForeground(uiColors.lightgray)
     gpu.set(center - 4, maxY - 3, 'TC')
     gpu.setForeground(uiColors.foreground)
-  elseif step.id >= 6 then
+  elseif step.id > 5 then
     gpu.set(center - 4, maxY - 3, 'TC')
   end
 
@@ -768,7 +771,7 @@ local function drawIWMap(step)
     gpu.setForeground(uiColors.red)
     gpu.set(center - 1, maxY - 3, 'CH')
     gpu.setForeground(uiColors.foreground)
-  elseif step.id >= 10 then
+  elseif step.id > 6 then
     gpu.setForeground(uiColors.lightgray)
     gpu.set(center - 1, maxY - 3, 'CH')
     gpu.setForeground(uiColors.foreground)
@@ -777,11 +780,11 @@ local function drawIWMap(step)
   end
 
   --OC CHARGER
-  if step.id == 3 or step.id == 7 then
+  if step.id == 3 or step.id == 6 or step.id == 9 then
     gpu.setForeground(uiColors.red)
     gpu.set(center + 2, maxY - 3, 'CG')
     gpu.setForeground(uiColors.foreground)
-  elseif step.id >= 10 then
+  elseif step.id > 6 then
     gpu.setForeground(uiColors.lightgray)
     gpu.set(center + 2, maxY - 3, 'CG')
     gpu.setForeground(uiColors.foreground)
@@ -790,11 +793,11 @@ local function drawIWMap(step)
   end
 
   --OPEN SENSOR
-  if step.id == 2 then
+  if step.id == 2 or step.id == 6 then
     gpu.setForeground(uiColors.red)
     gpu.set(center + 2, maxY - 2, 'OS')
     gpu.setForeground(uiColors.foreground)
-  elseif step.id >= 10 then
+  elseif step.id > 6 then
     gpu.setForeground(uiColors.lightgray)
     gpu.set(center + 2, maxY - 2, 'OS')
     gpu.setForeground(uiColors.foreground)
@@ -803,8 +806,12 @@ local function drawIWMap(step)
   end
 
   --COMPUTER CASE
-  if step.id >= 10 then
+  if step.id > 6 then
     gpu.setForeground(uiColors.lightgray)
+    gpu.set(center - 4, maxY - 2, 'CC')
+    gpu.setForeground(uiColors.foreground)
+  elseif step.id == 6 then
+    gpu.setForeground(uiColors.red)
     gpu.set(center - 4, maxY - 2, 'CC')
     gpu.setForeground(uiColors.foreground)
   else
@@ -812,8 +819,12 @@ local function drawIWMap(step)
   end
 
   --COMPUTER SCREEN
-  if step.id >= 10 then
+  if step.id > 6 then
     gpu.setForeground(uiColors.lightgray)
+    gpu.set(center - 1, maxY - 2, 'SC')
+    gpu.setForeground(uiColors.foreground)
+  elseif step.id == 6 then
+    gpu.setForeground(uiColors.red)
     gpu.set(center - 1, maxY - 2, 'SC')
     gpu.setForeground(uiColors.foreground)
   else
@@ -828,8 +839,6 @@ end
 
 local function drawIWContent(step)
   if not step.needContent then return end
-
-
   if step.id == 2 then
     local legend = {
       'CC - Computer Case',
@@ -873,29 +882,27 @@ local function drawIWContent(step)
       gpu.set(4, cursor, value);
       cursor = cursor + 1
     end
-  elseif step.id == 6 then
-    local cursorCol1 = 13
-    local cursorCol2 = 13
+  elseif step.id == 8 then
+    local cursorCol1 = 15
+    local cursorCol2 = 15
     local robotDelailsCol1 = {
       '1. Memory Tier 2',
       '2. Hard Disk Drive Tier 1',
       '3. EEPROM (Lua BIOS)',
-      '4. Linked card',
-      '5. Internet Card',
-      '6. Accelerated Processing Unit (APU) Tier 2',
+      '4. Network card',
+      '5. Accelerated Processing Unit (APU) Tier 2',
     }
 
     local robotDelailsCol2 = {
-      '7. Redstone Card Tier 1',
-      '8. Inventory Upgrade',
-      '9. Inventory Controller Upgrade',
-      '10. Keyboard',
-      '11. Screen Tier 1',
-      '12. Disk drive (as block)',
+      '6. Redstone Card Tier 1',
+      '7. Inventory Upgrade',
+      '8. Inventory Controller Upgrade',
+      '9. Keyboard',
+      '10. Screen Tier 1',
     }
 
 
-    gpu.set(2, 11, 'Also the list of parts needed for the Robot:');
+    gpu.set(2, 13, 'Also the list of parts needed for the Robot:');
 
     for index, value in ipairs(robotDelailsCol1) do
       gpu.set(2, cursorCol1, value);
@@ -906,10 +913,7 @@ local function drawIWContent(step)
       gpu.set(48, cursorCol2, value);
       cursorCol2 = cursorCol2 + 1
     end
-
-    gpu.set(2, 20, 'P.S. If you used a Linked Card from Creative or a different one, sync it with');
-    gpu.set(2, 21, 'the computer Linked Card by merging it in the crafting table.');
-  elseif step.id == 10 or step.id == 13 then
+  elseif step.id == 11 or step.id == 13 then
     local legend = {
       '[] - Farmland',
       'WS - Water source'
@@ -921,14 +925,12 @@ local function drawIWContent(step)
       cursor = cursor + 1
     end
 
-    --if step.id == 10 then
     gpu.setForeground(uiColors.yellow)
     gpu.set(2, 18, '⚠ WARNING');
     gpu.setForeground(uiColors.foreground)
     gpu.set(2, 19, 'If a farmland block is accidentally converted to dirt (e.g., by mobs),');
     gpu.set(2, 20, "the system won't detect it and may crash the game.");
     gpu.set(2, 21, "Make sure to protect the farm area from both passive and hostile mobs.");
-    --end
   elseif step.id == 12 then
     local legend = {
       'TD - Transvector Dislocator',
@@ -1037,13 +1039,29 @@ local function drawFarmGrid()
   local workingX = innerX
   local storageX = innerX + workingGridW + spacingX
 
-  local titleWorking = "WORKING"
-  local titleStorage = "STORAGE"
+  local titleWorking = "⯈ WORKING"
+  local titleStorage = "⯈ STORAGE"
   local workingTitleX = workingX + math.floor((workingGridW - #titleWorking) / 2)
   local storageTitleX = storageX + math.floor((storageGridW - #titleStorage) / 2)
 
   gpu.set(workingTitleX, innerY, titleWorking)
   gpu.set(storageTitleX, innerY, titleStorage)
+
+  recordButton({
+    x1 = workingTitleX,
+    x2 = workingTitleX + #titleWorking,
+    y1 = innerY,
+    y2 = innerY,
+    action = 'openListWorking'
+  })
+
+  recordButton({
+    x1 = storageTitleX,
+    x2 = storageTitleX + #titleStorage,
+    y1 = innerY,
+    y2 = innerY,
+    action = 'openListStorage'
+  })
 
   for slot = 1, workingArea do
     local col = (slot - 1) // workingSize
@@ -1090,6 +1108,118 @@ local function drawFarmGrid()
       slot = slot,
       type = "storage",
     }
+  end
+end
+
+local function drawFarmList(refresh)
+  local currentInListStorage = db.getSystemData('currentInListStorage') or false
+  local currentInListWorking = db.getSystemData('currentInListWorking') or false
+  local currentListPage = db.getSystemData('currentListPage') or 1
+  local pageLimit = 19
+
+  local menuX = menuPX + 3
+  local cursorY = 2
+
+  local colWidths = { 6, 6, 28, 7, 7, 7 }
+  local headers = { "Slot", "Tier", "Name", "Gain", "Growth", "Resist" }
+
+  if currentInListStorage and currentInListWorking then
+    currentInListStorage = false
+  end
+
+  local drawFarm = {}
+  if currentInListWorking then
+    drawFarm = db.getFarm()
+  elseif currentInListStorage then
+    drawFarm = db.getStorage()
+  end
+
+  local cursorX = menuX
+
+  if not refresh then
+    for i, header in ipairs(headers) do
+      gpu.set(cursorX, cursorY, header)
+      cursorX = cursorX + colWidths[i]
+    end
+    cursorY = cursorY + 1
+    gpu.set(menuX, cursorY, string.rep("-", 61))
+    cursorY = cursorY + 1
+  end
+
+  cursorY = 4
+
+  local function truncate(str, width)
+    if not str then return "-" end
+    if #str > width - 1 then
+      return str:sub(1, width - 2) .. "…"
+    end
+    return str
+  end
+
+  local slots = {}
+  for slot in pairs(drawFarm) do table.insert(slots, slot) end
+  table.sort(slots)
+
+  local startIndex = (currentListPage - 1) * pageLimit + 1
+  local endIndex = math.min(currentListPage * pageLimit, #slots)
+
+  for i = startIndex, endIndex do
+    local slot = slots[i]
+    local crop = drawFarm[slot]
+
+    local values = {
+      tostring(slot),
+      tostring(crop.tier or "-"),
+      crop.name or "Unknown",
+      tostring(crop.ga or "-"),
+      tostring(crop.gr or "-"),
+      tostring(crop.re or "-")
+    }
+
+    cursorX = menuX
+    for j, value in ipairs(values) do
+      gpu.set(cursorX, cursorY, truncate(value, colWidths[j]))
+      cursorX = cursorX + colWidths[j]
+    end
+
+    cursorY = cursorY + 1
+  end
+
+  if not refresh then
+    local totalPages = math.max(1, math.ceil(#slots / pageLimit))
+    local backText = "< Back"
+    cursorY = screenHeight - 1
+
+    gpu.set(menuX, cursorY, backText)
+    recordButton({
+      x1 = menuX,
+      x2 = menuX + #backText - 1,
+      y1 = cursorY,
+      y2 = cursorY,
+      action = "closeList"
+    })
+
+    local pageText = string.format("Page %d/%d", currentListPage, totalPages)
+    local fullText = "< " .. pageText .. " >"
+    local fullX = menuX + 61 - #fullText
+
+    gpu.set(fullX, cursorY, fullText)
+
+    recordButton({
+      x1 = fullX,
+      x2 = fullX + 1,
+      y1 = cursorY,
+      y2 = cursorY,
+      action = "prevListPage"
+    })
+
+    recordButton({
+      x1 = fullX + #fullText - 1,
+      x2 = fullX + #fullText,
+      y1 = cursorY,
+      y2 = cursorY,
+      action = "nextListPage"
+    })
   end
 end
 
@@ -1225,7 +1355,15 @@ local function drawFarm(refresh)
   local additionalW = (screenWidth - menuPX - 4) - 27
   local additionalH = 5
 
+  local currentInListStorage = db.getSystemData('currentInListStorage') or false
+  local currentInListWorking = db.getSystemData('currentInListWorking') or false
+
   if refresh then
+    if currentInListStorage or currentInListWorking then
+      drawFarmList(refresh)
+      return
+    end
+
     drawFarmGrid()
 
     local selectedSlot = db.getSystemData('farmSelectedSlot')
@@ -1241,15 +1379,20 @@ local function drawFarm(refresh)
   gpu.setBackground(uiColors.background)
   gpu.setForeground(uiColors.foreground)
 
-  drawFrame(frameX, frameY, frameW, frameH, " Farm Slots ")
-  drawFrame(frameX, infoFrameY, frameW, infoFrameH, " Slot Overview ")
-  gpu.set(frameX + 1, infoFrameY + 1, "Click a slot to view details.")
+  if currentInListStorage or currentInListWorking then
+    drawFarmList(refresh)
+    return
+  else
+    drawFrame(frameX, frameY, frameW, frameH, " Farm Slots ")
+    drawFrame(frameX, infoFrameY, frameW, infoFrameH, " Slot Overview ")
+    gpu.set(frameX + 1, infoFrameY + 1, "Click a slot to view details.")
 
-  drawFrame(additionalX, additionalY, additionalW, additionalH, " Additional ")
+    drawFrame(additionalX, additionalY, additionalW, additionalH, " Additional ")
 
-  drawFarmGrid()
-  drawLegend(legendX, legendY)
-  drawAdditional(additionalX + 1, additionalY + 1)
+    drawFarmGrid()
+    drawLegend(legendX, legendY)
+    drawAdditional(additionalX + 1, additionalY + 1)
+  end
 end
 
 local function drawComponentStatus(label, key, x, y)
@@ -1336,7 +1479,7 @@ local function drawSystem(refresh)
   end
 
   drawComponents("Robot", {
-    { label = "Linked card",          key = "linkedCard" },
+    { label = "Network card",         key = "networkCard" },
     { label = "Redstone card",        key = "redstoneCard" },
     { label = "Inventory upgrade",    key = "inventoryUpgrade" },
     { label = "Inventory controller", key = "inventoryController" },
@@ -1515,7 +1658,6 @@ local function drawLogs(refresh)
   local logsX = menuPX + 4
   local logsY = 2
   local logs = db.getLogs()
-  --local logsOffset = db.getSystemData('logsOffset') or 0
   local maxLineLen = screenWidth - logsX - 4
 
   local visibleLines = screenHeight - logsY - 2
@@ -1526,14 +1668,14 @@ local function drawLogs(refresh)
   gpu.set(screenWidth - 3, 3, '⇧')
   gpu.set(screenWidth - 3, screenHeight - 2, '⇩')
 
-  registeterButton({
+  recordButton({
     x1 = screenWidth - 3,
     x2 = screenWidth - 3,
     y1 = 3,
     y2 = 3,
     action = 'logsUp'
   })
-  registeterButton({
+  recordButton({
     x1 = screenWidth - 3,
     x2 = screenWidth - 3,
     y1 = screenHeight - 2,
@@ -1565,7 +1707,7 @@ local function drawLogs(refresh)
       end
 
       for i = 1, #segments do
-        gpu.set(logsX, y, segments[i]) -- Без отступа
+        gpu.set(logsX, y, segments[i])
         y = y + 1
         if y > screenHeight - 2 then return end
       end
@@ -2121,6 +2263,46 @@ local function handleBodyMouseClick(btn)
     logsUp()
   elseif btn.action == 'logsDown' then
     logsDown()
+  elseif btn.action == 'openListWorking' then
+    db.setSystemData('currentListPage', 1)
+    db.setSystemData('currentInListWorking', true)
+    db.setSystemData('currentInListStorage', false)
+    drawFarm()
+  elseif btn.action == 'openListStorage' then
+    db.setSystemData('currentListPage', 1)
+    db.setSystemData('currentInListStorage', true)
+    db.setSystemData('currentInListWorking', false)
+    drawFarm()
+  elseif btn.action == 'closeList' then
+    db.setSystemData('currentListPage', 1)
+    db.setSystemData('currentInListStorage', false)
+    db.setSystemData('currentInListWorking', false)
+    drawFarm()
+  elseif btn.action == 'prevListPage' or btn.action == 'nextListPage' then
+    local currentListPage = db.getSystemData('currentListPage') or 1
+    local currentInListStorage = db.getSystemData('currentInListStorage') or false
+    local currentInListWorking = db.getSystemData('currentInListWorking') or false
+    local curentFarmPageLimit = 1
+
+    if currentInListWorking then
+      curentFarmPageLimit = config.workingFarmSize ^ 2
+    elseif currentInListStorage then
+      curentFarmPageLimit = config.storageFarmSize ^ 2
+    else
+      return
+    end
+
+    local pageLimit = 19
+    local totalPages = math.max(1, math.ceil(curentFarmPageLimit / pageLimit))
+
+    if btn.action == 'prevListPage' and currentListPage > 1 then
+      db.setSystemData('currentListPage', currentListPage - 1)
+    elseif btn.action == 'nextListPage' and currentListPage < totalPages then
+      db.setSystemData('currentListPage', currentListPage + 1)
+    else
+      return
+    end
+    drawFarm()
   end
 end
 

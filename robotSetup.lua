@@ -1,4 +1,5 @@
 local shell = require('shell')
+local component = require('component')
 local args = { ... }
 local branch
 local repo

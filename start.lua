@@ -5,18 +5,41 @@ local gps = require('robotGPS')
 local actions = require('robotActions')
 local serialization = require("serialization")
 local config = require('robotConfig')
-local tunnel = component.tunnel
 local robot = require("robot")
 local robotStatus = true
 
-local function sendMessage(msg)
-    local messageToSend = serialization.serialize(msg)
-    tunnel.send(messageToSend)
+local function getModem()
+    if component.isAvailable("modem") then
+        local modem = component.modem
+        if not modem.isOpen(config.modemPort) then
+            modem.open(config.modemPort)
+        end
+
+        return modem
+    end
+    return nil
 end
 
-local function checkLinkedCard()
-    if component.isAvailable("tunnel") then
-        return true
+local function sendMessage(msg)
+    local modem = getModem()
+    if not modem then return nil end
+
+    local messageToSend = serialization.serialize(msg)
+    modem.broadcast(config.modemPort, messageToSend)
+end
+
+local function checkNetworkCard()
+    if component.isAvailable("modem") then
+        local modem = getModem()
+        if not modem then return false end
+
+        if not modem.isOpen(config.modemPort) then
+            modem.open(config.modemPort)
+        end
+
+        if modem.isOpen(config.modemPort) then
+            return true
+        end
     end
     return false
 end
@@ -95,7 +118,7 @@ end
 local function scanSystemRobot()
     local tools = checkTools(true)
     return {
-        linkedCard = checkLinkedCard(),
+        linkedCard = checkNetworkCard(),
         redstoneCard = checkRedstoneCard(),
         inventoryUpgrade = checkInventoryUpgrade(),
         inventoryController = checkInventoryController(),
@@ -174,8 +197,9 @@ end
 
 local function initRobot()
     local firstRun = true
+
     while true do
-        local _, _, _, _, _, rawMessage = event.pull("modem_message")
+        local _, _, from, port, _, rawMessage = event.pull("modem_message")
         if rawMessage then
             local success, parsed = pcall(serialization.unserialize, rawMessage)
             if success and parsed then
@@ -203,8 +227,8 @@ local function initRobot()
 end
 
 local function checkComponents()
-    if not checkLinkedCard() then
-        print("Requires a Linked Card to communicate with robot.")
+    if not checkNetworkCard() then
+        print("Requires a Network Card to communicate with computer.")
         os.exit()
     end
 

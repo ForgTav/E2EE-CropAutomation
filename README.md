@@ -15,30 +15,27 @@ Some plants **cannot be automated** using this script due to their unique enviro
 
 If a plant has similar constraints, it is recommended to handle it outside the automated system.
 
-## ⚙️ Required Components
+## ⚙️ Required components for CropAutomation
 
 | Component                    | Qty | Tier   | Mode                               |
 | ---------------------------- | --- | ------ | ---------------------------------- |
-| OC Electronics Assembler     | 1   | —      | OpenComputers                      |
-| OC Charger                   | 1   | —      | OpenComputers                      |
-| OC Sensor                    | 1   | —      | OpenComputers                      |
-| Computer Case                | 2   | Tier 3 | OpenComputers                      |
-| Linked Card                  | 2   | —      | OpenComputers                      |
-| Memory                       | 3   | Tier 2 | OpenComputers                      |
-| Accelerated Processing Unit  | 1   | Tier 2 | OpenComputers                      |
-| Central Processing Unit      | 1   | Tier 2 | OpenComputers                      |
-| Graphics Card                | 1   | Tier 2 | OpenComputers                      |
-| Redstone Card                | 1   | Tier 1 | OpenComputers                      |
-| Hard Disk Drive              | 2   | Tier 1 | OpenComputers                      |
+| Charger                      | 1   | —      | OpenComputers                      |
+| Sensor                       | 1   | —      | OpenComputers Sensors              |
+| Power Converter              | 1   | —      | OpenComputers                      |
+| Computer Case                | 2   | Tier 2 | OpenComputers                      |
 | Screen                       | 1   | Tier 1 | OpenComputers                      |
 | Screen                       | 1   | Tier 2 | OpenComputers                      |
 | Keyboard                     | 2   | —      | OpenComputers                      |
-| Disk Drive (Block)           | 1   | —      | OpenComputers                      |
-| Internet Card                | 2   | —      | OpenComputers                      |
+| Accelerated Processing Unit  | 1   | Tier 2 | OpenComputers                      |
+| Central Processing Unit      | 1   | Tier 2 | OpenComputers                      |
+| Memory                       | 3   | Tier 2 | OpenComputers                      |
+| Graphics Card                | 1   | Tier 2 | OpenComputers                      |
+| Redstone Card                | 1   | Tier 1 | OpenComputers                      |
+| Network Card                 | 2   | —      | OpenComputers                      |
+| Hard Disk Drive              | 2   | Tier 1 | OpenComputers                      |
 | Inventory Controller Upgrade | 1   | —      | OpenComputers                      |
 | Inventory Upgrade            | 1   | —      | OpenComputers                      |
 | EEPROM (Lua BIOS)            | 2   | —      | OpenComputers                      |
-| OpenOS Floppy Disk           | 1   | —      | OpenComputers                      |
 | Transvector Binder           | 1   | —      | Thaumic Tinkerer                   |
 | Transvector Dislocator       | 1   | —      | Thaumic Tinkerer                   |
 | Weeding Trowel               | 1   | —      | Industrial Craft 2                 |
@@ -47,15 +44,17 @@ If a plant has similar constraints, it is recommended to handle it outside the a
 ## 🌾 Setting Up the Farm
 
 Choose a location with high **humidity** and **air quality** (e.g., Jungle or Swamp at Y=130). Avoid placing solid blocks above the crops to maintain air quality. Ideally, keep everything inside a single chunk for easier chunk loading.
+> 💡 **Note:** You can change the biome using tools like the Extra Utilities Terraformer to create more suitable conditions for crops.
+
 ![Farm Top](media/prepare_farm.png?)
 Key setup details:
 
-- The robot should face the **rightmost column** of the working farm.
 - Next to the charger:
   - A **chest or drawer** for crop sticks
   - A **trash can** or optional recycling chest
 - Place the **transvector dislocator** to face the **blank farmland** (used as a teleport buffer between working and storage farm).
    - ![Face side](media/transvector_dislocator_face.png?)
+   > 💡 **Note:** You can identify Facing side by the number of dots on it's surface.
 
 ### Water Placement Guidelines
 
@@ -78,94 +77,130 @@ Key setup details:
 ![Farm bottom](media/Farm_Bottom.png?)
 ---
 
-## 🖥️ Setting Up the Computer
-### ⚙️ Computer Components
+## 🏗️ Setting Up the Assembly station
 
-| Component                    | Qty | Tier   | Mode                               |
-| ---------------------------- | --- | ------ | ---------------------------------- |
-| OC Charger                   | 1   | —      | OpenComputers                      |
-| OC Sensor                    | 1   | —      | OpenComputers                      |
-| Computer Case                | 1   | Tier 3 | OpenComputers                      |
-| Linked Card                  | 1   | —      | OpenComputers                      |
-| Memory                       | 2   | Tier 2 | OpenComputers                      |
-| Central Processing Unit      | 1   | Tier 2 | OpenComputers                      |
-| Graphics Card                | 1   | Tier 2 | OpenComputers                      |
-| Hard Disk Drive              | 1   | Tier 1 | OpenComputers                      |
-| Screen                       | 1   | Tier 2 | OpenComputers                      |
-| Keyboard                     | 1   | —      | OpenComputers                      |
-| Internet Card                | 1   | —      | OpenComputers                      |
-| EEPROM (Lua BIOS)            | 1   | —      | OpenComputers                      |
-| OpenOS Floppy Disk           | 1   | —      | OpenComputers                      |
+<details>
+  <summary>🏗️ Assembly Station Setup</summary>
+  
+  > Skip this step if you already have a computer with internet access. This will be referred to as the **Assembly Station**.
+  
+  ### ⚙️ Assembly station components
+  | Component                    | Qty | Tier   | Mode                               |
+  | ---------------------------- | --- | ------ | ---------------------------------- |
+  | Electronics Assembler        | 1   | —      | OpenComputers                      |
+  | Computer Case                | 1   | Tier 2 | OpenComputers                      |
+  | Screen                       | 1   | Tier 1 | OpenComputers                      |
+  | Disk Drive (Block)           | 1   | —      | OpenComputers                      |
+  | Keyboard                     | 1   | —      | OpenComputers                      |
+  | Central Processing Unit      | 1   | Tier 1 | OpenComputers                      |
+  | Memory                       | 2   | Tier 1 | OpenComputers                      |
+  | Internet Card                | 1   | —      | OpenComputers                      |
+  | EEPROM (Lua BIOS)            | 1   | —      | OpenComputers                      |
+  | OpenOS Floppy Disk           | 1   | —      | OpenComputers                      |
+  
+  1. Place the computer Case, Screen, Keyboard, Disk Drive and Electronics Assembler.
+  2. Install all components.
+     - ![Assembly Station Components](media/Assembly_station_components.png?)
+  4. Insert OpenOS floppy in Disk Drive
 
-1. Place the computer case, screen, and keyboard.
-2. Install all components.
-   - ![Computer Components](media/Computer_Components.png?)
-3. Insert OpenOS floppy, power on, and follow the prompts:
-   ```text
-   install → Y → Y
-   ```
-4. Remove the floppy disk (not needed afterward).
-5. Install the scripts:
-   ```bash
-   wget https://raw.githubusercontent.com/ForgTav/E2EE-CropAutomation/main/sysSetup.lua && sysSetup
-   ```
-6. Connect the OC Sensor to the computer using a cable.
+     ![Building assembly station](media/building_assembly_station.png?)
+</details>
 
-![Building computer](media/building_computer.png?)
-![Building computer 2](media/building_computer_2.png?)
+<details id="assembly-station-setup">
+  <summary>💽 Prepare Hard Disk Drive & Software</summary>
+  
+  1. Insert Hard Disk Drive in Assembly station
+     - ![Assembly station hard drive](media/Assembly_station_hard_drive.png?)
+  2. Power On the Assembly station, right click on screen and follow the prompt:
+     ```text
+     install → Y → Y
+     ```
+  3. After reboot, run the setup command for your device:
+     <details>
+       <summary>🤖 For Robot</summary>
+       
+       ```text
+       wget https://raw.githubusercontent.com/ForgTav/E2EE-CropAutomation/main/robotSetup.lua && robotSetup
+       ```
+     </details>
+     <details>
+       <summary>💻 For Computer</summary>
+       
+       ```text
+       wget https://raw.githubusercontent.com/ForgTav/E2EE-CropAutomation/main/sysSetup.lua && sysSetup
+       ```
+     </details>
+</details>
 
 ---
 
 ## 🤖 Building and Setting Up the Robot
-### ⚙️ Robot Components
+### ⚙️ Robot components
 
 | Component                    | Qty | Tier   | Mode                               |
 | ---------------------------- | --- | ------ | ---------------------------------- |
-| Computer Case                | 1   | Tier 3 | OpenComputers                      |
-| Linked Card                  | 1   | —      | OpenComputers                      |
-| Memory                       | 1   | Tier 2 | OpenComputers                      |
-| Accelerated Processing Unit  | 1   | Tier 2 | OpenComputers                      |
-| Redstone Card                | 1   | Tier 1 | OpenComputers                      |
-| Hard Disk Drive              | 1   | Tier 1 | OpenComputers                      |
+| Computer Case                | 1   | Tier 2 | OpenComputers                      |
 | Screen                       | 1   | Tier 1 | OpenComputers                      |
 | Keyboard                     | 1   | —      | OpenComputers                      |
-| Disk Drive (Block)           | 1   | —      | OpenComputers                      |
-| Internet Card                | 1   | —      | OpenComputers                      |
+| Accelerated Processing Unit  | 1   | Tier 2 | OpenComputers                      |
+| Memory                       | 1   | Tier 2 | OpenComputers                      |
+| Hard Disk Drive              | 1   | Tier 1 | OpenComputers                      |
+| Redstone Card                | 1   | Tier 1 | OpenComputers                      |
+| Network Card                 | 1   | —      | OpenComputers                      |
 | Inventory Controller Upgrade | 1   | —      | OpenComputers                      |
 | Inventory Upgrade            | 1   | —      | OpenComputers                      |
 | EEPROM (Lua BIOS)            | 1   | —      | OpenComputers                      |
-| OpenOS Floppy Disk           | 1   | —      | OpenComputers                      |
 | Transvector Binder           | 1   | —      | Thaumic Tinkerer                   |
 | Transvector Dislocator       | 1   | —      | Thaumic Tinkerer                   |
 | Weeding Trowel               | 1   | —      | Industrial Craft 2                 |
 
-1. Insert the second computer case into the OC Electronics Assembler.
-2. Add the required components.
+1. 💽 Prepare [Hard Disk Drive](#assembly-station-setup) for Robot
+2. Insert computer case into the Electronics Assembler and required components.
    - ![Robot Components](media/Robot_Components.png?)
+     > **Note:** [Hard Disk Drive](#assembly-station-setup) we were preparing at the assembly station.
 3. Click assemble and wait (\~3 minutes).
 4. Rename the robot using an anvil.
 5. Place it on the OC Charger and activate the charger with redstone.
-6. Insert OpenOS floppy into robot, power on, and run:
-   ```text
-   install → Y → Y
-   ```
-7. Remove the floppy.
-8. Install the robot scripts:
-   ```bash
-   wget https://raw.githubusercontent.com/ForgTav/E2EE-CropAutomation/main/robotSetup.lua && robotSetup
-   ```
-9. Equip:
+   > **Note:** The robot should face the **rightmost column** of the working farm.
+   - ![Building robot position](media/building_robot_position.png?)
+6. Equip:
    - Slot #16: Weeding Trowel
    - Slot #15: Transvector Binder
    - Slot #14: Crop sticks (optional; will auto-refill)
    - (Optional) Tool slot: Axe or Mattock
    - ![Robot Inventory](media/Robot_Inventory.png?)
-10. In terminal, enter:
+7. Power On and in terminal, enter:
+    ```text
+    start
+    ```
+8. The terminal will show an error if a part is missing.
+---
 
-```bash
-start
-```
-11. The terminal will show an error if a part is missing.
+## 🖥️ Setting Up the Computer
+### ⚙️ Computer components
+
+| Component                    | Qty | Tier   | Mode                               |
+| ---------------------------- | --- | ------ | ---------------------------------- |
+| Power Converter              | 1   | —      | OpenComputers                      |
+| Computer Case                | 1   | Tier 2 | OpenComputers                      |
+| Screen                       | 1   | Tier 2 | OpenComputers                      |
+| Keyboard                     | 1   | —      | OpenComputers                      |
+| Central Processing Unit      | 1   | Tier 2 | OpenComputers                      |
+| Memory                       | 2   | Tier 2 | OpenComputers                      |
+| Graphics Card                | 1   | Tier 2 | OpenComputers                      |
+| Network Card                 | 1   | —      | OpenComputers                      |
+| Hard Disk Drive              | 1   | Tier 1 | OpenComputers                      |
+| EEPROM (Lua BIOS)            | 1   | —      | OpenComputers                      |
+
+1. 💽 Prepare [Hard Disk Drive](#assembly-station-setup) for Computer
+2. Place the Computer Case, Screen, and Keyboard.
+   - ![Building computer](media/building_computer.png?)
+3. Install all components.
+   -  ![Computer Components](media/Computer_Components.png?)
+   > **Note:** [Hard Disk Drive](#assembly-station-setup) we were preparing at the assembly station.
+4. Connect the Sensor, Charger, Computer case and Power Converter using a cable.
+   -  ![Building computer 2](media/building_computer_2.png?)
+
 ---
 
 ## 🚀 Running the System
@@ -199,7 +234,7 @@ Crosses plants and automatically transfers newly bred crops to the storage area 
 This mode includes two sub-modes:
 
 - **Schema Mode:** Breeds according to a set pattern.
-  - ![schema_crop](media/schema.png?)
+  ![schema_crop](media/schema.png?)
 - **Manual Mode:** The robot does not edit parent seedlings unless they are weeded.
 
 ### Mode: autoSpread
@@ -241,7 +276,7 @@ Duplicates the target crop and transfers to storage.
 
 - When the system prepares a new order for the robot, the phrase "Loading.." appears in the bottom left corner. During this time, the user interface becomes unresponsive.
 
-![Schema_Beta](media/ui_loading.png?)
+![UI loading](media/ui_loading.png?)
 ---
 
 ## 💥 Force Termination
