@@ -118,7 +118,7 @@ end
 local function scanSystemRobot()
     local tools = checkTools(true)
     return {
-        linkedCard = checkNetworkCard(),
+        networkCard = checkNetworkCard(),
         redstoneCard = checkRedstoneCard(),
         inventoryUpgrade = checkInventoryUpgrade(),
         inventoryController = checkInventoryController(),
