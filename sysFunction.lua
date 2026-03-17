@@ -547,7 +547,7 @@ local function scanSystemRobot(firstRun)
     local connectionData = {}
     local allPassed = true
 
-    local linkedCardError = false
+    local networkCardError = false
     local redstoneCardError = false
     local inventoryUpgradeError = false
     local inventoryControllerError = false
@@ -573,7 +573,7 @@ local function scanSystemRobot(firstRun)
     end
 
     if connectionSuccess then
-        linkedCardError = connectionData.linkedCard or false
+        networkCardError = connectionData.networkCard or false
         redstoneCardError = connectionData.redstoneCard or false
         inventoryUpgradeError = connectionData.inventoryUpgrade or false
         inventoryControllerError = connectionData.inventoryController or false
@@ -581,13 +581,13 @@ local function scanSystemRobot(firstRun)
         transvectorBinderError = connectionData.transvectorBinder or false
     end
 
-    if not linkedCardError then
+    if not networkCardError then
         if firstRun then
-            drawMessage("Error: Linked Card error detected!", 0xFF0000)
+            drawMessage("Error: Network Card error detected!", 0xFF0000)
         end
         allPassed = false
     elseif firstRun then
-        drawMessage("Success: Linked Card check passed.", 0x00FF00)
+        drawMessage("Success: Network Card check passed.", 0x00FF00)
     end
 
     if not redstoneCardError then
@@ -638,7 +638,7 @@ local function scanSystemRobot(firstRun)
     end
 
     db.setSystemData('IWRobotTools', allPassed)
-    db.setSystemData('linkedCard', linkedCardError)
+    db.setSystemData('networkCard', networkCardError)
     db.setSystemData('redstoneCard', redstoneCardError)
     db.setSystemData('inventoryUpgrade', inventoryUpgradeError)
     db.setSystemData('inventoryController', inventoryControllerError)
