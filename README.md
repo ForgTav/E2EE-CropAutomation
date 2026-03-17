@@ -116,14 +116,14 @@ Key setup details:
      install → Y → Y
      ```
   3. After reboot, run the setup command for your device:
-     <details id="assembly-station-robot">
+     <details>
        <summary>🤖 For Robot</summary>
        
        ```text
        wget https://raw.githubusercontent.com/ForgTav/E2EE-CropAutomation/main/robotSetup.lua && robotSetup
        ```
      </details>
-     <details id="assembly-station-computer">
+     <details>
        <summary>💻 For Computer</summary>
        
        ```text
@@ -157,7 +157,7 @@ Key setup details:
 1. 💽 Prepare [Hard Disk Drive](#assembly-station-setup) for Robot
 2. Insert computer case into the Electronics Assembler and required components.
    - ![Robot Components](media/Robot_Components.png?)
-     > **Note:** [Hard Disk Drive](#assembly-station-robot) we were preparing at the assembly station.
+     > **Note:** [Hard Disk Drive](#assembly-station-setup) we were preparing at the assembly station.
 3. Click assemble and wait (\~3 minutes).
 4. Rename the robot using an anvil.
 5. Place it on the OC Charger and activate the charger with redstone.
@@ -197,7 +197,7 @@ Key setup details:
    - ![Building computer](media/building_computer.png?)
 3. Install all components.
    -  ![Computer Components](media/Computer_Components.png?)
-   > **Note:** [Hard Disk Drive](#assembly-station-computer) we were preparing at the assembly station.
+   > **Note:** [Hard Disk Drive](#assembly-station-setup) we were preparing at the assembly station.
 4. Connect the Sensor, Charger, Computer case and Power Converter using a cable.
    -  ![Building computer 2](media/building_computer_2.png?)
 
