@@ -532,11 +532,13 @@ local function scanTargetCrop()
     local cord = cordtoScan(raw[1], raw[2])
     local rawScan = sensor.scan(cord[1], 0, cord[2])
     local crop = fetchScan(rawScan)
-    if crop and crop.isCrop then
+
+    if crop and crop.isCrop and crop.name ~= "air" and crop.name ~= "emptyCrop" and not isWeed(crop) then
         db.setSystemData('systemTargetCrop', crop.name)
         db.setSystemData('IWTargetCrop', true)
         return true
     end
+    db.setSystemData('systemTargetCrop', nil)
     db.setSystemData('IWTargetCrop', false)
     return false;
 end
@@ -1090,9 +1092,18 @@ local function beforeStartSystem()
     local storageEmptySlots = db.getSystemData('systemStorageEmptySlots')
     if storageEmptySlots == 0 then
         db.setLogs(
-            string.format(
-                'Exit – Storage farm has no available space; If you have cleared the storage farm, run "scan storage" from the Actions menu.'),
-            'red')
+            'Exit – Storage farm has no available space; If you have cleared the storage farm, run "scan storage" from the Actions menu.',
+            'red'
+        )
+        return false
+    end
+
+    local systemTargetCrop = scanTargetCrop()
+    if not systemTargetCrop then
+        db.setLogs(
+            'Exit – Target crop is missing. Unable to start.',
+            'red'
+        )
         return false
     end
 

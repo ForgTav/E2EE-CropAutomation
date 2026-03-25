@@ -171,8 +171,8 @@ local installationSteps = {
       "Place the Power Converter from OpenComputers below the cable.",
       "Connect it to an RF energy source."
     },
-    checkBtn = true,
-    checkDB = "IWStorageFarm",
+    checkBtn = false,
+    checkDB = "",
     needMap = true,
     needContent = false
   },
@@ -191,13 +191,13 @@ local installationSteps = {
       "",
       "2. Find it on the Enigmatica 2: Expert - Extended Discord channel",
       "",
-      "3. Or enter the link manually and run this command:",
+      "3. Or enter the link manually:",
       "",
       "wget https://raw.githubusercontent.com/ForgTav/",
       "E2EE-CropAutomation/main/robotSetup.lua && robotSetup"
     },
     checkBtn = false,
-    checkDB = "IWRobotConnection",
+    checkDB = "",
     needMap = false,
     needContent = false
   },
@@ -214,7 +214,7 @@ local installationSteps = {
       "Use the Hard Disk Drive you prepared in Step 5.",
     },
     checkBtn = false,
-    checkDB = "IWRobotConnection",
+    checkDB = "",
     needMap = false,
     needContent = true
   },
@@ -290,6 +290,8 @@ local installationSteps = {
       "The System tab will open next, showing the latest scan result.",
       "Before launching, make sure to adjust the settings as needed.",
       "The final scan will run after clicking Next. It could take a while.",
+      "If the interface does not start, the scan has detected an error.",
+      "Go back through the steps and check everything."
     },
     checkBtn = false,
     checkDB = "",
@@ -2055,7 +2057,6 @@ local function handleBodyMouseClick(btn)
 
     if systemReady and not flagNeedCleanUp then
       db.setSystemData('systemEnabled', true)
-      sys.scanTargetCrop()
     end
 
     drawSystem()
