@@ -168,6 +168,7 @@ Key setup details:
    - Slot #15: Transvector Binder
    - Slot #14: Crop sticks (optional; will auto-refill)
    - (Optional) Tool slot: Axe or Mattock
+     > **Note:** The mattock, when broken, significantly slows down stick breaking - monitor its durability.
    - ![Robot Inventory](media/Robot_Inventory.png?)
 7. Power On and in terminal, enter:
     ```text
@@ -309,18 +310,15 @@ The system may automatically **terminate** itself under critical conditions to m
 💡 Make sure dislocator faces **forward**, not **up**.
 
 **3. Robot destroys placed crops**\
-💡 Resistance >2 or Growth > 23 or Gain > 31 is treated as weed.
+💡 Resistance > 2 or Growth > 23 or Gain > 31 is treated as weed.
 
 **4. Crops dying, weeds spreading**\
 💡 Location may have poor humidity/air/soil — consider relocating.
 
-**5. Computer can't communicate with the robot**  
-💡 Disassemble the robot and remove the **Linked Cards** from both the robot and the computer. Combine them in a **crafting table** to synchronize the connection, then reinsert and try again.
+**5. Robot cannot interact with chests or blocks**\
+💡 Check the fake player status permissions in your claim settings. Increase the block interaction access.
 
-**6. Robot doesn’t respond**\
-💡 Mekanism energy cube or cables may not power the OC charger properly.  
-
-**7. The robot and computer stopped unexpectedly and shut down**  
+**6. The robot and computer stopped unexpectedly and shut down**  
 💡 This is likely caused by the chunk being unloaded. Make sure the farm is inside a **chunk-loaded area**.  
 Install a **chunk loader** (e.g., from the IC² mod or another mod that provides chunk loading).
 
